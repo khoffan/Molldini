@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@layer base {
+  /* 1. ซ่อน Spin Buttons (ลูกศรขึ้น-ลง) สำหรับ Input Number ทั้งหมด */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield; /* สำหรับ Firefox */
+  }
+
+  /* 2. ลบขอบ Focus สีฟ้ามาตรฐานของ Browser */
+  input:focus, 
+  textarea:focus, 
+  select:focus {
+    outline: none;
+  }
+
+  /* 3. จัดการเรื่องการพิมพ์ใน iOS ไม่ให้ Zoom อัตโนมัติ (แถมให้) */
+  input[type="text"],
+  input[type="number"],
+  textarea {
+    font-size: 16px; 
+  }
+}
