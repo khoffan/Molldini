@@ -10,6 +10,10 @@ import type { AppDispatch } from './store'
 import { fetchProduct } from './actions/productAction'
 import UserProfile from './pages/UserProfile'
 import Login from './pages/LoginPage'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from './firebase/firebaseConfig'
+import { loginSuccess, logout } from './actions/userAction'
+import ProtectRoute from './components/ProtectRoute'
 
 
 
@@ -18,15 +22,27 @@ function App() {
   const dispatch = useDispatch<AppDispatch>()
   useEffect(() => {
     dispatch(fetchProduct())
+    const unscription = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        dispatch(loginSuccess(
+          firebaseUser
+        ))
+      } else {
+        dispatch(logout())
+      }
+    })
+    return () => unscription()
   }, [dispatch])
   const element = (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Product />} />
-      <Route path="/user-profile" element={<UserProfile />} />
       <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/cart" element={<Cart />} />
-      <Route path="/add-product" element={<AddProduct />} />
+      <Route element={<ProtectRoute />}>
+        <Route path="/add-product" element={<AddProduct />} />
+        <Route path="/user-profile" element={<UserProfile />} />
+      </Route>
     </Routes>
   )
 

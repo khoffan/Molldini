@@ -7,17 +7,22 @@ import {
     ChevronRight,
     Camera
 } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { RootState, AppDispatch } from '../store';
+import type { UserState } from '../reducer/userReducer';
+import { logout } from '../actions/userAction';
+import { useNavigate } from 'react-router';
 
 function UserProfile() {
-    // Mock Data
-    const user = {
-        name: "Dini Molldini",
-        email: "contact@molldini.design",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dini",
-        memberSince: "มกราคม 2024",
-        totalOrders: 12,
-        points: 450
-    };
+    const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
+    const { user } = useSelector((state: RootState) => state.auth) as UserState;
+
+
+    const handleLogout = () => {
+        dispatch(logout());
+        navigate("/");
+    }
 
     const menuItems = [
         { icon: <Package size={20} />, label: "คำสั่งซื้อของฉัน", desc: "ติดตามสถานะสินค้าและประวัติการซื้อ" },
@@ -40,7 +45,7 @@ function UserProfile() {
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
                     <div className="relative">
                         <div className="w-32 h-32 rounded-full border-4 border-white shadow-md overflow-hidden bg-blue-100">
-                            <img src={user.avatar} alt="avatar" className="w-full h-full object-cover" />
+                            <img src={user?.photoURL ?? ""} alt="avatar" className="w-full h-full object-cover" />
                         </div>
                         <button className="absolute bottom-1 right-1 bg-white p-2 rounded-full shadow-lg border border-gray-100 text-blue-600 hover:bg-blue-50 transition-colors">
                             <Camera size={16} />
@@ -48,16 +53,16 @@ function UserProfile() {
                     </div>
 
                     <div className="flex-1 text-center md:text-left">
-                        <h2 className="text-2xl font-black text-gray-900">{user.name}</h2>
-                        <p className="text-gray-500 font-medium">{user.email}</p>
+                        <h2 className="text-2xl font-black text-gray-900">{user?.displayName}</h2>
+                        <p className="text-gray-500 font-medium">{user?.email}</p>
                         <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4">
                             <div className="bg-blue-50 px-4 py-2 rounded-xl">
                                 <p className="text-xs text-blue-400 uppercase font-bold tracking-wider">คะแนนสะสม</p>
-                                <p className="text-lg font-black text-blue-600">{user.points} <span className="text-xs font-normal">Points</span></p>
+                                {/* <p className="text-lg font-black text-blue-600">{user?.points} <span className="text-xs font-normal">Points</span></p> */}
                             </div>
                             <div className="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
                                 <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">สมาชิกตั้งแต่</p>
-                                <p className="text-sm font-bold text-gray-700">{user.memberSince}</p>
+                                {/* <p className="text-sm font-bold text-gray-700">{user.memberSince}</p> */}
                             </div>
                         </div>
                     </div>
@@ -84,7 +89,7 @@ function UserProfile() {
                     ))}
 
                     {/* Logout Button */}
-                    <button className="mt-4 flex items-center justify-center gap-2 w-full py-4 text-red-500 font-bold hover:bg-red-50 rounded-2xl transition-colors">
+                    <button onClick={handleLogout} className="mt-4 flex items-center justify-center gap-2 w-full py-4 text-red-500 font-bold hover:bg-red-50 rounded-2xl transition-colors">
                         <LogOut size={20} />
                         ออกจากระบบ
                     </button>

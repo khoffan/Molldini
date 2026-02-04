@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { ProductItem } from '../interface/productInterface';
+import type { Dispatch } from '@reduxjs/toolkit';
 
 export const ActionType = {
     FETCH_PRODUCT: "FETCH_PRODUCT",
@@ -14,13 +15,13 @@ export const ActionType = {
 const baseUrl: string = "https://697d069897386252a2676641.mockapi.io/product";
 
 export const fetchProduct = (id: string = "") => {
-    return async (dispath: any) => {
+    return async (dispath: Dispatch) => {
         dispath({
             type: ActionType.FETCH_PRODUCT,
         });
         if (id == "") {
             try {
-                const response: any = await axios.get(baseUrl);
+                const response = await axios.get(baseUrl);
                 const data: ProductItem[] = response.data;
                 dispath(
                     {
@@ -28,18 +29,18 @@ export const fetchProduct = (id: string = "") => {
                         payload: data
                     }
                 )
-            } catch (e: any) {
+            } catch (e: unknown) {
                 dispath(
                     {
                         type: ActionType.FETCH_PRODUCT_FAILURE,
-                        payload: e.message
+                        payload: (e as Error).message
                     }
 
                 )
             }
         } else {
             try {
-                const response: any = await axios.get(baseUrl + "/" + id);
+                const response = await axios.get(baseUrl + "/" + id);
                 const data: ProductItem = response.data;
                 dispath(
                     {
@@ -47,11 +48,11 @@ export const fetchProduct = (id: string = "") => {
                         payload: data
                     }
                 )
-            } catch (e: any) {
+            } catch (e: unknown) {
                 dispath(
                     {
                         type: ActionType.FETCH_PRODUCT_FAILURE,
-                        payload: e.message
+                        payload: (e as Error).message
                     }
 
                 )
@@ -61,22 +62,22 @@ export const fetchProduct = (id: string = "") => {
     }
 }
 
-export const setProduct = (product: any) => {
-    return async (dispatch: any) => {
+export const setProduct = (product: ProductItem) => {
+    return async (dispatch: Dispatch) => {
         dispatch({ type: ActionType.SET_PRODUCT })
         try {
             product.createdAt = new Date().toISOString();
             product.updatedAt = new Date().toISOString();
             const data: ProductItem = product;
-            const response: any = await axios.post(baseUrl, data);
+            const response = await axios.post(baseUrl, data);
             dispatch({
                 type: ActionType.SET_PRODUCT_SUCCESS,
                 payload: response.data
             })
-        } catch (e: any) {
+        } catch (e: unknown) {
             dispatch({
                 type: ActionType.SET_PRODUCT_FAILURE,
-                payload: e.message
+                payload: (e as Error).message
             })
         }
     }

@@ -1,3 +1,4 @@
+
 export const UserRole = {
   USER: 'user',
   MERCHANT: 'merchant',
@@ -22,4 +23,6 @@ export interface AppUser {
   createdAt: string;     // สำคัญมากสำหรับ Backend เพื่อดูว่าสมัครเมื่อไหร่
   lastLogin: string;     // เอาไว้เช็ค Session ล่าสุด
 }
+
+
 
