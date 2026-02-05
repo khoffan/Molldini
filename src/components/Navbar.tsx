@@ -1,19 +1,41 @@
-import { Link } from "react-router";
-import { useSelector, } from "react-redux";
-import type { RootState, } from "../store";
+import { Link, useNavigate } from "react-router";
+import { useDispatch, useSelector, } from "react-redux";
+import type { AppDispatch, RootState, } from "../store";
 import type { UserState } from "../reducer/userReducer";
-
-
+import { useState, useRef, useEffect } from "react";
+import { logout } from "../actions/userAction";
+import { UserRole } from "../interface/userInterface";
+import DropdownItem from "./DropdownItem";
 
 
 function Navbar() {
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
+  const dispatch = useDispatch<AppDispatch>()
 
   // สมมติค่าตัวเลขในตะกร้า (เดี๋ยวเราจะใช้ useSelector ดึงจาก Redux)
   const cartItemCount = useSelector((state: RootState) => state.cart.items.length);
 
   const { user } = useSelector((state: RootState) => state.auth) as UserState;
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
+  const handleSignOut = () => {
+    dispatch(logout());
+    setIsOpen(false);
+    navigate("/");
+  }
 
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -51,26 +73,59 @@ function Navbar() {
             </Link>
 
             {/* 2. User Section: เช็คว่า Login หรือยัง */}
-            <div className="border-l pl-5 ml-2 border-gray-200">
+            <div className="border-l pl-5 ml-2 border-gray-200 relative" ref={dropdownRef}>
               {user ? (
-                /* ถ้า Login แล้ว: โชว์ Avatar และชื่อ */
-                <Link to="/user-profile" className="flex items-center space-x-2 group">
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt={user.displayName}
-                      className="h-8 w-8 rounded-full object-cover ring-1 ring-gray-200 group-hover:ring-blue-400 transition-all"
-                    />
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                      {user.displayName?.charAt(0).toUpperCase()}
+                <>
+                  {/* Avatar Button */}
+                  <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="flex items-center space-x-2 group focus:outline-none"
+                  >
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt="" className="h-8 w-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-blue-400 transition-all" />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-transparent group-hover:ring-blue-400">
+                        {user.displayName?.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="hidden sm:block text-left">
+                      <p className="text-sm font-semibold text-gray-800 leading-none group-hover:text-blue-600">{user.displayName}</p>
+                      <p className="text-[10px] text-gray-500 uppercase tracking-wide">{user.role}</p>
+                    </div>
+                    <svg className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isOpen && (
+                    <div className="absolute right-0 mt-3 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 overflow-hidden transform origin-top-right transition-all">
+                      <div className="px-4 py-2 border-b border-gray-50 mb-1">
+                        <p className="text-xs text-gray-400">Signed in as</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">{user.email || user.displayName}</p>
+                      </div>
+
+                      <DropdownItem to="/profile" icon="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" label="My Profile" />
+
+                      <DropdownItem to="/merchant" icon="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" label="Merchant Center" color="text-blue-600" />
+
+
+                      <DropdownItem to="/settings" icon="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" label="Settings" />
+
+                      <div className="border-t border-gray-50 mt-2 pt-1">
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 transition-colors"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
                     </div>
                   )}
-                  <div className="hidden sm:block text-left">
-                    <p className="text-sm font-semibold text-gray-800 leading-none group-hover:text-blue-600">{user.displayName}</p>
-                    <p className="text-[10px] text-gray-500">{user.role}</p>
-                  </div>
-                </Link>
+                </>
               ) : (
                 /* ถ้ายังไม่ได้ Login: โชว์ปุ่ม Login */
                 <Link
@@ -88,5 +143,7 @@ function Navbar() {
     </nav>
   );
 }
+
+
 
 export default Navbar;

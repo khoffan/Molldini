@@ -2,7 +2,7 @@ import type { User } from "firebase/auth"
 import type { AppUser } from "../interface/userInterface"
 import { signOut } from "firebase/auth"
 import { auth } from "../firebase/firebaseConfig"
-import axios from "axios"
+import api from "../lib/api"
 import type { Dispatch } from "@reduxjs/toolkit"
 
 
@@ -15,21 +15,16 @@ export const AuthAction = {
 export type AuthActionType = typeof AuthAction[keyof typeof AuthAction]
 
 
-
-
-
-
 export const loginSuccess = (user: User) => {
     return async (dispatch: Dispatch) => {
         try {
             const idToken = await user.getIdToken();
-            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/users/me`, {}, {
+            const res = await api.post(`/api/v1/users/me`, {}, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${idToken}`,
                 }
             });
-            console.log(res.data);
             const rawData = res.data;
             const appUser: AppUser = {
                 uid: rawData.uid,
@@ -49,7 +44,7 @@ export const loginSuccess = (user: User) => {
                 type: AuthAction.SYNC_USER,
                 payload: appUser,
             });
-        } catch(e: unknown) {
+        } catch (e: unknown) {
             console.log(e)
             dispatch({
                 type: AuthAction.SUNC_ERROR,

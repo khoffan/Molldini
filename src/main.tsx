@@ -6,13 +6,15 @@ import { store } from './store.tsx'
 import './index.css'
 import App from './App.tsx'
 
+
+
 createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
     <BrowserRouter>
-    <StrictMode>
-      <App />
-    </StrictMode>
-  </BrowserRouter>
+      <StrictMode>
+        <App />
+      </StrictMode>
+    </BrowserRouter>
   </Provider>
-  
+
 )

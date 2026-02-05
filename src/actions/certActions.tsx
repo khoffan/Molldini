@@ -10,9 +10,7 @@ export const CartActionType = {
 
 export const fetchCart = () => {
     const savedCart = localStorage.getItem("cart");
-    console.log(savedCart);
     const cartItems: CartItem[] = savedCart ? JSON.parse(savedCart) : [];
-    console.log(cartItems);
     return {
         type: CartActionType.FETCH_CART,
         payload: cartItems

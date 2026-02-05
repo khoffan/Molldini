@@ -1,10 +1,10 @@
-import { ActionType } from "../actions/productAction";
-import type { ProductItem } from "../interface/productInterface";
+import { ProductAction } from "../actions/productAction";
+import type { Product } from "../interface/productInterface";
 
 
 
 export interface ProductState {
-    items: ProductItem[],
+    items: Product[],
     loading: boolean,
     error: string | null
 }
@@ -17,43 +17,43 @@ const initState: ProductState = {
 
 export const productReducer = (state: ProductState = initState, action: any) => {
     switch (action.type) {
-        case ActionType.FETCH_PRODUCT:
+        case ProductAction.FETCH_PRODUCT:
             return {
                 ...state,
                 loading: true,
                 error: null
             }
-        case ActionType.FETCH_PRODUCT_SUCCESS:
+        case ProductAction.FETCH_PRODUCT_SUCCESS:
             return {
                 ...state,
                 loading: false,
                 items: action.payload
             }
-        case ActionType.FETCH_PRODUCT_FAILURE:
+        case ProductAction.FETCH_PRODUCT_FAILURE:
             return {
                 ...state,
                 loading: false,
                 error: action.payload
             }
-        case ActionType.SET_PRODUCT:
+        case ProductAction.SET_PRODUCT:
             return {
                 ...state,
                 loading: true,
                 error: null
             }
-        case ActionType.SET_PRODUCT_SUCCESS:
+        case ProductAction.SET_PRODUCT_SUCCESS:
             return {
                 ...state,
                 loading: false,
                 items: [...state.items, action.payload]
             }
-        case ActionType.SET_PRODUCT_FAILURE:
+        case ProductAction.SET_PRODUCT_FAILURE:
             return {
                 ...state,
                 loading: false,
                 error: action.payload
             }
-        case ActionType.REMOVE_PRODUCT:
+        case ProductAction.REMOVE_PRODUCT:
             return {
                 ...state,
                 loading: false,

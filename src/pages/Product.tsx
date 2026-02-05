@@ -1,17 +1,17 @@
 import { useDispatch, useSelector, } from "react-redux";
 import type { RootState, AppDispatch } from "../store";
 import { Link, useNavigate } from "react-router";
-import type { ProductItem } from "../interface/productInterface";
+import type { Product } from "../interface/productInterface";
 import LoadingSkelition from "../components/LoadingSkelition";
 import { addToCart } from "../actions/certActions";
 import type { CartItem } from "../interface/cartInterface";
 
-function Product() {
+function ProductPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { items, loading, error } = useSelector((state: RootState) => state.product)
 
-  const handleAddToCart = (e: React.MouseEvent, product: ProductItem) => {
+  const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.preventDefault();
     e.stopPropagation();
     const cartItem: CartItem = {
@@ -45,7 +45,7 @@ function Product() {
           </div>
 
           {/* 3. ปุ่มนำทางไปหน้า Add Product */}
-          <button
+          {/* <button
             onClick={() => navigate('/add-product')} // เปลี่ยน path ให้ตรงกับที่ตั้งไว้ใน App.tsx
             className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100 active:scale-95"
           >
@@ -53,12 +53,12 @@ function Product() {
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
             </svg>
             Add New Product
-          </button>
+          </button> */}
         </div>
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
-          {items.map((product: ProductItem) => (
+          {items.map((product: any) => (
             <Link to={`/product/${product.id}`} key={product.id} className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow duration-300">
               {/* Image Container */}
               <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-200 lg:aspect-none h-72">
@@ -98,4 +98,4 @@ function Product() {
   );
 }
 
-export default Product;
+export default ProductPage;
