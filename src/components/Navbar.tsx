@@ -1,10 +1,8 @@
 import { Link, useNavigate } from "react-router";
 import { useDispatch, useSelector, } from "react-redux";
 import type { AppDispatch, RootState, } from "../store";
-import type { UserState } from "../reducer/userReducer";
 import { useState, useRef, useEffect } from "react";
-import { logout } from "../actions/userAction";
-import { UserRole } from "../interface/userInterface";
+import { logoutAction } from "../service/authService";
 import DropdownItem from "./DropdownItem";
 
 
@@ -15,9 +13,15 @@ function Navbar() {
   const dispatch = useDispatch<AppDispatch>()
 
   // สมมติค่าตัวเลขในตะกร้า (เดี๋ยวเราจะใช้ useSelector ดึงจาก Redux)
-  const cartItemCount = useSelector((state: RootState) => state.cart.items.length);
+  const { cart } = useSelector((state: RootState) => state.cart);
 
-  const { user } = useSelector((state: RootState) => state.auth) as UserState;
+  // สมมติค่าตัวเลขในตะกร้า (เดี๋ยวเราจะใช้ useSelector ดึงจาก Redux)
+  console.log("Cart in Navbar:", cart);
+  const cartItems = cart?.items;
+  const cartItemCount = cartItems?.reduce((total, item) => total + item.quantity, 0) ?? 0;
+  console.log("Cart Item Count:", cartItemCount);
+
+  const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -32,7 +36,7 @@ function Navbar() {
   }, []);
 
   const handleSignOut = () => {
-    dispatch(logout());
+    dispatch(logoutAction());
     setIsOpen(false);
     navigate("/");
   }
@@ -81,8 +85,8 @@ function Navbar() {
                     onClick={() => setIsOpen(!isOpen)}
                     className="flex items-center space-x-2 group focus:outline-none"
                   >
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="" className="h-8 w-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-blue-400 transition-all" />
+                    {user.photoURL?.url ? (
+                      <img src={user.photoURL.url ?? ""} alt="" className="h-8 w-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-blue-400 transition-all" />
                     ) : (
                       <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold ring-2 ring-transparent group-hover:ring-blue-400">
                         {user.displayName?.charAt(0).toUpperCase()}

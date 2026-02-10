@@ -1,4 +1,7 @@
 import axios from "axios";
+import { store } from "../store";
+import { logoutAction } from "../service/authService";
+import { auth } from "../firebase/firebaseConfig";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
@@ -9,11 +12,18 @@ const api = axios.create({
 });
 
 // คุณสามารถทำ Interceptors เพื่อจัดการ Error ส่วนกลางได้ที่นี่
-api.interceptors.response.use(
-    (response) => response,
+api.interceptors.response.use( async (config) => {
+        const user = auth.currentUser;
+        if(user) {
+            const token = await user.getIdToken(true);
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
     (error) => {
         if (error.response?.status === 401) {
             // เช่น ถ้า Token หมดอายุ ให้เด้งไปหน้า Login
+            store.dispatch(logoutAction());
             window.location.href = '/login';
         }
         return Promise.reject(error);

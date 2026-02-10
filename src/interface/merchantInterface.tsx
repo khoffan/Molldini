@@ -1,12 +1,13 @@
 import type { AppUser } from "./userInterface";
 import type { Product } from "./productInterface";
 import type { Address } from "./addressInterface";
+import type { Media } from "./mediaInterface";
 
 export interface Merchant {
     id: string;
     name: string;
     description?: string | null; // ใน Prisma เป็น String? จะได้ค่าเป็น null ได้
-    logoUrl?: string | null;
+    logoUrl?: Media | null;
     ownerId: string;
 
     // Relations (ใส่เป็น Optional ไว้เผื่อกรณีที่ดึงข้อมูลแบบไม่ได้ include)

@@ -3,16 +3,21 @@ import type { RootState, AppDispatch } from '../store';
 import RegistrationForm from '../components/RegistrationForm';
 import MerchantDashboard from '../components/MerchantDashboard';
 import { useEffect } from 'react';
-import { fetchMyMerchant } from '../actions/merchantAction';
+import { fetchMyMerchant } from '../service/merchantService';
 // สมมติว่าคุณมี action ในการดึงข้อมูล merchant
 // import { fetchMyMerchant } from '../store/slices/merchantSlice';
 
 function MerchantPage() {
+    const dispatch = useDispatch<AppDispatch>();
 
     // 1. ดึงข้อมูลจาก Redux Store
     const { merchant, loading } = useSelector((state: RootState) => state.merchant);
     console.log("merchant", merchant);
     const { user } = useSelector((state: RootState) => state.auth);
+
+    useEffect(() => {
+        dispatch(fetchMyMerchant());
+    }, [dispatch])
     // 2. แสดงผล Loading ระหว่างรอข้อมูล
     if (loading) {
         return (
@@ -35,7 +40,7 @@ function MerchantPage() {
                                 <p className="text-gray-500">Manage your store and products here.</p>
                             </div>
                             {merchant.logoUrl && (
-                                <img src={merchant.logoUrl} alt="Logo" className="h-16 w-16 rounded-full object-cover border" />
+                                <img src={merchant.logoUrl.url} alt="Logo" className="h-16 w-16 rounded-full object-cover border" />
                             )}
                         </header>
 

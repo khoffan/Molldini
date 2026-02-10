@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useDispatch } from 'react-redux';
-import { setMerchant } from '../actions/merchantAction';
+import { createMerchant } from '../service/merchantService';
 import type { AppDispatch } from '../store';
 import type { CreateMerchantInput } from '../interface/merchantInterface';
 import type { Address } from '../interface/addressInterface';
@@ -45,7 +45,7 @@ function RegistrationForm({ userId }: { userId?: string }) {
                     postcode: data.postcode,
                 } as Address,
         };
-        dispatch(setMerchant(merchantInput));
+        dispatch(createMerchant(merchantInput));
         console.log("merchantInput", merchantInput);
     };
 

@@ -1,5 +1,6 @@
 import type { Merchant } from "./merchantInterface";
 import type { Category } from "./categoryInterface";
+import type { Media, MediaInput } from "./mediaInterface";
 
 export interface ProductVariant {
     id: string;
@@ -7,11 +8,16 @@ export interface ProductVariant {
     variantName: string; // เช่น "สีดำ, ไซส์ L"
     price: number;      // ราคาเฉพาะของตัวเลือกนี้
     stock: number;      // จำนวนสต็อก
-    image: string | null; // รูปเฉพาะสี (ถ้ามี)
+    images: Media[]; // รูปเฉพาะสี (ถ้ามี)
     sku: string | null;   // รหัสสินค้าเฉพาะตัว
+}
 
-    createdAt: string | Date;
-    updatedAt: string | Date;
+export interface ProductVariantInput {
+    variantName: string; // เช่น "สีดำ, ไซส์ L"
+    price: number;      // ราคาเฉพาะของตัวเลือกนี้
+    stock: number;      // จำนวนสต็อก
+    images: MediaInput[]; // รูปเฉพาะสี (ถ้ามี)
+    sku: string | null;   // รหัสสินค้าเฉพาะตัว
 }
 
 export interface Product {
@@ -20,6 +26,7 @@ export interface Product {
     description: string | null;
     merchantId: string | null;
     categoryId: string | null;
+    images: Media[];
 
     // Relations
     merchant?: Merchant;
@@ -27,9 +34,21 @@ export interface Product {
 
     // 💡 หัวใจสำคัญ: สินค้าหนึ่งตัวจะมีหลาย Variant
     variants: ProductVariant[];
+}
 
-    createdAt: string | Date;
-    updatedAt: string | Date;
+export interface ProductInput {
+    title: string;
+    description: string | null;
+    merchantId: string | null;
+    categoryId: string | null;
+    images: MediaInput[];
+
+    // Relations
+    merchant?: Merchant;
+    category?: Category | null;
+
+    // 💡 หัวใจสำคัญ: สินค้าหนึ่งตัวจะมีหลาย Variant
+    variants: ProductVariantInput[];
 }
 
 // สำหรับใช้ในหน้าแรก (Home) หรือรายการสินค้าที่ต้องการแสดงราคาเริ่มต้น

@@ -5,20 +5,22 @@ import { auth, provider } from '../firebase/firebaseConfig';
 import { signInWithPopup } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { Navigate } from 'react-router';
-import { loginSuccess } from '../actions/userAction';
+import { syncUserWithBackend } from '../service/authService';
 import type { RootState, AppDispatch } from '../store';
 
 const LoginPage: React.FC = () => {
   // กำหนด Type ให้ State เป็น User หรือ null
   const dispatch = useDispatch<AppDispatch>();
-  const { user, loading } = useSelector((state: RootState) => state.auth);
+  const { user, loading, error } = useSelector((state: RootState) => state.auth);
   const [localLoading, setLocalLoading] = useState<boolean>(false);
+
+  console.log(error);
 
   const handleGoogleLogin = async (): Promise<void> => {
     setLocalLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      dispatch(loginSuccess(result.user))
+      dispatch(syncUserWithBackend(result.user))
     } catch (error: unknown) {
       if (error instanceof FirebaseError) {
         // ตรงนี้ TypeScript จะรู้แล้วว่า error คือ FirebaseError
@@ -40,6 +42,19 @@ const LoginPage: React.FC = () => {
 
   if (user) {
     return <Navigate to="/" replace />
+  }
+
+  if(error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold text-gray-800">Error</h1>
+            <p className="text-gray-500 mt-2">{error}</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

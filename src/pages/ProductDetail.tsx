@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { ShoppingCart, Plus, Minus, ChevronLeft } from 'lucide-react';
 import LoadingSkelition from '../components/LoadingSkelition';
-import type { ProductState } from '../reducer/productReducer';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '../actions/certActions';
+import { addToCart } from '../service/cartService';
 import type { CartItem } from '../interface/cartInterface';
 import Swal from 'sweetalert2';
+import { fetchProducts } from '../service/productService';
 
 function ProductDetail() {
     const { id } = useParams();
@@ -18,9 +18,17 @@ function ProductDetail() {
 
     const { items, loading, error } = useSelector((state: RootState) =>
         state.product
-    ) as ProductState;
+    );
 
     const product = items.find(item => item.id === id);
+    console.log(product);
+    const productVariant = product?.variants;
+    console.log("productVariant", productVariant);
+
+
+    useEffect(() => {
+        dispatch(fetchProducts());
+    }, [dispatch]);
 
     if (loading) {
         return <LoadingSkelition />;
@@ -37,14 +45,12 @@ function ProductDetail() {
     const handleIncrement = () => setQuantity(prev => prev + 1);
     const handleDecrement = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
-    const handleAddToCart = (shouldNavigate: boolean) => {
+    const handleAddToCart = (shouldNavigate: boolean, variantId: string) => {
         const cartItem: CartItem = {
-            id: Date.now().toString(),
-            productId: product.id ?? "",
             quantity,
-            userId: "1",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            userId: "",
+            title: product.title,
+            productId: variantId
         }
         dispatch(addToCart(cartItem));
 
@@ -70,6 +76,8 @@ function ProductDetail() {
         }
     }
 
+
+
     return (
         <div className="bg-gray-50 min-h-screen pb-12">
             {/* Navigation Breadcrumb */}
@@ -86,83 +94,87 @@ function ProductDetail() {
             <main className="max-w-6xl mx-auto px-4">
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="flex flex-col lg:flex-row">
+                        {Array.isArray(productVariant) && productVariant.map((variant) => {
+                            return (
+                                <>
+                                    {/* ฝั่งซ้าย: รูปภาพสินค้า */}
+                                    <div className="lg:w-1/2 p-8 border-r border-gray-50" >
+                                        <div className="aspect-square rounded-2xl overflow-hidden bg-gray-100 group">
+                                            <img
+                                                src={variant?.images[0]?.url ?? ""}
+                                                alt={variant?.variantName ?? ""}
+                                                className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+                                            />
+                                        </div>
+                                    </div>
 
-                        {/* ฝั่งซ้าย: รูปภาพสินค้า */}
-                        <div className="lg:w-1/2 p-8 border-r border-gray-50">
-                            <div className="aspect-square rounded-2xl overflow-hidden bg-gray-100 group">
-                                <img
-                                    src={product.image}
-                                    alt={product.title}
-                                    className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
-                                />
-                            </div>
-                        </div>
-
-                        {/* ฝั่งขวา: รายละเอียดสินค้า */}
-                        <div className="lg:w-1/2 p-8 lg:p-12 flex flex-col">
-                            <div className="flex-1">
-                                <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full uppercase tracking-wider">
-                                    {product.category}
-                                </span>
-                                <h1 className="mt-4 text-3xl font-extrabold text-gray-900 leading-tight">
-                                    {product.title}
-                                </h1>
-
-                                <div className="mt-6 flex items-baseline gap-4">
-                                    <span className="text-4xl font-black text-blue-600">
-                                        ฿{product.price.toLocaleString()}
-                                    </span>
-                                    {/* สมมติราคาก่อนลด */}
-                                    <span className="text-lg text-gray-400 line-through">
-                                        ฿{(product.price * 1.2).toLocaleString()}
-                                    </span>
-                                </div>
-
-                                <div className="mt-8">
-                                    <h3 className="text-sm font-bold text-gray-900 uppercase">รายละเอียดสินค้า</h3>
-                                    <p className="mt-3 text-gray-600 leading-relaxed">
-                                        {product.description || "ไม่มีรายละเอียดสินค้าเพิ่มเติมสำหรับรายการนี้ ผลิตภัณฑ์คุณภาพเยี่ยมที่คัดสรรมาเพื่อคุณโดยเฉพาะ"}
-                                    </p>
-                                </div>
-
-                                {/* ส่วนเลือกจำนวนสินค้า */}
-                                <div className="mt-10">
-                                    <h3 className="text-sm font-bold text-gray-900 uppercase mb-4">จำนวน</h3>
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                                            <button
-                                                onClick={handleDecrement}
-                                                className="p-3 hover:bg-gray-50 text-gray-600 transition-colors"
-                                            >
-                                                <Minus size={18} />
-                                            </button>
-                                            <span className="w-14 text-center font-bold text-gray-900 border-x border-gray-200">
-                                                {quantity}
+                                    {/* ฝั่งขวา: รายละเอียดสินค้า */}
+                                    <div className="lg:w-1/2 p-8 lg:p-12 flex flex-col">
+                                        <div className="flex-1">
+                                            <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full uppercase tracking-wider">
+                                                {variant?.sku ?? ""}
                                             </span>
-                                            <button
-                                                onClick={handleIncrement}
-                                                className="p-3 hover:bg-gray-50 text-gray-600 transition-colors"
-                                            >
-                                                <Plus size={18} />
+                                            <h1 className="mt-4 text-3xl font-extrabold text-gray-900 leading-tight">
+                                                {variant.variantName}
+                                            </h1>
+
+                                            <div className="mt-6 flex items-baseline gap-4">
+                                                <span className="text-4xl font-black text-blue-600">
+                                                    ฿{variant.price.toLocaleString()}
+                                                </span>
+                                                {/* สมมติราคาก่อนลด */}
+                                                <span className="text-lg text-gray-400 line-through">
+                                                    ฿{(variant.price * 1.2).toLocaleString()}
+                                                </span>
+                                            </div>
+
+                                            {/* <div className="mt-8">
+                                            <h3 className="text-sm font-bold text-gray-900 uppercase">รายละเอียดสินค้า</h3>
+                                            <p className="mt-3 text-gray-600 leading-relaxed">
+                                                {product.description || "ไม่มีรายละเอียดสินค้าเพิ่มเติมสำหรับรายการนี้ ผลิตภัณฑ์คุณภาพเยี่ยมที่คัดสรรมาเพื่อคุณโดยเฉพาะ"}
+                                            </p>
+                                        </div> */}
+
+                                            {/* ส่วนเลือกจำนวนสินค้า */}
+                                            <div className="mt-10">
+                                                <h3 className="text-sm font-bold text-gray-900 uppercase mb-4">จำนวน</h3>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                                                        <button
+                                                            onClick={handleDecrement}
+                                                            className="p-3 hover:bg-gray-50 text-gray-600 transition-colors"
+                                                        >
+                                                            <Minus size={18} />
+                                                        </button>
+                                                        <span className="w-14 text-center font-bold text-gray-900 border-x border-gray-200">
+                                                            {quantity}
+                                                        </span>
+                                                        <button
+                                                            onClick={handleIncrement}
+                                                            className="p-3 hover:bg-gray-50 text-gray-600 transition-colors"
+                                                        >
+                                                            <Plus size={18} />
+                                                        </button>
+                                                    </div>
+                                                    <span className="text-sm text-gray-400">มีสินค้าทั้งหมด {variant.stock} ชิ้น</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* ปุ่ม Action */}
+                                        <div className="mt-12 flex flex-col sm:flex-row gap-4">
+                                            <button onClick={() => handleAddToCart(false, variant.id)} className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-600 py-4 rounded-2xl font-bold hover:bg-blue-100 transition-all active:scale-95">
+                                                <ShoppingCart size={20} />
+                                                เพิ่มไปยังรถเข็น
+                                            </button>
+                                            <button onClick={() => handleAddToCart(true, variant.id)} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95">
+                                                ซื้อเลยตอนนี้
                                             </button>
                                         </div>
-                                        <span className="text-sm text-gray-400">มีสินค้าทั้งหมด 99 ชิ้น</span>
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* ปุ่ม Action */}
-                            <div className="mt-12 flex flex-col sm:flex-row gap-4">
-                                <button onClick={() => handleAddToCart(false)} className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-600 py-4 rounded-2xl font-bold hover:bg-blue-100 transition-all active:scale-95">
-                                    <ShoppingCart size={20} />
-                                    เพิ่มไปยังรถเข็น
-                                </button>
-                                <button onClick={() => handleAddToCart(true)} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95">
-                                    ซื้อเลยตอนนี้
-                                </button>
-                            </div>
-                        </div>
-
+                                </>
+                            )
+                        })}
                     </div>
                 </div>
 
@@ -181,8 +193,8 @@ function ProductDetail() {
                         {/* เพิ่มเติมได้ตามต้องการ */}
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
 

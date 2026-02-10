@@ -9,18 +9,17 @@ import {
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
-import type { UserState } from '../reducer/userReducer';
-import { logout } from '../actions/userAction';
 import { useNavigate } from 'react-router';
+import { logoutAction } from '../service/authService';
 
 function UserProfile() {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { user } = useSelector((state: RootState) => state.auth) as UserState;
+    const { user } = useSelector((state: RootState) => state.auth);
 
 
     const handleLogout = () => {
-        dispatch(logout());
+        dispatch(logoutAction());
         navigate("/");
     }
 

@@ -1,26 +1,35 @@
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect } from "react";
 import type { AppDispatch, RootState } from "../store";
 import type { CartItem } from "../interface/cartInterface";
-import type { CartState } from "../reducer/certRducer";
-import type { ProductState } from "../reducer/productReducer";
-import { decrementQuantity, removeFromCart, incrementQuantity, fetchCart } from "../actions/certActions";
+import { fetchCartFromDb, mergeCartAfterLogin, removeFromCart, updateCartDecrementQuantityDb, updateCartIncrementQuantityDb } from "../service/cartService";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
+import { setOrderFromCartId } from "../service/orderService";
+import Swal from "sweetalert2";
 
 
 
 function Cart() {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   // ดึงสินค้าทั้งหมดจาก Product Slice มาเพื่อหาข้อมูลชื่อ/รูป/ราคา
-  const { items } = useSelector((state: RootState) => state.cart) as CartState;
-  const allProducts = useSelector((state: RootState) => state.product) as ProductState;
+  const { cart, loading, error } = useSelector((state: RootState) => state.cart);
+  const cartItems = cart?.items || [];
+  const isSynced = useSelector((state: RootState) => state.cart.isSynced);
+  const allProducts = useSelector((state: RootState) => state.product);
+  const productVarients = allProducts.items.map(item => item.variants).flat();
   useEffect(() => {
-    dispatch(fetchCart());
-  }, [dispatch])
+    if (isSynced) {
+      dispatch(fetchCartFromDb());
+    }
+    dispatch(mergeCartAfterLogin());
+  }, [dispatch, isSynced])
+
+  console.log("Cart items:", cartItems);
   // คำนวณราคารวมทั้งหมด
-  const subtotal = items.reduce((acc, item) => {
-    const productInfo = allProducts.items.find(p => p.id === item.productId);
-    return acc + (productInfo?.price || 0) * item.quantity;
-  }, 0);
+  const subtotal = cartItems.reduce((acc, item) => {
+    return acc + (productVarients.find(v => v.id === item.productId)?.price || 0) * item.quantity;
+  }, 0) ?? 0;
 
   const shipping = subtotal > 0 ? 10 : 0;
 
@@ -31,11 +40,51 @@ function Cart() {
   }
 
   const handleIncrement = (id: string) => {
-    dispatch(incrementQuantity(id));
+    dispatch(updateCartIncrementQuantityDb({ productId: id }));
   }
 
   const handleDecrement = (id: string) => {
-    dispatch(decrementQuantity(id));
+
+    dispatch(updateCartDecrementQuantityDb({ productId: id }));
+
+  }
+
+  const handleCheckOut = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    try {
+      if (!isSynced) {
+        await dispatch(mergeCartAfterLogin());
+        console.log("Syncing cart...");
+      }
+      console.log("Proceed to checkout with total amount:", total);
+      console.log("Cart ID for checkout:", id);
+      await dispatch(setOrderFromCartId({
+        cartId: id,
+        shippingAddress: "",
+        receiverName: "",
+        receiverPhone: "",
+        paymentMethod: ""
+      }));
+      navigate(`/checkout/${id}`);
+    } catch (err: unknown) {
+      console.error("Error during checkout:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Checkout Failed',
+        text: err instanceof Error ? err.message : 'An unexpected error occurred during checkout.',
+      })
+    }
+
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-gray-50 min-h-screen py-10">
+        <div className="max-w-5xl mx-auto px-4">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Loading...</h1>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -46,14 +95,14 @@ function Cart() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* 1. รายการสินค้าในตะกร้า */}
           <div className="flex-1 space-y-4">
-            {items.map((item: CartItem) => {
-              const productInfo = allProducts.items.find(p => p.id === item.productId);
+            {Array.isArray(cartItems) && cartItems.length > 0 && productVarients.length > 0 && cartItems.map((item: CartItem) => {
+              const productInfo = productVarients.find(p => p.id === item.productId);
 
               return <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                <img src={productInfo?.image} alt={productInfo?.title} className="w-24 h-24 object-cover rounded-lg" />
+                <img src={productInfo?.images[0].url ?? ""} alt={productInfo?.variantName ?? ""} className="w-24 h-24 object-cover rounded-lg" />
 
                 <div className="flex-1">
-                  <h3 className="font-bold text-gray-800">{productInfo?.title}</h3>
+                  <h3 className="font-bold text-gray-800">{productInfo?.variantName}</h3>
                   <p className="text-blue-600 font-bold">฿{productInfo?.price.toLocaleString()}</p>
                 </div>
 
@@ -94,13 +143,14 @@ function Cart() {
                 <span>฿{total.toLocaleString()}</span>
               </div>
 
-              <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100">
+              <button onClick={(e) => handleCheckOut(e, cart?.id ?? "")} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100">
                 Checkout
               </button>
             </div>
           </div>
         </div>
       </div>
+      {error && <div className="text-red-500 mt-4 text-center">{error}</div>}
     </div>
   );
 }
