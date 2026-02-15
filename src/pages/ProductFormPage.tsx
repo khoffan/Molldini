@@ -1,20 +1,24 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation, useParams } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
-import { setProduct, type ProductArgs } from "../service/productService";
+import { setProduct, updateProductById, type ProductArgs } from "../service/productService";
 import type { RootState, AppDispatch } from "../store";
 import Swal from 'sweetalert2';
 import { Plus, Trash2, Package, FolderPlus, X, ImagePlus, LinkIcon } from "lucide-react"; // แนะนำให้ลง lucide-react ครับ
 import { fetchCategories, createCategory } from "../service/categoryService";
 import type { Category } from "../interface/categoryInterface";
+import type { Product, ProductVariant } from "../interface/productInterface";
 
 interface VariantFormData {
+    id?: string;
     variantName: string;
     price: number;
     stock: number;
-    sku: string;
+    sku: string | null;
     image: string; // เก็บเป็น URL หรือ path ชั่วคราว\
+    imagePreview: string;
 }
 
 interface ProductFormData {
@@ -26,24 +30,53 @@ interface ProductFormData {
 }
 
 
-function AddProduct() {
+function ProductFormPage() {
+    const { id } = useParams();
+    const location = useLocation();
+    const existingProduct = location.state?.product as Product | undefined;
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
+    const [formData, setFormData] = useState<ProductFormData>(() => {
+        if (existingProduct) {
+            if (existingProduct.images?.length > 0) {
+                return {
+                    title: existingProduct.title,
+                    description: existingProduct.description ?? "",
+                    categoryId: existingProduct.categoryId || '',
+                    image: null,
+                    imageUrl: existingProduct.images?.[0]?.url || ""
+                };
+            } else {
+                return {
+                    title: existingProduct.title,
+                    description: existingProduct.description ?? "",
+                    categoryId: existingProduct.categoryId || '',
+                    image: null,
+                    imageUrl: ""
+                };
+            }
 
-    const [formData, setFormData] = useState<ProductFormData>({
-        title: '',
-        description: '',
-        categoryId: '',
-        image: null as File | null,
-        imageUrl: ""
+        }
+        return { title: '', description: '', categoryId: '', image: null, imageUrl: '' };
     });
     const [mainImageFile, setMainImageFile] = useState<File | null>(null);
     const [mainImagePreview, setMainImagePreview] = useState<string>("");
 
     // 💡 หัวใจสำคัญ: เก็บข้อมูล Variants เป็น Array
-    const [variants, setVariants] = useState<VariantFormData[]>([
-        { variantName: 'Default', price: 0, stock: 0, sku: '', image: '' }
-    ]);
+    const [variants, setVariants] = useState<VariantFormData[]>(() => {
+        if (existingProduct?.variants) {
+            return existingProduct.variants.map((v: ProductVariant) => ({
+                id: v.id,
+                variantName: v.variantName,
+                price: v.price,
+                stock: v.stock,
+                sku: v.sku,
+                imagePreview: v.images?.[0]?.url || "",
+                image: v.images?.[0]?.url || ""
+            }));
+        }
+        return [{ variantName: 'Default', price: 0, stock: 0, sku: '', image: '', imagePreview: "" }]
+    });
 
     const { loading, error } = useSelector((state: RootState) => state.product);
     const { categories } = useSelector((state: RootState) => state.category);
@@ -72,9 +105,43 @@ function AddProduct() {
         dispatch(fetchCategories());
     }, [dispatch]);
 
+    // useEffect(() => {
+    //     if (id && existingProduct) {
+    //         if (Array.isArray(existingProduct.images) && existingProduct.images.length > 0) {
+    //             setFormData({
+    //                 title: existingProduct.title,
+    //                 description: existingProduct.description ?? "",
+    //                 categoryId: existingProduct.categoryId || '',
+    //                 image: null as File | null,
+    //                 imageUrl: existingProduct.images[0].url
+    //             });
+    //             setMainImagePreview(existingProduct.images[0].url);
+    //         } else {
+    //             setFormData({
+    //                 title: existingProduct.title,
+    //                 description: existingProduct.description ?? "",
+    //                 categoryId: existingProduct.categoryId || '',
+    //                 image: null as File | null,
+    //                 imageUrl: ""
+    //             });
+    //         }
+    //         // Map variants จาก database เข้าสู่ state ของเรา
+    //         const mappedVariants = existingProduct.variants.map((v: any) => ({
+    //             ...v,
+    //             imagePreview: v.images?.[0]?.url || "" // ไว้โชว์รูปเดิม
+    //         }));
+    //         setVariants(mappedVariants);
+    //     } else if (!id) {
+    //         setFormData({ title: '', description: '', categoryId: '', image: null, imageUrl: '' });
+    //         setVariants([{ variantName: 'Default', price: 0, stock: 0, sku: '', image: '' }]);
+    //         return;
+    //     }
+    // }, [id, existingProduct]);
+
+
     // ฟังก์ชันเพิ่ม Variant ใหม่
     const addVariant = () => {
-        setVariants([...variants, { variantName: '', price: 0, stock: 0, sku: '', image: '' }]);
+        setVariants([...variants, { variantName: '', price: 0, stock: 0, sku: '', image: '', imagePreview: "" }]);
     };
 
     // ฟังก์ชันลบ Variant
@@ -85,52 +152,95 @@ function AddProduct() {
     };
 
     // ฟังก์ชันอัปเดตข้อมูลในแต่ละ Variant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateVariant = (index: number, field: string, value: any) => {
         const newVariants = [...variants];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (newVariants[index] as any)[field] = value;
         setVariants(newVariants);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent, productId?: string) => {
         e.preventDefault();
-
-        // เตรียมข้อมูลตาม Schema (Product + Variants)
-        const productPayload: ProductArgs = {
-            productData: {
-                title: formData.title,
-                description: formData.description,
-                categoryId: formData.categoryId || null,
-                images: [],
-                merchantId: null,
-                variants: variants.map((v) => ({
-                    variantName: v.variantName,
-                    price: Number(v.price),
-                    stock: Number(v.stock),
-                    sku: v.sku || null,
-                    images: v.image ? [{ url: v.image, path: '', fileName: "external link", mimeType: null, size: null }] : []
+        if (id && existingProduct) {
+            console.log(" edit zone");
+            const proId = productId || existingProduct.id;
+            const productPayload: ProductArgs = {
+                productData: {
+                    title: formData.title,
+                    description: formData.description,
+                    categoryId: formData.categoryId || null,
+                    images: formData.imageUrl ? [{ url: formData.imageUrl, path: '', fileName: "external link", mimeType: null, size: null }] : [],
+                    merchantId: null,
+                    variants: variants.map((v) => ({
+                        id: v.id,
+                        variantName: v.variantName,
+                        price: Number(v.price),
+                        stock: Number(v.stock),
+                        sku: v.sku || null,
+                        images: v.image ? [{ url: v.image, path: '', fileName: "external link", mimeType: null, size: null }] : []
+                    }))
+                },
+                mainFile: mainImageFile,
+                // แปลง record เป็น array ของ {index, file}
+                variantFiles: Object.entries(variantFiles).map(([index, file]) => ({
+                    index: parseInt(index),
+                    file
                 }))
-            },
-            mainFile: mainImageFile,
-            // แปลง record เป็น array ของ {index, file}
-            variantFiles: Object.entries(variantFiles).map(([index, file]) => ({
-                index: parseInt(index),
-                file
-            }))
-        };
+            };
 
-        try {
-            await dispatch(setProduct(productPayload)).unwrap();
-            Swal.fire({
-                title: 'สำเร็จ!',
-                text: 'เพิ่มสินค้าและตัวเลือกเรียบร้อยแล้ว',
-                icon: 'success',
-                confirmButtonColor: '#2563eb',
-            }).then(() => navigate('/merchant')); // ย้อนกลับไปหน้าจัดการร้านค้า
-        } catch (e: unknown) {
-            Swal.fire({ title: 'เกิดข้อผิดพลาด', text: (e as Error).message, icon: 'error' });
+            try {
+                await dispatch(updateProductById({
+                    productId: proId,
+                    args: productPayload
+                })).unwrap();
+                Swal.fire({
+                    title: 'สำเร็จ!',
+                    text: 'เพิ่มสินค้าและตัวเลือกเรียบร้อยแล้ว',
+                    icon: 'success',
+                    confirmButtonColor: '#2563eb',
+                }).then(() => navigate('/merchant')); // ย้อนกลับไปหน้าจัดการร้านค้า
+            } catch (e: unknown) {
+                Swal.fire({ title: 'เกิดข้อผิดพลาด', text: (e as Error).message, icon: 'error' });
+            }
+        } else {
+            console.log(" add zone");
+
+            const productPayload: ProductArgs = {
+                productData: {
+                    title: formData.title,
+                    description: formData.description,
+                    categoryId: formData.categoryId || null,
+                    images: formData.imageUrl ? [{ url: formData.imageUrl, path: '', fileName: "external link", mimeType: null, size: null }] : [],
+                    merchantId: null,
+                    variants: variants.map((v) => ({
+                        variantName: v.variantName,
+                        price: Number(v.price),
+                        stock: Number(v.stock),
+                        sku: v.sku || null,
+                        images: v.image ? [{ url: v.image, path: '', fileName: "external link", mimeType: null, size: null }] : []
+                    }))
+                },
+                mainFile: mainImageFile,
+                // แปลง record เป็น array ของ {index, file}
+                variantFiles: Object.entries(variantFiles).map(([index, file]) => ({
+                    index: parseInt(index),
+                    file
+                }))
+            };
+
+            try {
+                await dispatch(setProduct(productPayload)).unwrap();
+                Swal.fire({
+                    title: 'สำเร็จ!',
+                    text: 'เพิ่มสินค้าและตัวเลือกเรียบร้อยแล้ว',
+                    icon: 'success',
+                    confirmButtonColor: '#2563eb',
+                }).then(() => navigate('/merchant')); // ย้อนกลับไปหน้าจัดการร้านค้า
+            } catch (e: unknown) {
+                Swal.fire({ title: 'เกิดข้อผิดพลาด', text: (e as Error).message, icon: 'error' });
+            }
         }
+        // เตรียมข้อมูลตาม Schema (Product + Variants)
+
     };
 
     // ฟังก์ชันสำหรับเพิ่มหมวดหมู่ใหม่ (Popup)
@@ -170,13 +280,9 @@ function AddProduct() {
             }
         }
     };
-
-    if (error) {
-        return <div>{error}</div>
-    }
-
     return (
         <div className="bg-gray-50 min-h-screen py-10 px-4">
+            <div>{error}</div>
             <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-gray-900">เพิ่มสินค้าใหม่</h1>
@@ -363,7 +469,7 @@ function AddProduct() {
                                             <input
                                                 type="text"
                                                 className="w-full mt-1 px-3 py-1.5 border rounded-md text-sm"
-                                                value={variant.sku}
+                                                value={variant.sku || ""}
                                                 onChange={(e) => updateVariant(index, 'sku', e.target.value)}
                                             />
                                         </div>
@@ -403,4 +509,4 @@ function AddProduct() {
     );
 }
 
-export default AddProduct;
+export default ProductFormPage;

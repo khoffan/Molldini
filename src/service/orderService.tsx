@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import type { Order, OrderAddress, OrderReceiveInfo } from "../interface/orderInterface";
+import type { Order, OrderAddress, OrderReceiveInfo, OrderResponse } from "../interface/orderInterface";
 import api from "../lib/api";
+import { AxiosError } from "axios";
 
 interface OrderState {
     order: Order | null;
@@ -13,6 +14,21 @@ export const initialOrderState: OrderState = {
     loading: false,
     error: null,
 };
+
+export const fetchOrderById = createAsyncThunk(
+    "order/fetchOrderbyId",
+    async (orderId: string, { rejectWithValue }) => {
+        try {
+            const res = await api.get(`/api/v1/orders/${orderId}`);
+            return res.data as OrderResponse;
+        } catch (e: unknown) {
+            if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+    }
+);
 
 export const setOrderFromCartId = createAsyncThunk(
     'order/fetchFromDb',
@@ -46,7 +62,7 @@ export const updateDataOrder = createAsyncThunk(
             }
             const address: string = reciveAddress.address + ", " + reciveAddress.city + ", " + reciveAddress.zipCode;
             const fullname = reciveInfo.firstName + " " + reciveInfo.lastName;
-            const phone = reciveInfo.phome;
+            const phone = reciveInfo.phone;
             const res = await api.put(`/api/v1/orders/${orderId}/data/${cartId}`, {
                 shippingAddress: address,
                 receiverName: fullname,
@@ -63,6 +79,26 @@ export const updateDataOrder = createAsyncThunk(
         }
     }
 );
+
+export const checkoutOrder = createAsyncThunk(
+    "order/checkout",
+    async ({ source, orderId, }: { source: string, orderId: string }, { rejectWithValue }) => {
+        try {
+            const res = await api.post("/api/v1/checkout/" + orderId, {
+                source
+            });
+            console.log("Order checked out:", res.data);
+            return res.data;
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            } else if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+    }
+)
 
 const orderSlice = createSlice({
     name: 'order',
@@ -99,7 +135,19 @@ const orderSlice = createSlice({
             .addCase(updateDataOrder.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
-            });
+            })
+            .addCase(checkoutOrder.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(checkoutOrder.fulfilled, (state, action) => {
+                state.order = action.payload;
+                state.loading = false;
+            })
+            .addCase(checkoutOrder.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
     }
 });
 

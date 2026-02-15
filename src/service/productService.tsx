@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/tool
 import api from "../lib/api";
 import type { Product, ProductInput } from "../interface/productInterface";
 import { uploadToCloudinary } from "../lib/uploadfileToFirestoage";
+import { AxiosError } from "axios";
 
 export interface ProductState {
     items: Product[];
@@ -29,7 +30,7 @@ export const fetchProducts = createAsyncThunk(
             const endpoint = id ? `/api/v1/products/${id}` : "/api/v1/products";
             const response = await api.get(endpoint);
             console.log("response.data", response.data);
-            return response.data; // ผลลัพธ์จะเป็น Product[] หรือ Product
+            return response.data as Product | Product[]; // ผลลัพธ์จะเป็น Product[] หรือ Product
         } catch (e: unknown) {
             const error = e as Error;
             return rejectWithValue(error.message);
@@ -78,7 +79,7 @@ export const setProduct = createAsyncThunk(
             // 3. รวมข้อมูลทั้งหมดเพื่อส่งไป Backend
             const finalPayload = {
                 ...productData,
-                images: mainImageMetadata ? [mainImageMetadata] : [],
+                images: mainImageMetadata ? [mainImageMetadata] : productData.images,
                 variants: updatedVariants
             };
 
@@ -90,6 +91,51 @@ export const setProduct = createAsyncThunk(
             const error = e as Error;
             return rejectWithValue(error.message);
         }
+    }
+);
+
+export const updateProductById = createAsyncThunk(
+    "update/productbyId",
+    async ({ productId, args }: { productId: string, args: ProductArgs }, { rejectWithValue }) => {
+        try {
+            console.log("🚀 ~ productId:", productId)
+            console.log("🚀 ~ productData:", args)
+            const { productData, mainFile, variantFiles } = args;
+            let mainImageMetadata = null;
+            if (mainFile) {
+                mainImageMetadata = await uploadToCloudinary(mainFile, "products");
+            }
+
+            const updatedVariants = [...productData.variants];
+            if (variantFiles && variantFiles.length > 0) {
+                for (const item of variantFiles) {
+                    const vImageInfo = await uploadToCloudinary(item.file, "variants");
+                    // เก็บ Metadata ไว้ใน Object variant เพื่อส่งไปให้ Backend
+                    updatedVariants[item.index] = {
+                        ...updatedVariants[item.index],
+                        images: [{ ...vImageInfo }]
+                    };
+                }
+            }
+
+            // 3. รวมข้อมูลทั้งหมดเพื่อส่งไป Backend
+            const finalPayload = {
+                ...productData,
+                images: mainImageMetadata ? [mainImageMetadata] : productData.images,
+                variants: updatedVariants
+            };
+            const response = await api.put(`/api/v1/products/${productId}`, finalPayload);
+            console.log("🚀 ~ response:", response.data)
+            return response.data.data;
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            } else if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+
     }
 );
 
@@ -136,6 +182,22 @@ const productSlice = createSlice({
             .addCase(setProduct.fulfilled, (state, action: PayloadAction<Product>) => {
                 state.loading = false;
                 state.items.push(action.payload); // Immer จัดการ immutability ให้เอง
+            })
+
+            //case update product
+            .addCase(updateProductById.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateProductById.fulfilled, (state, action: PayloadAction<Product>) => {
+                state.loading = false;
+                const index = state.items.findIndex(p => p.id === (action.payload as Product).id);
+                if (index !== -1) state.items[index] = action.payload as Product;
+                else state.items.push(action.payload as Product);
+            })
+            .addCase(updateProductById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             });
     },
 });

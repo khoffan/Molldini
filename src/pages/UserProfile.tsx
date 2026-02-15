@@ -9,13 +9,16 @@ import {
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { logoutAction } from '../service/authService';
+import { useEffect } from 'react';
+import { fetchUser } from '../service/userService';
+import LoadingSkelition from '../components/LoadingSkelition';
 
 function UserProfile() {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const { user } = useSelector((state: RootState) => state.auth);
+    const { user, loading } = useSelector((state: RootState) => state.user);
 
 
     const handleLogout = () => {
@@ -23,12 +26,20 @@ function UserProfile() {
         navigate("/");
     }
 
+    useEffect(() => {
+        dispatch(fetchUser());
+    }, [dispatch])
+
     const menuItems = [
-        { icon: <Package size={20} />, label: "คำสั่งซื้อของฉัน", desc: "ติดตามสถานะสินค้าและประวัติการซื้อ" },
-        { icon: <MapPin size={20} />, label: "ที่อยู่ในการจัดส่ง", desc: "จัดการที่อยู่สำหรับรับสินค้า" },
-        { icon: <CreditCard size={20} />, label: "ช่องทางการชำระเงิน", desc: "จัดการบัตรเครดิตและวอลเล็ต" },
-        { icon: <Settings size={20} />, label: "ตั้งค่าบัญชี", desc: "เปลี่ยนรหัสผ่านและการแจ้งเตือน" },
+        { icon: <Package size={20} />, label: "คำสั่งซื้อของฉัน", desc: "ติดตามสถานะสินค้าและประวัติการซื้อ", link: "/profile/orders" },
+        { icon: <MapPin size={20} />, label: "ที่อยู่ในการจัดส่ง", desc: "จัดการที่อยู่สำหรับรับสินค้า", link: "/profile/address" },
+        { icon: <CreditCard size={20} />, label: "ช่องทางการชำระเงิน", desc: "จัดการบัตรเครดิตและวอลเล็ต", link: '/payments' },
+        { icon: <Settings size={20} />, label: "ตั้งค่าบัญชี", desc: "เปลี่ยนรหัสผ่านและการแจ้งเตือน", link: '/settings' },
     ];
+
+    if (loading) {
+        return <LoadingSkelition />;
+    }
 
     return (
         <div className="bg-gray-50 min-h-screen pb-20">
@@ -44,7 +55,7 @@ function UserProfile() {
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
                     <div className="relative">
                         <div className="w-32 h-32 rounded-full border-4 border-white shadow-md overflow-hidden bg-blue-100">
-                            <img src={user?.photoURL ?? ""} alt="avatar" className="w-full h-full object-cover" />
+                            <img src={user?.image?.url} alt="avatar" className="w-full h-full object-cover" />
                         </div>
                         <button className="absolute bottom-1 right-1 bg-white p-2 rounded-full shadow-lg border border-gray-100 text-blue-600 hover:bg-blue-50 transition-colors">
                             <Camera size={16} />
@@ -72,7 +83,8 @@ function UserProfile() {
                     <h3 className="text-sm font-bold text-gray-400 uppercase ml-2 mb-2 tracking-widest">การจัดการ</h3>
 
                     {menuItems.map((item, index) => (
-                        <button
+                        <Link
+                            to={item.link}
                             key={index}
                             className="group flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:border-blue-200 hover:shadow-md transition-all text-left"
                         >
@@ -84,7 +96,7 @@ function UserProfile() {
                                 <p className="text-sm text-gray-500">{item.desc}</p>
                             </div>
                             <ChevronRight size={20} className="text-gray-300 group-hover:text-blue-600 transition-colors" />
-                        </button>
+                        </Link>
                     ))}
 
                     {/* Logout Button */}

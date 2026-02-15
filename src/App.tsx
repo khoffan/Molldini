@@ -2,56 +2,101 @@ import { Route, Routes } from 'react-router'
 import ProductPage from './pages/Product'
 import Cart from './pages/Cart'
 import Navbar from './components/Navbar'
-import AddProduct from './pages/AddProduct'
+import ProductFormPage from './pages/ProductFormPage'
 import ProductDetail from './pages/ProductDetail'
 import { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import type { AppDispatch } from './store'
+import { useDispatch, useSelector } from 'react-redux'
+import type { AppDispatch, RootState } from './store'
 import { fetchProducts } from './service/productService'
 import UserProfile from './pages/UserProfile'
 import Login from './pages/LoginPage'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from './firebase/firebaseConfig'
-import { syncUserWithBackend, logoutAction } from './service/authService'
+import { syncUserWithBackend, logoutAction, setInitialize } from './service/authService'
 import ProtectRoute from './components/ProtectRoute'
 import MerchantPage from './pages/merchantPage'
 import { fetchMyMerchant } from './service/merchantService'
 import { fetchCategories } from './service/categoryService'
-import { fetchCartFromDb, mergeCartAfterLogin } from './service/cartService'
+import { mergeCartAfterLogin } from './service/cartService'
 import CheckoutPage from './pages/CheckoutPage'
+import ProfileLayout from './pages/ProfileLayout'
+import GuestRoute from './components/GuestRoute'
+import AddAddressUserPage from './pages/AddAddressUserPage'
+import { fetchUser } from './service/userService'
+import AddressPage from './pages/AddressPage'
+import OrderUserPage from './pages/OrderUserPage'
+import SettingPage from './pages/SettingPage'
+import OrderDetailPage from './pages/OrderDetailPage'
+import SuccessCheckoutPage from './pages/SuccessCheckoutPage'
+import QRcodePage from './pages/QRcodePage'
+
+
 
 
 function App() {
   const dispatch = useDispatch<AppDispatch>()
+  const { isAuthenticated, isSynced } = useSelector((state: RootState) => state.auth)
   useEffect(() => {
     dispatch(fetchProducts())
     dispatch(fetchCategories())
     const unscription = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        await dispatch(syncUserWithBackend(
-          firebaseUser
-        ))
-
-        dispatch(fetchMyMerchant())
-        dispatch(mergeCartAfterLogin())
-        dispatch(fetchCartFromDb())
+        console.log("User is signed in", firebaseUser);
+        if (!isSynced) {
+          await dispatch(syncUserWithBackend(
+            firebaseUser
+          ));
+          await Promise.all([
+            dispatch(fetchUser()),
+            dispatch(fetchMyMerchant()),
+            dispatch(mergeCartAfterLogin()),
+          ])
+        }
       } else {
         dispatch(logoutAction())
       }
+      dispatch(setInitialize());
     })
     return () => unscription()
-  }, [dispatch])
+  }, [dispatch, isSynced])
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        {/* ใส่ Spinner สวยๆ ตรงนี้ เพื่อไม่ให้หน้าจอกระพริบ */}
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   const element = (
     <Routes>
-      <Route path="/login" element={<Login />} />
       <Route path="/" element={<ProductPage />} />
+      <Route element={<GuestRoute />}>
+        <Route path="/login" element={<Login />} />
+      </Route>
       <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/cart" element={<Cart />} />
       <Route element={<ProtectRoute />}>
         <Route path="/merchant" element={<MerchantPage />} />
-        <Route path="/add-product" element={<AddProduct />} />
-        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/add-product" element={<ProductFormPage />} />
+        <Route path="/edit-product/:id" element={<ProductFormPage />} />
+        <Route path="/profile" element={<ProfileLayout />}>
+          <Route index element={<UserProfile />} />
+          {/* URL: /profile/address (หน้ารวมที่อยู่) */}
+          <Route path="address">
+            <Route index element={<AddressPage />} />
+            {/* URL: /profile/address/add (หน้าเพิ่มที่อยู่) */}
+            <Route path="add" element={<AddAddressUserPage />} />
+            <Route path="edit/:id" element={<AddAddressUserPage />} />
+          </Route>
+          <Route path='orders' element={<OrderUserPage />} />
+          <Route path='orders/:id' element={<OrderDetailPage />} />
+        </Route>
+        <Route path='/settings' element={<SettingPage />} />
         <Route path="/checkout/:id" element={<CheckoutPage />} />
+        <Route path='/checkout/qr' element={<QRcodePage />} />
+        <Route path='/success/:id' element={<SuccessCheckoutPage />} />
       </Route>
     </Routes>
   )

@@ -1,12 +1,12 @@
 import { useSelector, useDispatch } from "react-redux";
 import type { AppDispatch, RootState } from "../store";
 import type { CartItem } from "../interface/cartInterface";
-import { fetchCartFromDb, mergeCartAfterLogin, removeFromCart, updateCartDecrementQuantityDb, updateCartIncrementQuantityDb } from "../service/cartService";
+import { mergeCartAfterLogin, removeFromCart, updateCartDecrementQuantityDb, updateCartIncrementQuantityDb } from "../service/cartService";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { setOrderFromCartId } from "../service/orderService";
 import Swal from "sweetalert2";
-
+import { getImageValidate } from "../utils/getImageValidate";
 
 
 function Cart() {
@@ -15,25 +15,19 @@ function Cart() {
   // ดึงสินค้าทั้งหมดจาก Product Slice มาเพื่อหาข้อมูลชื่อ/รูป/ราคา
   const { cart, loading, error } = useSelector((state: RootState) => state.cart);
   const cartItems = cart?.items || [];
-  const isSynced = useSelector((state: RootState) => state.cart.isSynced);
   const allProducts = useSelector((state: RootState) => state.product);
   const productVarients = allProducts.items.map(item => item.variants).flat();
   useEffect(() => {
-    if (isSynced) {
-      dispatch(fetchCartFromDb());
-    }
     dispatch(mergeCartAfterLogin());
-  }, [dispatch, isSynced])
+  }, [dispatch])
 
-  console.log("Cart items:", cartItems);
   // คำนวณราคารวมทั้งหมด
   const subtotal = cartItems.reduce((acc, item) => {
     return acc + (productVarients.find(v => v.id === item.productId)?.price || 0) * item.quantity;
   }, 0) ?? 0;
 
-  const shipping = subtotal > 0 ? 10 : 0;
 
-  const total = subtotal + shipping;
+  const total = subtotal;
 
   const handleDeleteItem = (id: string) => {
     dispatch(removeFromCart(id));
@@ -49,13 +43,15 @@ function Cart() {
 
   }
 
+
+
   const handleCheckOut = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     try {
-      if (!isSynced) {
-        await dispatch(mergeCartAfterLogin());
-        console.log("Syncing cart...");
-      }
+      // if (!isSynced) {
+      //   await dispatch(mergeCartAfterLogin());
+      //   console.log("Syncing cart...");
+      // }
       console.log("Proceed to checkout with total amount:", total);
       console.log("Cart ID for checkout:", id);
       await dispatch(setOrderFromCartId({
@@ -99,7 +95,16 @@ function Cart() {
               const productInfo = productVarients.find(p => p.id === item.productId);
 
               return <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                <img src={productInfo?.images[0].url ?? ""} alt={productInfo?.variantName ?? ""} className="w-24 h-24 object-cover rounded-lg" />
+                <img
+                  src={getImageValidate(productInfo?.images[0].url)}
+                  alt={productInfo?.variantName ?? ""}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    // ถ้า Link หลักตาย ให้เปลี่ยนเป็น Link สำรอง (Fallback Link)
+                    target.src = "https://placehold.co/400x500?text=Image+Error";
+                  }}
+                  className="w-24 h-24 object-cover rounded-lg"
+                />
 
                 <div className="flex-1">
                   <h3 className="font-bold text-gray-800">{productInfo?.variantName}</h3>
@@ -132,10 +137,10 @@ function Cart() {
                   <span>Subtotal</span>
                   <span>฿{subtotal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between">
+                {/* <div className="flex justify-between">
                   <span>Shipping</span>
                   <span>฿{shipping.toLocaleString()}</span>
-                </div>
+                </div> */}
               </div>
 
               <div className="flex justify-between font-bold text-lg text-gray-900 mb-6">

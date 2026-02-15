@@ -32,59 +32,36 @@
 //             }
 //         },
 
-import type { InvoiceResponce, ReceiptResponse } from "./invoiceInterface";
-
-
-export interface OrderResponse {
+export interface InvoiceResponce {
     id: string | null;
-    userId: string | null;
-    totalPrice: number;
+    orderId: string | null;
+    amount: number;
+    paymentMethod: string;
     status: string;
-    items: OrderItems[];
-    shippingAddress: string | null;
-    receiverName: string | null;
-    email: string | null;
-    recivePhone: string | null;
-    invoice: InvoiceResponce;
-    receipt: ReceiptResponse;
+    paidAt: string | null;
     createdAt?: string | Date;
     updatedAt?: string | Date;
 }
+// id        String  @id @default(uuid())
+//   orderId   String  @unique
+//   order     Order   @relation(fields: [orderId], references: [id])
+//   invoiceId String  @unique
+//   invoice   Invoice @relation(fields: [invoiceId], references: [id])
 
-
-export interface Order {
-    id?: string | null;
-    userId: string | null;
-    totalPrice: number;
-    status: string;
-    items: OrderItems[];
-    shippingAddress: OrderAddress;
-    reciveInfo: OrderReceiveInfo;
-    email: string | null;
-    recivePhone: string | null;
-    createdAt?: string | Date;
-    updatedAt?: string | Date;
-}
-
-export interface OrderItems {
-    id?: string | null;
-    orderId?: string | null;
-    productId: string;
-    title: string;
-    quantity: number;
-    price: number;
-    image: string;
-    productVariantId: string;
-}
-
-export interface OrderAddress {
-    address: string;
-    city: string;
-    zipCode: string;
-}
-
-export interface OrderReceiveInfo {
-    firstName: string;
-    lastName: string;
-    phone: string;
+//   receiptNumber String   @unique // เช่น REC20240001
+//   amount        Float // ยอดที่จ่ายจริง
+//   paymentMethod String // เช่น "PROMPTPAY"
+//   omiseChargeId String? // เก็บ ID จาก Omise ไว้ตรวจสอบ
+//   paidAt        DateTime @default(now())
+//   createdAt     DateTime @default(now())
+export interface ReceiptResponse {
+    id: string;
+    orderId: string;
+    invoiceId: string;
+    receiptNumber: string;
+    amount: number;
+    paymentMethod: string;
+    omiseChargeId: string;
+    paidAt: string;
+    createdAt: string;
 }

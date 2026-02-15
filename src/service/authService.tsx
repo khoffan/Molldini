@@ -4,11 +4,12 @@ import { auth } from "../firebase/firebaseConfig";
 import api from "../lib/api";
 import type { AppUser } from "../interface/userInterface";
 
-interface AuthState {
+export interface AuthState {
     user: AppUser | null;
     loading: boolean;
     error: string | null;
     isAuthenticated: boolean;
+    isSynced: boolean
 }
 
 const initialState: AuthState = {
@@ -16,6 +17,7 @@ const initialState: AuthState = {
     loading: false,
     error: null,
     isAuthenticated: false,
+    isSynced: false,
 };
 
 // 💡 ใช้ createAsyncThunk แทน Manual Thunk เดิม
@@ -34,7 +36,6 @@ export const syncUserWithBackend = createAsyncThunk(
                 }
             );
 
-            console.log(res.data);
 
             const rawData = res.data;
             // 💡 Mapping ข้อมูลตรงนี้เลย
@@ -46,16 +47,18 @@ export const syncUserWithBackend = createAsyncThunk(
                 firstName: rawData.firstName,
                 lastName: rawData.lastName,
                 displayName: rawData.name,
-                photoURL: rawData.imageUrl,
+                image: rawData.image,
                 emailVerified: rawData.emailVerified,
                 phoneNumber: rawData.phoneNumber,
                 createdAt: rawData.createdAt,
                 lastLogin: rawData.lastLogin,
+                addresses: [],
+                orders: [],
             };
             return appUser;
         } catch (err: unknown) {
             const e = err as Error;
-            return rejectWithValue( e.message);
+            return rejectWithValue(e.message);
         }
     }
 );
@@ -77,7 +80,12 @@ const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
-        // 💡 เอาไว้ใช้กรณีต้องการล้าง Error หรือเซ็ตค่าแบบ Manual (ถ้ามี)
+        setInitialize: (state) => {
+            state.loading = false;
+            state.isAuthenticated = true
+        },
+        // 💡 เอาไว้ใช้กรณีต้องการล้
+        // าง Error หรือเซ็ตค่าแบบ Manual (ถ้ามี)
         clearAuthError: (state) => {
             state.error = null;
         },
@@ -88,12 +96,12 @@ const authSlice = createSlice({
             .addCase(syncUserWithBackend.pending, (state) => {
                 state.loading = true;
                 state.error = null;
-                
+
             })
             .addCase(syncUserWithBackend.fulfilled, (state, action: PayloadAction<AppUser>) => {
                 state.user = action.payload;
                 state.loading = false;
-                state.isAuthenticated = true;
+                state.isSynced = true;
             })
             .addCase(syncUserWithBackend.rejected, (state, action) => {
                 state.loading = false;
@@ -107,5 +115,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { clearAuthError } = authSlice.actions;
+export const { clearAuthError, setInitialize } = authSlice.actions;
 export default authSlice.reducer;

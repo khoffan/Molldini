@@ -1,9 +1,13 @@
+import type { Address } from "./addressInterface";
+import type { Carts } from "./cartInterface";
 import type { Media } from "./mediaInterface";
+import type { Merchant } from "./merchantInterface";
+import type { OrderResponse } from "./orderInterface";
 
 export const UserRole = {
-  USER: 'user',
-  MERCHANT: 'merchant',
-  ADMIN: 'admin'
+  USER: 'USER',
+  MERCHANT: 'MERCHANT',
+  ADMIN: 'ADMIN'
 } as const;
 
 // สร้าง Type จาก Object ข้างบน (เพื่อให้เรียกใช้ใน Interface ได้)
@@ -18,11 +22,15 @@ export interface AppUser {
   firstName: string;     // แนะนำพิมพ์เต็มเพื่อความชัดเจน (fname -> firstName)
   lastName: string;
   displayName: string;   // เพิ่มอันนี้ไว้ เพราะ Google ให้มาเป็นชื่อเต็มก้อนเดียว
-  photoURL: Media | null;
+  image: Media | null;
   emailVerified: boolean;
   phoneNumber: string | null;
   createdAt: string;     // สำคัญมากสำหรับ Backend เพื่อดูว่าสมัครเมื่อไหร่
-  lastLogin: string;     // เอาไว้เช็ค Session ล่าสุด
+  lastLogin: string;
+  addresses: Address[];
+  carts?: Carts | null,
+  merchant?: Merchant | null,
+  orders: OrderResponse[]
 }
 
 

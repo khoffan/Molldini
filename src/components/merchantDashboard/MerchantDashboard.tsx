@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from 'react-router';
-import type { Merchant } from '../interface/merchantInterface'; // ปรับ path ตามโปรเจกต์
+import type { Merchant } from '../../interface/merchantInterface'; // ปรับ path ตามโปรเจกต์
 import { Plus, Package, ShoppingBag, MapPin, Globe } from 'lucide-react';
+import { ProductDesktopRow, ProductMobileCard } from './MerchantProductComponent';
+import type { Product } from '../../interface/productInterface';
 
 interface Props {
     merchant: Merchant;
@@ -64,7 +67,7 @@ function MerchantDashboard({ merchant }: Props) {
                 <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
                     {merchant.logoUrl ? (
                         <img
-                            src={merchant.logoUrl}
+                            src={merchant.logoUrl.url}
                             alt={merchant.name}
                             className="w-24 h-24 rounded-2xl object-cover border-2 border-gray-50"
                         />
@@ -96,42 +99,44 @@ function MerchantDashboard({ merchant }: Props) {
 
             {/* 3. รายการสินค้าจริง (ถ้ามี) */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
                     <h3 className="text-lg font-bold text-gray-800">จัดการสินค้าภายในร้าน</h3>
+                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                        ทั้งหมด {merchant.products?.length || 0} รายการ
+                    </span>
                 </div>
 
                 {merchant.products && merchant.products.length > 0 ? (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-gray-400 text-xs uppercase tracking-wider font-bold">
-                                <tr>
-                                    <th className="px-6 py-4">ชื่อสินค้า</th>
-                                    <th className="px-6 py-4">ราคาปัจจุบัน</th>
-                                    <th className="px-6 py-4">สต็อก</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {merchant.products.map((product) => (
-                                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                                        {product.variants.map((variant) => (
-                                            <>
-                                                <td className="px-6 py-4 font-semibold text-gray-800">{variant.variantName}</td>
-                                                <td className="px-6 py-4 text-gray-600">฿{variant.price.toLocaleString()}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`font-bold ${variant.stock <= 5 ? 'text-red-500' : 'text-gray-600'}`}>
-                                                        {variant.stock} ชิ้น
-                                                    </span>
-                                                </td>
-                                            </>
-                                        ))}
+                    <>
+                        {/* 🖥️ Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-gray-50/50 text-gray-400 text-[11px] uppercase tracking-[0.1em] font-black">
+                                    <tr>
+                                        <th className="px-6 py-4 w-[40%]">สินค้า</th>
+                                        <th className="px-6 py-4">จำนวนรูปแบบ</th>
+                                        <th className="px-6 py-4">สต็อกรวม</th>
+                                        <th className="px-6 py-4 text-right">จัดการ</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {merchant.products.map((product: Product, index: number) => (
+                                        <ProductDesktopRow key={index} product={product} />
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* 📱 Mobile Card View */}
+                        <div className="md:hidden divide-y divide-gray-100">
+                            {merchant.products.map((product: Product, index: number) => (
+                                <ProductMobileCard key={index} product={product} />
+                            ))}
+                        </div>
+                    </>
                 ) : (
-                    <div className="p-12 text-center">
-                        <Package className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                    <div className="p-20 text-center">
+                        <Package className="w-16 h-16 text-gray-200 mx-auto mb-4" />
                         <p className="text-gray-400 font-medium">ยังไม่มีสินค้าในร้านค้าของคุณ</p>
                     </div>
                 )}
@@ -139,5 +144,7 @@ function MerchantDashboard({ merchant }: Props) {
         </div>
     );
 }
+
+
 
 export default MerchantDashboard;

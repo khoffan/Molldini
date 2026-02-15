@@ -1,18 +1,15 @@
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import RegistrationForm from '../components/RegistrationForm';
-import MerchantDashboard from '../components/MerchantDashboard';
+import MerchantDashboard from '../components/merchantDashboard/MerchantDashboard';
 import { useEffect } from 'react';
 import { fetchMyMerchant } from '../service/merchantService';
-// สมมติว่าคุณมี action ในการดึงข้อมูล merchant
-// import { fetchMyMerchant } from '../store/slices/merchantSlice';
 
 function MerchantPage() {
     const dispatch = useDispatch<AppDispatch>();
 
     // 1. ดึงข้อมูลจาก Redux Store
     const { merchant, loading } = useSelector((state: RootState) => state.merchant);
-    console.log("merchant", merchant);
     const { user } = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {

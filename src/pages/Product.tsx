@@ -1,32 +1,21 @@
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
-import { addToCart } from '../service/cartService';
-import type { Product, ProductVariant } from '../interface/productInterface';
-import type { CartItem } from '../interface/cartInterface';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { fetchProducts } from '../service/productService';
+import CategoryTag from '../components/categoryTag';
+import { getImageValidate } from '../utils/getImageValidate';
 
 export default function ProductPage() {
-  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const [selectedCat, setSelectedCat] = useState<string | null>(null);
+
   const { items, loading, error } = useSelector((state: RootState) => state.product);
-  const { user } = useSelector((state: RootState) => state.auth);
-
-  const handleAddToCart = (e: React.MouseEvent, product: Product, variant: ProductVariant) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const cartItem: CartItem = {
-      userId: user?.uid || '',
-      productId: variant.id,
-      title: product.title,
-      quantity: 1,
-    };
-
-    dispatch(addToCart(cartItem));
-    navigate('/cart');
-  };
+  const { categories } = useSelector((state: RootState) => state.category);
+  const filterProductByCategory = useMemo(() => {
+    if (!selectedCat) return items;
+    return items.filter((item) => item.categoryId === selectedCat);
+  }, [selectedCat, items]);
 
   useEffect(() => {
     dispatch(fetchProducts());
@@ -38,24 +27,31 @@ export default function ProductPage() {
   return (
     <div className="bg-gray-50 min-h-screen py-12 px-4">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-12 text-center">
+        <header className="mb-12 text-start">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Featured Collection</h1>
           <p className="mt-4 text-gray-600">ค้นพบสินค้าที่ตอบโจทย์สไตล์ในแบบของคุณ</p>
         </header>
 
+        <CategoryTag categories={categories} selectedId={selectedCat} onSelect={(value) => setSelectedCat(value)} />
+
         <div className="grid grid-cols-1 gap-y-12 gap-x-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {items.map((product) => {
+          {filterProductByCategory.map((product) => {
             // เลือก Variant ตัวแรกเป็นค่าเริ่มต้น หรือตัวที่ราคาถูกที่สุด
             const defaultVariant = product.variants?.[0];
             const hasMultipleVariants = product.variants && product.variants.length > 1;
 
             return (
-              <div key={product.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100">
+              <Link to={`/product/${product.id}`} key={product.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100">
                 {/* Image Section */}
-                <Link to={`/product/${product.id}`} className="relative aspect-[4/5] overflow-hidden">
+                <div className="relative aspect-[4/5] overflow-hidden">
                   <img
-                    src={product?.images?.[0]?.url || 'https://via.placeholder.com/400x500?text=No+Image'}
+                    src={getImageValidate(product?.images?.[0]?.url)}
                     alt={product.title}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      // ถ้า Link หลักตาย ให้เปลี่ยนเป็น Link สำรอง (Fallback Link)
+                      target.src = "https://placehold.co/400x500?text=Image+Error";
+                    }}
                     className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   {hasMultipleVariants && (
@@ -65,7 +61,7 @@ export default function ProductPage() {
                       </p>
                     </div>
                   )}
-                </Link>
+                </div>
 
                 {/* Content Section */}
                 <div className="p-6 flex flex-col flex-1">
@@ -94,19 +90,9 @@ export default function ProductPage() {
                         ฿{defaultVariant?.price.toLocaleString() ?? 'N/A'}
                       </p>
                     </div>
-
-                    <button
-                      onClick={(e) => defaultVariant && handleAddToCart(e, product, defaultVariant)}
-                      disabled={!defaultVariant}
-                      className="bg-blue-600 text-white p-3 rounded-2xl hover:bg-gray-900 transition-colors shadow-lg shadow-blue-100 disabled:bg-gray-300"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                    </button>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

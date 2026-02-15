@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
-import { ShoppingCart, Plus, Minus, ChevronLeft } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, ChevronLeft, Star, ShieldCheck, Truck } from 'lucide-react';
 import LoadingSkelition from '../components/LoadingSkelition';
 import { useDispatch } from 'react-redux';
-import { addToCart } from '../service/cartService';
+import { addCartDb } from '../service/cartService';
 import type { CartItem } from '../interface/cartInterface';
 import Swal from 'sweetalert2';
 import { fetchProducts } from '../service/productService';
+import { getImageValidate } from '../utils/getImageValidate';
 
 function ProductDetail() {
     const { id } = useParams();
@@ -21,9 +22,19 @@ function ProductDetail() {
     );
 
     const product = items.find(item => item.id === id);
-    console.log(product);
     const productVariant = product?.variants;
-    console.log("productVariant", productVariant);
+
+    // เพิ่ม State สำหรับเลือก Variant (เริ่มต้นที่ตัวแรก)
+    const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
+    const currentVariant = productVariant![selectedVariantIndex];
+
+
+    let imageUrl: string = "";
+    if (Array.isArray(currentVariant.images) && currentVariant.images.length > 0) {
+        imageUrl = getImageValidate(currentVariant.images[0].url);
+    } else {
+        imageUrl = "https://placehold.co/400x500?text=Image+Error";
+    }
 
 
     useEffect(() => {
@@ -38,9 +49,7 @@ function ProductDetail() {
         return <div className="text-center py-20 text-gray-500">เกิดข้อผิดพลาด: {error}</div>;
     }
 
-    if (!product) {
-        return <div className="text-center py-20 text-gray-500">ไม่พบข้อมูลสินค้า</div>;
-    }
+    if (!product || !currentVariant) return <div className="text-center py-20 text-gray-500">ไม่พบข้อมูลสินค้า</div>;
 
     const handleIncrement = () => setQuantity(prev => prev + 1);
     const handleDecrement = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
@@ -52,7 +61,7 @@ function ProductDetail() {
             title: product.title,
             productId: variantId
         }
-        dispatch(addToCart(cartItem));
+        dispatch(addCartDb(cartItem));
 
         if (shouldNavigate) {
             // กรณีปุ่ม "ซื้อเลยตอนนี้"
@@ -80,121 +89,119 @@ function ProductDetail() {
 
     return (
         <div className="bg-gray-50 min-h-screen pb-12">
-            {/* Navigation Breadcrumb */}
+            {/* Breadcrumb */}
             <div className="max-w-6xl mx-auto px-4 py-4">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="flex items-center text-gray-600 hover:text-blue-600 transition-colors"
-                >
-                    <ChevronLeft size={20} />
-                    <span>ย้อนกลับ</span>
+                <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors font-medium">
+                    <ChevronLeft size={20} /> ย้อนกลับ
                 </button>
             </div>
 
             <main className="max-w-6xl mx-auto px-4">
-                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
                     <div className="flex flex-col lg:flex-row">
-                        {Array.isArray(productVariant) && productVariant.map((variant) => {
-                            return (
-                                <>
-                                    {/* ฝั่งซ้าย: รูปภาพสินค้า */}
-                                    <div className="lg:w-1/2 p-8 border-r border-gray-50" >
-                                        <div className="aspect-square rounded-2xl overflow-hidden bg-gray-100 group">
-                                            <img
-                                                src={variant?.images[0]?.url ?? ""}
-                                                alt={variant?.variantName ?? ""}
-                                                className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
-                                            />
-                                        </div>
-                                    </div>
 
-                                    {/* ฝั่งขวา: รายละเอียดสินค้า */}
-                                    <div className="lg:w-1/2 p-8 lg:p-12 flex flex-col">
-                                        <div className="flex-1">
-                                            <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full uppercase tracking-wider">
-                                                {variant?.sku ?? ""}
-                                            </span>
-                                            <h1 className="mt-4 text-3xl font-extrabold text-gray-900 leading-tight">
+                        {/* 📸 ฝั่งซ้าย: รูปภาพสินค้า (ไม่ Map ซ้ำแล้ว) */}
+                        <div className="lg:w-1/2 p-4 lg:p-12 bg-white">
+                            <div className="aspect-square rounded-3xl overflow-hidden bg-gray-50 border border-gray-50 group">
+                                <img
+                                    src={imageUrl}
+                                    alt={currentVariant.variantName}
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        // ถ้า Link หลักตาย ให้เปลี่ยนเป็น Link สำรอง (Fallback Link)
+                                        target.src = "https://placehold.co/400x500?text=Image+Error";
+                                    }}
+                                    className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700"
+                                />
+                            </div>
+                        </div>
+
+                        {/* 📝 ฝั่งขวา: รายละเอียดและการเลือก */}
+                        <div className="lg:w-1/2 p-8 lg:p-12 bg-white flex flex-col border-l border-gray-50">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full uppercase tracking-widest">
+                                        {currentVariant.sku}
+                                    </span>
+                                    <div className="flex items-center gap-1 text-amber-400">
+                                        <Star size={14} fill="currentColor" />
+                                        <span className="text-gray-400 text-xs font-bold">4.8 (120 รีวิว)</span>
+                                    </div>
+                                </div>
+
+                                <h1 className="text-3xl lg:text-4xl font-black text-gray-900 leading-tight">
+                                    {product.title}
+                                </h1>
+                                <p className="text-gray-500 mt-2 font-medium">{currentVariant.variantName}</p>
+
+                                <div className="mt-8 flex items-center gap-4">
+                                    <span className="text-4xl font-black text-blue-600">
+                                        ฿{currentVariant.price.toLocaleString()}
+                                    </span>
+                                    <span className="text-xl text-gray-300 line-through font-medium">
+                                        ฿{(currentVariant.price * 1.2).toLocaleString()}
+                                    </span>
+                                </div>
+
+                                {/* 🎨 ส่วนเลือก Variant (ใช้ Map ตรงนี้แทน) */}
+                                <div className="mt-10">
+                                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">ตัวเลือกสินค้า</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        {Array.isArray(productVariant) && productVariant.map((variant, index) => (
+                                            <button
+                                                key={variant.id}
+                                                onClick={() => setSelectedVariantIndex(index)}
+                                                className={`px-5 py-3 rounded-2xl font-bold text-sm transition-all border-2 ${selectedVariantIndex === index
+                                                    ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md shadow-blue-50'
+                                                    : 'border-gray-100 hover:border-gray-200 text-gray-500'
+                                                    }`}
+                                            >
                                                 {variant.variantName}
-                                            </h1>
-
-                                            <div className="mt-6 flex items-baseline gap-4">
-                                                <span className="text-4xl font-black text-blue-600">
-                                                    ฿{variant.price.toLocaleString()}
-                                                </span>
-                                                {/* สมมติราคาก่อนลด */}
-                                                <span className="text-lg text-gray-400 line-through">
-                                                    ฿{(variant.price * 1.2).toLocaleString()}
-                                                </span>
-                                            </div>
-
-                                            {/* <div className="mt-8">
-                                            <h3 className="text-sm font-bold text-gray-900 uppercase">รายละเอียดสินค้า</h3>
-                                            <p className="mt-3 text-gray-600 leading-relaxed">
-                                                {product.description || "ไม่มีรายละเอียดสินค้าเพิ่มเติมสำหรับรายการนี้ ผลิตภัณฑ์คุณภาพเยี่ยมที่คัดสรรมาเพื่อคุณโดยเฉพาะ"}
-                                            </p>
-                                        </div> */}
-
-                                            {/* ส่วนเลือกจำนวนสินค้า */}
-                                            <div className="mt-10">
-                                                <h3 className="text-sm font-bold text-gray-900 uppercase mb-4">จำนวน</h3>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                                                        <button
-                                                            onClick={handleDecrement}
-                                                            className="p-3 hover:bg-gray-50 text-gray-600 transition-colors"
-                                                        >
-                                                            <Minus size={18} />
-                                                        </button>
-                                                        <span className="w-14 text-center font-bold text-gray-900 border-x border-gray-200">
-                                                            {quantity}
-                                                        </span>
-                                                        <button
-                                                            onClick={handleIncrement}
-                                                            className="p-3 hover:bg-gray-50 text-gray-600 transition-colors"
-                                                        >
-                                                            <Plus size={18} />
-                                                        </button>
-                                                    </div>
-                                                    <span className="text-sm text-gray-400">มีสินค้าทั้งหมด {variant.stock} ชิ้น</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* ปุ่ม Action */}
-                                        <div className="mt-12 flex flex-col sm:flex-row gap-4">
-                                            <button onClick={() => handleAddToCart(false, variant.id)} className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-600 py-4 rounded-2xl font-bold hover:bg-blue-100 transition-all active:scale-95">
-                                                <ShoppingCart size={20} />
-                                                เพิ่มไปยังรถเข็น
                                             </button>
-                                            <button onClick={() => handleAddToCart(true, variant.id)} className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95">
-                                                ซื้อเลยตอนนี้
-                                            </button>
-                                        </div>
+                                        ))}
                                     </div>
-                                </>
-                            )
-                        })}
+                                </div>
+
+                                {/* 🔢 ส่วนเลือกจำนวน */}
+                                <div className="mt-10">
+                                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">จำนวน</h3>
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center bg-gray-50 rounded-2xl p-1 border border-gray-100">
+                                            <button onClick={handleDecrement} className="p-3 hover:bg-white rounded-xl text-gray-600 transition-all shadow-sm active:scale-90"><Minus size={18} /></button>
+                                            <span className="w-12 text-center font-black text-lg text-gray-900">{quantity}</span>
+                                            <button onClick={handleIncrement} className="p-3 hover:bg-white rounded-xl text-gray-600 transition-all shadow-sm active:scale-90"><Plus size={18} /></button>
+                                        </div>
+                                        <span className="text-xs font-bold text-gray-400">คลังสินค้า: {currentVariant.stock} ชิ้น</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 🛒 ปุ่ม Action */}
+                            <div className="mt-12 flex flex-col sm:flex-row gap-4">
+                                <button onClick={() => handleAddToCart(false, currentVariant.id)} className="flex-[2] flex items-center justify-center gap-3 bg-white border-2 border-blue-600 text-blue-600 py-4 rounded-2xl font-black hover:bg-blue-50 transition-all active:scale-95 shadow-lg shadow-blue-50">
+                                    <ShoppingCart size={22} /> เพิ่มลงรถเข็น
+                                </button>
+                                <button onClick={() => handleAddToCart(true, currentVariant.id)} className="flex-[3] bg-blue-600 text-white py-4 rounded-2xl font-black hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-95">
+                                    ซื้อเลยตอนนี้
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* ส่วนเสริมด้านล่าง (Reviews/Specs) */}
-                <div className="mt-8 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
-                    <h2 className="text-xl font-bold text-gray-900 mb-6">คุณสมบัติโดยละเอียด</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                        <div className="flex justify-between py-2 border-b border-gray-50">
-                            <span className="text-gray-500">แบรนด์</span>
-                            <span className="font-medium text-gray-900 text-right">Premium Mall</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-gray-50">
-                            <span className="text-gray-500">การรับประกัน</span>
-                            <span className="font-medium text-gray-900 text-right">12 เดือน</span>
-                        </div>
-                        {/* เพิ่มเติมได้ตามต้องการ */}
+                {/* Info Badges */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div className="bg-white p-5 rounded-3xl flex items-center gap-4 border border-gray-100">
+                        <div className="bg-green-50 p-3 rounded-2xl text-green-600"><ShieldCheck /></div>
+                        <div><p className="font-bold text-sm">รับประกันของแท้</p><p className="text-xs text-gray-400">ยินดีคืนเงิน 100%</p></div>
+                    </div>
+                    <div className="bg-white p-5 rounded-3xl flex items-center gap-4 border border-gray-100">
+                        <div className="bg-blue-50 p-3 rounded-2xl text-blue-600"><Truck /></div>
+                        <div><p className="font-bold text-sm">จัดส่งด่วน</p><p className="text-xs text-gray-400">ภายใน 1-3 วันทำการ</p></div>
                     </div>
                 </div>
-            </main >
-        </div >
+            </main>
+        </div>
     );
 }
 
