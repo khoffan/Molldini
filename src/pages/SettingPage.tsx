@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { User, Bell, Lock, Store, Save } from 'lucide-react'; // แนะนำให้ลง lucide-react หรือใช้ SVG แทนได้ครับ
-import { useSelector } from 'react-redux';
-import type { RootState } from '../store';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../store';
 import { UserRole } from '../interface/userInterface';
+import { setupNotifications } from '../service/notificationService';
 
 export default function SettingPage() {
+    const dispatch = useDispatch<AppDispatch>();
+
     const [activeTab, setActiveTab] = useState('general');
 
     const { user } = useSelector((state: RootState) => state.user);
+    const { isAllow } = useSelector((state: RootState) => state.noti)
     console.log("user", user);
     const isMerchant = user?.role === UserRole.MERCHANT;
     let merchant = null;
@@ -86,19 +90,56 @@ export default function SettingPage() {
                                     <p className="text-sm text-gray-500">Choose what updates you want to receive.</p>
                                 </div>
 
+                                {/* 🔔 ส่วนเพิ่ม: Web Push Notification Status */}
+                                <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl mb-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className={`p-2 rounded-full ${isAllow ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                <Bell size={20} />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-900">Browser Push Notifications</p>
+                                                <p className="text-xs text-gray-600">{isAllow ? 'Status: Active' : 'Enable to get real-time alerts'}</p>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => dispatch(setupNotifications())}
+                                            disabled={isAllow}
+                                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isAllow
+                                                ? 'bg-green-500 text-white cursor-default'
+                                                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                                                }`}
+                                        >
+                                            {isAllow ? 'ON' : 'ENABLE'}
+                                        </button>
+                                    </div>
+
+                                    {/* กรณีโดนบล็อก แสดงคำแนะนำที่นี่ */}
+                                    {Notification.permission === 'denied' && (
+                                        <p className="mt-3 text-[10px] text-red-500 bg-red-50 p-2 rounded border border-red-100">
+                                            ⚠️ <strong>Permission Blocked:</strong> Please click the tune/lock icon in your browser address bar to allow notifications for Molldini.
+                                        </p>
+                                    )}
+                                </div>
+
                                 <div className="space-y-4">
                                     {[
-                                        { title: 'Email Notifications', desc: 'Get updates about your orders via email.' },
-                                        { title: 'Merchant Updates', desc: 'New features and tips for your shop.' },
-                                        { title: 'Stock Alerts', desc: 'Notify when products are low in stock.' }
-                                    ].map((item, idx) => (
-                                        <div key={idx} className="flex items-center justify-between py-3">
+                                        { id: 'email', title: 'Email Notifications', desc: 'Get updates about your orders via email.' },
+                                        { id: 'merchant', title: 'Merchant Updates', desc: 'New features and tips for your shop.' },
+                                        { id: 'stock', title: 'Stock Alerts', desc: 'Notify when products are low in stock.' }
+                                    ].map((item) => (
+                                        <div key={item.id} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
                                             <div>
                                                 <p className="text-sm font-medium text-gray-900">{item.title}</p>
                                                 <p className="text-xs text-gray-500">{item.desc}</p>
                                             </div>
                                             <label className="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" className="sr-only peer" defaultChecked={idx === 0} />
+                                                <input
+                                                    type="checkbox"
+                                                    className="sr-only peer"
+                                                // ในอนาคตใช้ value จาก DB: defaultChecked={userSettings[item.id]} 
+                                                />
                                                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                             </label>
                                         </div>

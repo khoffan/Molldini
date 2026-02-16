@@ -1,0 +1,104 @@
+import { getToken } from 'firebase/messaging'
+import { messaging } from '../firebase/firebaseConfig';
+import { AxiosError } from 'axios';
+import api from '../lib/api';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+
+interface NotificationState {
+    isAllow: boolean,
+    loading: boolean,
+    permissionStatus: NotificationPermission;
+    error: string | null
+}
+
+const initialState: NotificationState = {
+    isAllow: Notification.permission === 'granted',
+    permissionStatus: Notification.permission,
+    loading: false,
+    error: null
+}
+
+
+const saveTokenToBackend = async (token: string) => {
+    try {
+        const res = await api.put("/api/v1/update-fcm-token", {
+            token: token
+        })
+        if (res.status === 200) {
+            console.log('Token saved to backend successfully');
+        }
+    } catch (e: unknown) {
+        if (e instanceof AxiosError) {
+            console.error('Error saving token to backend:', e.response?.data);
+        }
+        console.error('Error saving token to backend:', e);
+    }
+}
+
+export const setupNotifications = createAsyncThunk(
+    "notifications/setup",
+    async (_, { rejectWithValue }) => {
+        try {
+            console.log("Notification.permission", Notification.permission)
+            // เช็คว่า Browser รองรับไหม (เผื่อเปิดในพวก In-app Browser เก่าๆ)
+            if (!("Notification" in window)) {
+                return rejectWithValue("This browser does not support desktop notification");
+            }
+
+            // ถ้าโดน Denied มาก่อนแล้ว ไม่ต้องเรียก Request ซ้ำ (เพราะมันจะไม่เด้ง)
+            if (Notification.permission === 'denied') {
+                return rejectWithValue("Permission blocked. Please enable it in browser settings.");
+            }
+            // 1. เรียก Popup ของ Browser เพื่อขออนุญาต
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                console.log('Notification permission granted.');
+
+                // 2. ถ้าอนุญาตแล้ว ให้ดึง Token ทันที
+                const token = await getToken(messaging, {
+                    vapidKey: import.meta.env.VITE_VAPID_KEY
+                });
+
+                if (token) {
+                    // 3. ส่ง Token ไปเก็บใน DB ผูกกับ UserId
+                    await saveTokenToBackend(token);
+                    return true;
+                }
+            } else {
+                console.log('Unable to get permission to notify.');
+                return rejectWithValue("Unable to get permission to notify.")
+            }
+        } catch (error) {
+            console.error('Error setting up notifications:', error);
+            return rejectWithValue(error);
+        }
+    }
+)
+
+const notificationsSlice = createSlice({
+    name: 'notifications',
+    initialState,
+    reducers: {
+
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(setupNotifications.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(setupNotifications.fulfilled, (state, action) => {
+                state.error = null
+                state.loading = false
+                state.isAllow = action.payload as boolean
+                state.permissionStatus = Notification.permission
+            })
+            .addCase(setupNotifications.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+                state.permissionStatus = Notification.permission;
+            })
+    }
+})
+
+export default notificationsSlice.reducer

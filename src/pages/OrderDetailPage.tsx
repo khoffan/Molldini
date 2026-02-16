@@ -48,18 +48,22 @@ export default function OrderDetailPage() {
     const status = order?.invoice.status || 'UNPAID';
     const allProducts = useSelector((state: RootState) => state.product.items);
 
+    // Flatten all orderItems from subOrders
+    const allOrderItems = useMemo(() => {
+        if (!order?.subOrders) return [];
+        return order.subOrders.flatMap(sub => sub.orderItems || []);
+    }, [order?.subOrders]);
+
     const variantList = useMemo(() => {
-        if (!order?.items) return []
-        return order?.items.map(item => {
-            // ค้นหาใน Store ว่ามีสินค้าที่มี Variant ID นี้อยู่ไหม
-            // (สมมติว่า variant ถูกเก็บไว้ข้างใน product)
+        if (!allOrderItems.length) return []
+        return allOrderItems.map(item => {
             for (const product of allProducts) {
                 const variant = product.variants.find(v => v.id === item.productVariantId);
                 if (variant) return variant;
             }
             return null;
-        }).filter(v => v !== null); // กรองตัวที่หาไม่เจอออก
-    }, [order?.items, allProducts]);
+        }).filter(v => v !== null);
+    }, [allOrderItems, allProducts]);
 
     if (loading && !order) return <LoadingSkelition />;
 
@@ -96,7 +100,7 @@ export default function OrderDetailPage() {
                             </div>
                             <div className="flex items-center">
                                 <Package size={16} className="mr-1" />
-                                {order?.items?.length || 0} Items
+                                {allOrderItems.length} Items
                             </div>
                         </div>
                     </div>
@@ -107,22 +111,32 @@ export default function OrderDetailPage() {
                             <h3 className="font-semibold text-gray-900">Items Summary</h3>
                         </div>
                         <div className="divide-y divide-gray-50">
-                            {order?.items.map((item) => {
-                                const variantData = variantList.find((variant) => variant.id === item.productVariantId);
-                                return (
-                                    <div key={item.id} className="p-6 flex items-center space-x-4">
-                                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0" />
-                                        <div className="flex-1">
-                                            <h4 className="text-sm font-medium text-gray-900">{item.title}</h4>
-                                            <p className="text-xs text-gray-500">{variantData?.variantName}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-semibold text-gray-900">{item.price}</p>
-                                            <p className="text-xs text-gray-500">{item.quantity}</p>
-                                        </div>
+                            {order?.subOrders?.map((subOrder) => (
+                                <div key={subOrder.id}>
+                                    {/* Merchant Header */}
+                                    <div className="px-6 py-3 bg-gray-50">
+                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                            ร้าน: {subOrder.merchantName || 'Unknown'}
+                                        </p>
                                     </div>
-                                )
-                            })}
+                                    {subOrder.orderItems?.map((item) => {
+                                        const variantData = variantList.find((variant) => variant.id === item.productVariantId);
+                                        return (
+                                            <div key={item.id} className="p-6 flex items-center space-x-4">
+                                                <img src={item.image} alt={item.title} className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0" />
+                                                <div className="flex-1">
+                                                    <h4 className="text-sm font-medium text-gray-900">{item.title}</h4>
+                                                    <p className="text-xs text-gray-500">{variantData?.variantName}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-sm font-semibold text-gray-900">฿{item.price}</p>
+                                                    <p className="text-xs text-gray-500">x{item.quantity}</p>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

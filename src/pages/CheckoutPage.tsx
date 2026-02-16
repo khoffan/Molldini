@@ -19,7 +19,6 @@ export default function CheckoutPage() {
     // ดึงข้อมูล User และ Saved Addresses
     const { user } = useSelector((state: RootState) => state.user);
     const { order, loading } = useSelector((state: RootState) => state.order);
-    console.log("🚀 ~ CheckoutPage ~ user:", user)
     // 📍 State สำหรับเลือกที่อยู่ (Default เลือกอันที่เป็น isDefault)
     const [selectedAddressId, setSelectedAddressId] = useState<string>(
         user?.addresses?.find(addr => addr.isDefault)?.id || user?.addresses?.[0]?.id || ""
@@ -29,6 +28,8 @@ export default function CheckoutPage() {
     const [selectedShippingId, setSelectedShippingId] = useState<string>(""); // [id, setSelectedShippingId]
 
     const total = order?.totalPrice || 0;
+
+    console.log("order data => ", order)
 
     const createSource = (amount: number, method: string): Promise<any> => {
         return new Promise((resolve, reject) => {
@@ -184,28 +185,27 @@ export default function CheckoutPage() {
 
     return (
         <div className="bg-[#F8FAFC] min-h-screen py-10 font-sans grid">
-            <div className="max-w-6xl mx-auto px-4">
+            <div className="max-w-[1240px] mx-auto px-4">
                 <header className="mb-10 text-center lg:text-left">
                     <h1 className="text-4xl font-black text-gray-900 tracking-tight">Checkout</h1>
                     <p className="text-gray-500 mt-2">กรุณาตรวจสอบข้อมูลการจัดส่งและเลือกช่องทางชำระเงิน</p>
                 </header>
 
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                <form onSubmit={handleSubmit} className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:items-start xl:gap-x-12">
+                    {/* Left Column: Main Content */}
+                    <div className="lg:col-span-7 xl:col-span-8 space-y-6">
 
-                    {/* ==========================================
-                        SECTION 1: Address (Mobile Order: 1)
-                    ========================================== */}
-                    <div className="lg:col-span-8 order-1 space-y-6">
-                        <section className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-sm border border-gray-100">
+                        {/* 1. Address Section */}
+                        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-bold flex items-center gap-3">
-                                    <MapPin className="text-blue-600" size={24} />
+                                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                    <MapPin className="text-blue-600" size={20} />
                                     ที่อยู่จัดส่ง
                                 </h2>
                                 <button
                                     type="button"
                                     onClick={() => navigate('/profile/address/add')}
-                                    className="text-sm font-bold text-blue-600 flex items-center gap-1 hover:underline"
+                                    className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
                                 >
                                     <Plus size={16} /> เพิ่มที่อยู่ใหม่
                                 </button>
@@ -216,231 +216,163 @@ export default function CheckoutPage() {
                                     <div
                                         key={addr.id}
                                         onClick={() => setSelectedAddressId(addr.id)}
-                                        className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all ${selectedAddressId === addr.id
-                                            ? 'border-blue-600 bg-blue-50/50 ring-4 ring-blue-50'
-                                            : 'border-gray-100 hover:border-gray-200'
+                                        className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 group ${selectedAddressId === addr.id
+                                            ? 'border-blue-600 bg-blue-50/30 ring-1 ring-blue-600'
+                                            : 'border-gray-100 hover:border-gray-300 hover:shadow-sm'
                                             }`}
                                     >
-                                        {selectedAddressId === addr.id && (
-                                            <CheckCircle2 className="absolute top-4 right-4 text-blue-600" size={20} />
-                                        )}
-                                        <p className="font-bold text-gray-900 mb-1">{addr.receiverName}</p>
-                                        <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className="font-bold text-gray-900">{addr.receiverName}</span>
+                                            {selectedAddressId === addr.id && (
+                                                <CheckCircle2 className="text-blue-600" size={18} />
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-gray-500 leading-relaxed mb-2">
                                             {addr.detail} {addr.subDistrict} {addr.district} {addr.province} {addr.postcode}
                                         </p>
-                                        <p className="text-sm font-medium text-gray-700 mt-3">{addr.phone}</p>
+                                        <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                            {addr.phone}
+                                        </p>
                                     </div>
                                 ))}
                             </div>
                         </section>
 
-                        {/* 🚚 แทรกลำดับ 1.5: Shipping Methods (สำหรับ Desktop จะต่อท้ายที่อยู่) */}
-                        <section className="hidden lg:block bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
-                            <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
-                                <Truck className="text-blue-600" size={24} />
+                        {/* 2. Shipping Method Section */}
+                        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
+                                <Truck className="text-blue-600" size={20} />
                                 ตัวเลือกการจัดส่ง
                             </h2>
-                            {/* ส่วนนี้คือ Shipping Cards ที่เราคุยกันตอนแรก */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-3">
                                 {mockShippingMethods
-                                    // กรองเฉพาะตัวที่ยอดสั่งซื้อถึงเกณฑ์ขั้นต่ำ
                                     .filter(method => total >= method.minOrderAmount)
-                                    // เรียงลำดับตาม sortOrder
                                     .sort((a, b) => a.sortOrder - b.sortOrder)
                                     .map((method) => (
                                         <div
                                             key={method.id}
                                             onClick={() => setSelectedShippingId(method.id)}
-                                            className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${selectedShippingId === method.id
-                                                ? 'border-blue-600 bg-blue-50/50 ring-4 ring-blue-50'
-                                                : 'border-gray-100 hover:border-gray-200 bg-white'
+                                            className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${selectedShippingId === method.id
+                                                ? 'border-blue-600 bg-blue-50/30'
+                                                : 'border-gray-100 hover:border-gray-200'
                                                 }`}
                                         >
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400">
-                                                        {method.provider}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-bold text-gray-900 text-sm">{method.name}</p>
-                                                        <p className="text-[10px] text-gray-400">{method.estimatedDays}</p>
-                                                    </div>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-xs font-black text-gray-500 border border-gray-100">
+                                                    {method.provider}
                                                 </div>
-                                                {selectedShippingId === method.id && (
-                                                    <CheckCircle2 className="text-blue-600" size={18} />
-                                                )}
+                                                <div>
+                                                    <p className="font-bold text-gray-900 text-sm">{method.name}</p>
+                                                    <p className="text-xs text-gray-500">{method.description} • {method.estimatedDays}</p>
+                                                </div>
                                             </div>
-
-                                            <div className="mt-4 flex justify-between items-end">
-                                                <p className="text-[10px] text-gray-500 max-w-[120px] leading-tight">
-                                                    {method.description}
-                                                </p>
-                                                <p className="font-black text-blue-600">
-                                                    {/* Logic ส่งฟรี: ถ้ายอดถึง Threshold ให้เป็น 0 หรือคำว่า "ฟรี" */}
+                                            <div className="text-right">
+                                                <p className="font-bold text-blue-600">
                                                     {method.freeShippingThreshold && total >= method.freeShippingThreshold
                                                         ? "FREE"
                                                         : `฿${method.price}`
                                                     }
                                                 </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                            </div>
-                        </section>
-                    </div>
-
-                    {/* ==========================================
-                        SECTION 2: Order Summary (Mobile Order: 2)
-                    ========================================== */}
-                    <div className="lg:col-span-4 order-2 lg:order-1">
-                        <div className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-sm border border-gray-100 sticky top-10">
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-3">
-                                <Package className="text-blue-600 lg:hidden" size={24} />
-                                สรุปคำสั่งซื้อ
-                            </h2>
-
-                            <div className="max-h-60 overflow-y-auto mb-6 pr-2 space-y-4">
-                                {order?.items?.map((item) => (
-                                    <div key={item.id} className="flex gap-4 items-center">
-                                        <div className="w-16 h-16 bg-gray-50 rounded-xl border border-gray-100 flex-shrink-0">
-                                            <img src={item.image} className="w-full h-full object-contain mix-blend-multiply" alt={item.title} />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-bold text-gray-900 truncate">{item.title}</p>
-                                            <p className="text-xs text-gray-400">จำนวน: {item.quantity}</p>
-                                            <p className="text-sm font-black text-blue-600">฿{item.price.toLocaleString()}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="space-y-4 pt-6 border-t border-gray-50 text-sm">
-                                <div className="flex justify-between text-gray-500 font-medium">
-                                    <span>ราคารวมสินค้า</span>
-                                    <span>฿{total.toLocaleString()}</span>
-                                </div>
-                                {/* <div className="flex justify-between text-gray-500 font-medium">
-                                    <span>ค่าจัดส่ง</span>
-                                    <span>฿{shippingFee.toLocaleString()}</span>
-                                </div> */}
-                                <div className="flex justify-between items-end pt-2 border-t border-gray-100">
-                                    <span className="text-gray-900 font-bold">ยอดสุทธิ</span>
-                                    <span className="text-3xl font-black text-blue-600 tracking-tight">
-                                        ฿{(total).toLocaleString()}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* ปุ่มนี้จะแสดงเฉพาะบน Desktop เท่านั้น */}
-                            <button
-                                type="submit"
-                                className="hidden lg:flex w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg mt-8 hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 items-center justify-center gap-2 group"
-                            >
-                                สั่งซื้อตอนนี้ <ChevronRight className="group-hover:translate-x-1 transition-transform" />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* ==========================================
-                        SECTION 3: Payment (Mobile Order: 3)
-                    ========================================== */}
-                    <div className="lg:col-span-8 order-3 lg:order-2 space-y-6">
-                        {/* Shipping Methods สำหรับ Mobile (ย้ายมาโชว์ก่อนจ่ายเงิน) */}
-                        <section className="lg:hidden bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100">
-                            <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
-                                <Truck className="text-blue-600" size={24} />
-                                ตัวเลือกการจัดส่ง
-                            </h2>
-                            {/* Shipping Cards... */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {mockShippingMethods
-                                    // กรองเฉพาะตัวที่ยอดสั่งซื้อถึงเกณฑ์ขั้นต่ำ
-                                    .filter(method => total >= method.minOrderAmount)
-                                    // เรียงลำดับตาม sortOrder
-                                    .sort((a, b) => a.sortOrder - b.sortOrder)
-                                    .map((method) => (
-                                        <div
-                                            key={method.id}
-                                            onClick={() => setSelectedShippingId(method.id)}
-                                            className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${selectedShippingId === method.id
-                                                ? 'border-blue-600 bg-blue-50/50 ring-4 ring-blue-50'
-                                                : 'border-gray-100 hover:border-gray-200 bg-white'
-                                                }`}
-                                        >
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-400">
-                                                        {method.provider}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-bold text-gray-900 text-sm">{method.name}</p>
-                                                        <p className="text-[10px] text-gray-400">{method.estimatedDays}</p>
-                                                    </div>
-                                                </div>
                                                 {selectedShippingId === method.id && (
-                                                    <CheckCircle2 className="text-blue-600" size={18} />
+                                                    <div className="flex justify-end mt-1">
+                                                        <CheckCircle2 className="text-blue-600" size={16} />
+                                                    </div>
                                                 )}
-                                            </div>
-
-                                            <div className="mt-4 flex justify-between items-end">
-                                                <p className="text-[10px] text-gray-500 max-w-[120px] leading-tight">
-                                                    {method.description}
-                                                </p>
-                                                <p className="font-black text-blue-600">
-                                                    {/* Logic ส่งฟรี: ถ้ายอดถึง Threshold ให้เป็น 0 หรือคำว่า "ฟรี" */}
-                                                    {method.freeShippingThreshold && total >= method.freeShippingThreshold
-                                                        ? "FREE"
-                                                        : `฿${method.price}`
-                                                    }
-                                                </p>
                                             </div>
                                         </div>
                                     ))}
                             </div>
                         </section>
 
-                        <section className="bg-white rounded-[2rem] p-6 lg:p-8 shadow-sm border border-gray-100">
-                            <h2 className="text-xl font-bold flex items-center gap-3 mb-6">
-                                <CreditCard className="text-blue-600" size={24} />
+                        {/* 3. Payment Section */}
+                        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
+                                <CreditCard className="text-blue-600" size={20} />
                                 ช่องทางชำระเงิน
                             </h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 {[
                                     { id: 'PROMPTPAY', label: 'PromptPay', icon: '🏧', method: "promptpay" },
-                                    { id: 'TRUEMONEY', label: 'True money', icon: '🏧', method: "truemoney_jumpapp" },
-                                    { id: 'CREDIT_CARD', label: 'Credit Card', icon: '💳', method: "" },
-                                    { id: 'CASH_ON_DELIVERY', label: 'ปลายทาง', icon: '🚚', method: "cod" }
+                                    { id: 'TRUEMONEY', label: 'TrueMoney', icon: '💰', method: "truemoney_jumpapp" },
+                                    { id: 'CREDIT_CARD', label: 'Credit Card', icon: '💳', method: "credit_card" },
+                                    { id: 'COD', label: 'เก็บเงินปลายทาง', icon: '🚚', method: "cod" }
                                 ].map((method) => (
                                     <button
                                         key={method.id}
                                         type="button"
                                         onClick={() => setPaymentMethod(method.method)}
-                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === method.method
-                                            ? 'border-blue-600 bg-blue-50 text-blue-600 font-bold'
-                                            : 'border-gray-50 text-gray-400 hover:border-gray-200'
+                                        className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 h-28 ${paymentMethod === method.method
+                                            ? 'border-blue-600 bg-blue-50/30 text-blue-700'
+                                            : 'border-gray-100 text-gray-500 hover:border-gray-200 hover:bg-gray-50'
                                             }`}
                                     >
-                                        <span className="text-2xl">{method.icon}</span>
-                                        <span className="text-xs lg:text-sm">{method.label}</span>
+                                        <span className="text-2xl filter grayscale-[0.5]">{method.icon}</span>
+                                        <span className="text-xs font-bold text-center">{method.label}</span>
+                                        {paymentMethod === method.method && (
+                                            <div className="absolute top-2 right-2">
+                                                <CheckCircle2 size={16} className="text-blue-600" />
+                                            </div>
+                                        )}
                                     </button>
                                 ))}
                             </div>
                         </section>
-
-                        {/* ปุ่มสั่งซื้อสำหรับ Mobile - จะอยู่ล่างสุดของหน้าจอเสมอ */}
-                        <div className="lg:hidden pb-10">
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 flex items-center justify-center gap-2"
-                            >
-                                ยืนยันคำสั่งซื้อ ฿{(total).toLocaleString()}
-                            </button>
-                            <p className="text-center text-[10px] text-gray-400 mt-4 uppercase tracking-widest font-bold">
-                                🔒 Secure SSL Checkout
-                            </p>
-                        </div>
                     </div>
 
+                    {/* Right Column: Order Summary */}
+                    <div className="mt-8 lg:mt-0 lg:col-span-5 xl:col-span-4">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-8">
+                            <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <Package className="text-blue-600" size={20} />
+                                สรุปคำสั่งซื้อ
+                            </h2>
+
+                            <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200">
+                                {order?.subOrders?.flatMap((sub) => sub.orderItems || []).map((item) => (
+                                    <div key={item.id} className="flex gap-3 py-2 border-b border-gray-50 last:border-0">
+                                        <div className="w-14 h-14 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden">
+                                            <img src={item.image} className="w-full h-full object-contain mix-blend-multiply" alt={item.title} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                                            <div className="flex justify-between items-center mt-1">
+                                                <p className="text-xs text-gray-500">x{item.quantity}</p>
+                                                <p className="text-sm font-bold text-gray-900">฿{item.price.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="space-y-3 pt-4 border-t border-gray-100">
+                                <div className="flex justify-between text-sm text-gray-500">
+                                    <span>ราคารวมสินค้า</span>
+                                    <span>฿{total.toLocaleString()}</span>
+                                </div>
+                                {/* <div className="flex justify-between text-sm text-gray-500">
+                                    <span>ค่าจัดส่ง</span>
+                                    <span>฿0</span>
+                                </div> */}
+                                <div className="flex justify-between items-end pt-3 border-t border-gray-100">
+                                    <span className="text-base font-bold text-gray-900">ยอดสุทธิ</span>
+                                    <span className="text-2xl font-black text-blue-600">฿{total.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-base mt-6 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 group active:scale-[0.98]"
+                            >
+                                ยืนยันการสั่งซื้อ <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+
+                            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
+                                <CheckCircle2 size={12} />
+                                <span>Secure SSL Encryption</span>
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>

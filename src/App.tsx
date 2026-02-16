@@ -11,7 +11,7 @@ import { fetchProducts } from './service/productService'
 import UserProfile from './pages/UserProfile'
 import Login from './pages/LoginPage'
 import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from './firebase/firebaseConfig'
+import { auth, messaging } from './firebase/firebaseConfig'
 import { syncUserWithBackend, logoutAction, setInitialize } from './service/authService'
 import ProtectRoute from './components/ProtectRoute'
 import MerchantPage from './pages/merchantPage'
@@ -29,6 +29,11 @@ import SettingPage from './pages/SettingPage'
 import OrderDetailPage from './pages/OrderDetailPage'
 import SuccessCheckoutPage from './pages/SuccessCheckoutPage'
 import QRcodePage from './pages/QRcodePage'
+import MerchantProductStore from './pages/MerchantProductStore'
+import { setupNotifications } from './service/notificationService'
+import { onMessage } from 'firebase/messaging';
+import { Toast } from './utils/Toast'
+import Swal from 'sweetalert2'
 
 
 
@@ -46,6 +51,7 @@ function App() {
           await dispatch(syncUserWithBackend(
             firebaseUser
           ));
+          dispatch(setupNotifications());
           await Promise.all([
             dispatch(fetchUser()),
             dispatch(fetchMyMerchant()),
@@ -57,7 +63,28 @@ function App() {
       }
       dispatch(setInitialize());
     })
-    return () => unscription()
+    const unsubscriptionMessage = onMessage(messaging, (payload) => {
+      console.log("Foreground message:", payload);
+
+      Toast.fire({
+        icon: 'info', // หรือเช็คจาก payload.data.type เพื่อเปลี่ยนสี icon
+        title: payload.notification?.title || "แจ้งเตือนใหม่",
+        text: payload.notification?.body,
+        // แถม: ถ้าคลิกแล้วให้ลิงก์ไปหน้าออเดอร์
+        didOpen: (toast) => {
+          toast.style.cursor = 'pointer'; // เปลี่ยนเมาส์เป็นรูปมือให้รู้ว่าคลิกได้
+          toast.addEventListener('click', () => {
+            // ใช้ window.location หรือ navigate (ถ้าอยู่ใน Component)
+            window.location.href = '/profile/orders';
+            Swal.close(); // ปิด toast ทันทีที่คลิก
+          });
+        }
+      });
+    })
+    return () => {
+      unscription()
+      unsubscriptionMessage()
+    }
   }, [dispatch, isSynced])
 
   if (!isAuthenticated) {
@@ -76,6 +103,7 @@ function App() {
         <Route path="/login" element={<Login />} />
       </Route>
       <Route path="/product/:id" element={<ProductDetail />} />
+      <Route path="/merchant/product/:id" element={<MerchantProductStore />} />
       <Route path="/cart" element={<Cart />} />
       <Route element={<ProtectRoute />}>
         <Route path="/merchant" element={<MerchantPage />} />

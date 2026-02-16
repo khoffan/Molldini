@@ -7,6 +7,7 @@ import productReducer from "./service/productService";
 import orderReducer from "./service/orderService";
 import userService from "./service/userService";
 import addressReducer from './service/addressService';
+import notiReducer from './service/notificationService';
 
 export const store = configureStore({
     reducer: {
@@ -17,7 +18,8 @@ export const store = configureStore({
         category: categoryReducer,
         order: orderReducer,
         user: userService,
-        address: addressReducer
+        address: addressReducer,
+        noti: notiReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

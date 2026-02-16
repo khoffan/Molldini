@@ -40,7 +40,7 @@ export interface OrderResponse {
     userId: string | null;
     totalPrice: number;
     status: string;
-    items: OrderItems[];
+    subOrders: SubOrder[];
     shippingAddress: string | null;
     receiverName: string | null;
     email: string | null;
@@ -57,7 +57,7 @@ export interface Order {
     userId: string | null;
     totalPrice: number;
     status: string;
-    items: OrderItems[];
+    subOrders: SubOrder[];
     shippingAddress: OrderAddress;
     reciveInfo: OrderReceiveInfo;
     email: string | null;
@@ -66,10 +66,24 @@ export interface Order {
     updatedAt?: string | Date;
 }
 
+export interface SubOrder {
+    id: string;
+    orderId: string;
+    merchantId: string;
+    merchantName?: string | null;
+    shippingFee: number;
+    totalPrice: number;
+    status: string;
+    orderItems: OrderItems[];
+    createAt?: string | Date;
+    updateAt?: string | Date;
+}
+
 export interface OrderItems {
     id?: string | null;
-    orderId?: string | null;
+    subOrderId?: string | null;
     productId: string;
+    merchantId: string;
     title: string;
     quantity: number;
     price: number;

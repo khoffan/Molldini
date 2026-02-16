@@ -1,13 +1,15 @@
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
 import { useEffect, useMemo, useState } from 'react';
 import { fetchProducts } from '../service/productService';
 import CategoryTag from '../components/categoryTag';
 import { getImageValidate } from '../utils/getImageValidate';
+import { Store } from 'lucide-react';
 
 export default function ProductPage() {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
 
   const { items, loading, error } = useSelector((state: RootState) => state.product);
@@ -16,6 +18,12 @@ export default function ProductPage() {
     if (!selectedCat) return items;
     return items.filter((item) => item.categoryId === selectedCat);
   }, [selectedCat, items]);
+
+  const handleMerchantPage = (e: React.MouseEvent, merchantId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/merchant/product/${merchantId}`);
+  }
 
   useEffect(() => {
     dispatch(fetchProducts());
@@ -66,12 +74,23 @@ export default function ProductPage() {
                 {/* Content Section */}
                 <div className="p-6 flex flex-col flex-1">
                   <div className="mb-auto">
-                    <p className="text-sm font-medium text-blue-600 mb-1">{product.category?.name || 'General'}</p>
-                    <Link to={`/product/${product.id}`}>
-                      <h3 className="text-lg font-bold text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors">
-                        {product.title}
-                      </h3>
-                    </Link>
+                    <p className="text-xs font-bold text-blue-600 mb-2 uppercase tracking-wider">{product.category?.name || 'General'}</p>
+                    <h3 className="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors mb-3">
+                      {product.title}
+                    </h3>
+
+                    <button onClick={(e) => handleMerchantPage(e, product.merchantId!)} className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-50 cursor-pointer">
+                      <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 flex-shrink-0">
+                        {product.merchant?.logoUrl ? (
+                          <img src={product.merchant.logoUrl.url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Store size={12} className="text-gray-400" />
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-500 font-medium truncate">
+                        {product.merchant?.name || 'Molldini Official'}
+                      </span>
+                    </button>
                   </div>
 
                   {/* Variants Preview (แสดงจุดสีหรือขนาดคร่าวๆ) */}

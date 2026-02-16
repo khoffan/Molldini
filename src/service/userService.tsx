@@ -23,7 +23,25 @@ export const updateAddressUser = createAsyncThunk(
             const response = await api.put(`/api/v1/users/address/me`, {
                 address: userAddress
             });
-            return response.data as AppUser;
+            const rawData = response.data;
+            const appUser: AppUser = {
+                uid: rawData.id,
+                providerId: rawData.provider,
+                email: rawData.email,
+                role: rawData.role,
+                firstName: rawData.firstName,
+                lastName: rawData.lastName,
+                displayName: rawData.name,
+                image: rawData.image,
+                emailVerified: rawData.emailVerified,
+                phoneNumber: rawData.phoneNumber,
+                createdAt: rawData.createdAt,
+                lastLogin: rawData.lastLogin,
+                addresses: rawData.addresses,
+                orders: rawData.orders,
+                userDevices: rawData.userDevices,
+            };
+            return appUser;
         } catch (e: unknown) {
             if (e instanceof AxiosError) {
                 return rejectWithValue(e.response?.data?.message || e.message);
@@ -48,7 +66,25 @@ export const updateAddressData = createAsyncThunk(
             console.log("update address su");
 
             const res = await api.get(`/api/v1/profile`);
-            return res.data as AppUser;
+            const rawData = res.data;
+            const appUser: AppUser = {
+                uid: rawData.id,
+                providerId: rawData.provider,
+                email: rawData.email,
+                role: rawData.role,
+                firstName: rawData.firstName,
+                lastName: rawData.lastName,
+                displayName: rawData.name,
+                image: rawData.image,
+                emailVerified: rawData.emailVerified,
+                phoneNumber: rawData.phoneNumber,
+                createdAt: rawData.createdAt,
+                lastLogin: rawData.lastLogin,
+                addresses: rawData.addresses,
+                orders: rawData.orders,
+                userDevices: rawData.userDevices,
+            };
+            return appUser;
         } catch (e: unknown) {
             if (e instanceof AxiosError) {
                 return rejectWithValue(e.response?.data?.message || e.message);
@@ -65,7 +101,25 @@ export const fetchUser = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await api.get(`/api/v1/profile`);
-            return response.data as AppUser;
+            const rawData = response.data;
+            const appUser: AppUser = {
+                uid: rawData.id,
+                providerId: rawData.provider,
+                email: rawData.email,
+                role: rawData.role,
+                firstName: rawData.firstName,
+                lastName: rawData.lastName,
+                displayName: rawData.name,
+                image: rawData.image,
+                emailVerified: rawData.emailVerified,
+                phoneNumber: rawData.phoneNumber,
+                createdAt: rawData.createdAt,
+                lastLogin: rawData.lastLogin,
+                addresses: rawData.addresses,
+                orders: rawData.orders, userDevices: rawData.userDevices,
+            };
+
+            return appUser;
         } catch (e: unknown) {
             if (e instanceof AxiosError) {
                 return rejectWithValue(e.response?.data?.message || e.message);

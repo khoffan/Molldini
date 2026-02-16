@@ -14,6 +14,8 @@ export default function OrderUserPage() {
     const { user } = useSelector((state: RootState) => state.user);
     const orders = user?.orders || [];
 
+    console.log("orders => ", orders);
+
     // ฟังก์ชันจัดการสีของ Status
     const getStatusStyle = (status: string) => {
         switch (status) {
@@ -39,7 +41,7 @@ export default function OrderUserPage() {
     // };
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto py-10">
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-2xl font-black text-gray-900 flex items-center gap-3">
@@ -109,7 +111,7 @@ export default function OrderUserPage() {
                                                 <Package size={24} />
                                             </div>
                                             <div>
-                                                <p className="font-bold text-gray-900">รายการสินค้า ({order.items?.length || 0} รายการ)</p>
+                                                <p className="font-bold text-gray-900">รายการสินค้า ({order.subOrders?.reduce((acc, sub) => acc + (sub.orderItems?.length || 0), 0) || 0} รายการ)</p>
                                                 {/* <p className="text-sm text-gray-500 italic">
                                                         {Array.isArray(filterProduct) && filterProduct} 
                                                     </p> */}

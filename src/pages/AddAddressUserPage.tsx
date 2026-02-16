@@ -91,14 +91,15 @@ export default function AddAddressUserPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        console.log("update address user by ", id)
         try {
             if (id) {
+                console.log("update address user by ", id)
                 await dispatch(updateAddressData({
                     addressId: id,
                     userAddress: formData
                 })).unwrap();
             } else {
+                console.log("add address user")
                 await dispatch(updateAddressUser(formData)).unwrap();
             }
 

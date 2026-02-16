@@ -13,6 +13,15 @@ export const UserRole = {
 // สร้าง Type จาก Object ข้างบน (เพื่อให้เรียกใช้ใน Interface ได้)
 export type UserRoleType = typeof UserRole[keyof typeof UserRole];
 
+export interface UserDevicesResponse {
+  id: string;
+  userId: string;
+  fcmToken: string;
+  deviceType: string | null,
+  createdAt: string;
+  updatedAt: string;
+}
+
 
 export interface AppUser {
   uid: string;           // Firebase ใช้คำว่า uid เป็นมาตรฐาน (Unique ID)
@@ -31,6 +40,7 @@ export interface AppUser {
   carts?: Carts | null,
   merchant?: Merchant | null,
   orders: OrderResponse[]
+  userDevices: UserDevicesResponse[]
 }
 
 
