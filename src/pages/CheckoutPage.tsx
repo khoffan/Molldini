@@ -6,7 +6,7 @@ import type { RootState, AppDispatch } from '../store';
 import { useNavigate, useParams } from 'react-router';
 import Swal from 'sweetalert2';
 import { checkoutOrder, updateDataOrder } from '../service/orderService';
-import LoadingSkelition from '../components/LoadingSkelition';
+import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
 import { clearCart } from '../service/cartService';
 
 Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);
@@ -25,7 +25,8 @@ export default function CheckoutPage() {
     );
 
     const [paymentMethod, setPaymentMethod] = useState<string>("promptpay");
-    const [selectedShippingId, setSelectedShippingId] = useState<string>(""); // [id, setSelectedShippingId]
+    const [selectedBank, setSelectedBank] = useState<string>("");
+    const [selectedShippingId, setSelectedShippingId] = useState<string>("s1"); // [id, setSelectedShippingId]
 
     const total = order?.totalPrice || 0;
 
@@ -45,6 +46,18 @@ export default function CheckoutPage() {
                 return resolve(response);
             })
         })
+    }
+
+    const handleSelectPayment = (e: React.MouseEvent<HTMLButtonElement>, method: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setPaymentMethod(method);
+    }
+
+    const handleSelectBankMethod = (e: React.MouseEvent<HTMLButtonElement>, method: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedBank(method);
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -82,6 +95,12 @@ export default function CheckoutPage() {
             const orderAddress = address?.detail + ", " + address?.subDistrict + ", " + address?.district + ", " + address?.province + ", " + address?.postcode;
             const firstName = address?.receiverName?.split(" ")[0];
             const lastName = address?.receiverName?.split(" ")[1];
+            let method = '';
+            if (paymentMethod === 'mobile_banking') {
+                method = selectedBank
+            } else {
+                method = paymentMethod
+            }
             // ใช้ Logic เดิมในการส่งข้อมูลไป Backend
             const resultOrder = await dispatch(updateDataOrder({
                 cartId: id || '',
@@ -95,14 +114,14 @@ export default function CheckoutPage() {
                     lastName: lastName ?? "",
                     phone: address?.phone ?? "",
                 },
-                paymentMethod: paymentMethod,
+                paymentMethod: method,
             })).unwrap();
 
             dispatch(clearCart());
 
-            if (paymentChoice === true && paymentMethod !== "cod") {
+            if (paymentChoice === true && method !== "cod") {
                 console.log("resultOrder: ", resultOrder);
-                const source = await createSource(total, paymentMethod);
+                const source = await createSource(total, method);
                 console.log("🚀 ~ handleSubmit ~ source:", source)
                 Swal.close();
                 const chargeResult = await dispatch(checkoutOrder({ source: source.id, orderId: resultOrder.id })).unwrap();
@@ -140,6 +159,14 @@ export default function CheckoutPage() {
             }
         }
     };
+
+    const paymentSections = [
+        { id: 'PROMPTPAY', label: 'PromptPay', icon: '🏧', method: "promptpay" },
+        { id: 'MOBILE_BANKING', label: 'Mobile Banking', icon: '📱', method: "mobile_banking", children: [{ id: "scb", label: "SCB", method: "mobile_banking_scb" }, { id: "kbank", label: "K-Bank", method: "mobile_banking_kbank" }, { id: "ktb", label: "Krung Thai", method: "mobile_banking_ktb" }, { id: "kma", label: "Krungsri", method: "mobile_banking_bay" }] },
+        { id: 'TRUEMONEY', label: 'TrueMoney', icon: '💰', method: "truemoney_jumpapp" },
+        { id: 'CREDIT_CARD', label: 'Credit Card', icon: '💳', method: "credit_card" },
+        { id: 'COD', label: 'เก็บเงินปลายทาง', icon: '🚚', method: "cod" }
+    ];
 
     const mockShippingMethods = [
         {
@@ -196,7 +223,7 @@ export default function CheckoutPage() {
                     <div className="lg:col-span-7 xl:col-span-8 space-y-6">
 
                         {/* 1. Address Section */}
-                        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden">
+                        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden order-1">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                                     <MapPin className="text-blue-600" size={20} />
@@ -252,7 +279,11 @@ export default function CheckoutPage() {
                                     .map((method) => (
                                         <div
                                             key={method.id}
-                                            onClick={() => setSelectedShippingId(method.id)}
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                e.stopPropagation()
+                                                setSelectedShippingId(method.id)
+                                            }}
                                             className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${selectedShippingId === method.id
                                                 ? 'border-blue-600 bg-blue-50/30'
                                                 : 'border-gray-100 hover:border-gray-200'
@@ -291,31 +322,162 @@ export default function CheckoutPage() {
                                 <CreditCard className="text-blue-600" size={20} />
                                 ช่องทางชำระเงิน
                             </h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                {[
-                                    { id: 'PROMPTPAY', label: 'PromptPay', icon: '🏧', method: "promptpay" },
-                                    { id: 'TRUEMONEY', label: 'TrueMoney', icon: '💰', method: "truemoney_jumpapp" },
-                                    { id: 'CREDIT_CARD', label: 'Credit Card', icon: '💳', method: "credit_card" },
-                                    { id: 'COD', label: 'เก็บเงินปลายทาง', icon: '🚚', method: "cod" }
-                                ].map((method) => (
-                                    <button
-                                        key={method.id}
-                                        type="button"
-                                        onClick={() => setPaymentMethod(method.method)}
-                                        className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 h-28 ${paymentMethod === method.method
-                                            ? 'border-blue-600 bg-blue-50/30 text-blue-700'
-                                            : 'border-gray-100 text-gray-500 hover:border-gray-200 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        <span className="text-2xl filter grayscale-[0.5]">{method.icon}</span>
-                                        <span className="text-xs font-bold text-center">{method.label}</span>
-                                        {paymentMethod === method.method && (
-                                            <div className="absolute top-2 right-2">
-                                                <CheckCircle2 size={16} className="text-blue-600" />
-                                            </div>
-                                        )}
-                                    </button>
-                                ))}
+                            {/* Container หลัก: บนจอใหญ่จะจำกัดความกว้างไว้ตรงกลางเพื่อให้ดูไม่ใหญ่จนเกินไป */}
+                            <div className="max-w-4xl mx-auto w-full px-2 sm:px-4">
+                                <div className="flex flex-col gap-4"> {/* ใช้ flex-col เพื่อให้เรียงลงมาทั้ง mobile และ desktop */}
+                                    {paymentSections.map((section) => (
+                                        <div
+                                            key={section.id}
+                                            className={`border-2 rounded-2xl overflow-hidden transition-all duration-300 shadow-sm ${paymentMethod === section.method
+                                                ? 'border-blue-500 ring-1 ring-blue-500 ring-opacity-50'
+                                                : 'border-gray-100 hover:border-gray-200'
+                                                }`}
+                                        >
+                                            {/* Header Section */}
+                                            <button
+                                                onClick={(e) => handleSelectPayment(e, section.method)}
+                                                className={`w-full flex items-center justify-between p-5 sm:p-6 transition-colors ${paymentMethod === section.method ? 'bg-blue-50/50' : 'bg-white'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center space-x-4">
+                                                    <div className={`p-3 rounded-xl text-3xl shadow-sm ${paymentMethod === section.method ? 'bg-white' : 'bg-gray-50'
+                                                        }`}>
+                                                        {section.icon}
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <span className="block font-semibold text-gray-900 text-lg">
+                                                            {section.label}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 uppercase tracking-wider">
+                                                            Secure Payment {paymentMethod}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Radio Indicator */}
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === section.method
+                                                    ? 'border-blue-600 bg-blue-600'
+                                                    : 'border-gray-300'
+                                                    }`}>
+                                                    {paymentMethod === section.method && (
+                                                        <div className="w-2.5 h-2.5 bg-white rounded-full animate-in zoom-in-50" />
+                                                    )}
+                                                </div>
+                                            </button>
+
+                                            {/* Expandable Content Section */}
+                                            {paymentMethod === section.method && (
+                                                <div className="p-6 border-t border-gray-100 bg-gray-50/30 animate-in fade-in slide-in-from-top-4 duration-300">
+                                                    <div className="max-w-md mx-auto"> {/* จำกัดความกว้าง Form ภายในให้พอดีสายตา */}
+
+                                                        {section.id === 'PROMPTPAY' && (
+                                                            <div className="text-center py-6 bg-white rounded-2xl border border-gray-200 shadow-inner">
+                                                                <p className="text-sm font-medium text-gray-600 mb-4">สแกนจ่ายผ่านแอปธนาคารทุกธนาคาร</p>
+                                                                <div className="mx-auto w-48 h-48 bg-gray-50 flex items-center justify-center rounded-xl border-2 border-dashed border-gray-300">
+                                                                    <div className="text-center">
+                                                                        <span className="block text-3xl mb-2">📸</span>
+                                                                        <span className="text-xs text-gray-400">QR Code จะปรากฏที่นี่</span>
+                                                                    </div>
+                                                                </div>
+                                                                <p className="mt-4 text-[11px] text-gray-400 italic">* QR Code มีอายุการใช้งาน 15 นาที</p>
+                                                            </div>
+                                                        )}
+
+                                                        {section.id === 'MOBILE_BANKING' && (
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                {section.children?.map(bank => (
+                                                                    <button
+                                                                        key={bank.id}
+                                                                        onClick={(e) => handleSelectBankMethod(e, bank.method)}
+                                                                        className={`relative flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-200 font-medium shadow-sm border-2 ${
+                                                                            // 🎨 เงื่อนไข: ถ้า bank.method ตรงกับที่เลือก ให้เปลี่ยนสีขอบและพื้นหลัง
+                                                                            selectedBank === bank.method
+                                                                                ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
+                                                                                : 'border-gray-100 bg-white text-gray-700 hover:border-blue-200 hover:bg-gray-50'
+                                                                            }`}
+                                                                    >
+                                                                        {/* 🟢 แสดงเครื่องหมายถูกที่มุมขวาบนเมื่อถูกเลือก */}
+                                                                        {selectedBank === bank.method && (
+                                                                            <div className="absolute top-2 right-2 animate-in zoom-in duration-200">
+                                                                                <div className="bg-blue-500 rounded-full p-0.5">
+                                                                                    <svg
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                        className="h-3 w-3 text-white"
+                                                                                        viewBox="0 0 20 20"
+                                                                                        fill="currentColor"
+                                                                                    >
+                                                                                        <path
+                                                                                            fillRule="evenodd"
+                                                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                                                            clipRule="evenodd"
+                                                                                        />
+                                                                                    </svg>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+
+                                                                        {/* ส่วนของโลโก้จำลอง */}
+                                                                        <div className={`w-12 h-12 rounded-lg mb-2 flex items-center justify-center text-xs font-bold uppercase transition-colors ${selectedBank === bank.method ? 'bg-white text-blue-600' : 'bg-gray-100'
+                                                                            }`}>
+                                                                            {bank.label.substring(0, 2)}
+                                                                        </div>
+
+                                                                        <span className="text-sm tracking-tight">{bank.label}</span>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {section.id === 'CREDIT_CARD' && (
+                                                            <div className="space-y-4 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                                                                <div>
+                                                                    <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Card Number</label>
+                                                                    <input type="text" placeholder="0000 0000 0000 0000" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+                                                                </div>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div>
+                                                                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Expiry Date</label>
+                                                                        <input type="text" placeholder="MM/YY" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">CVV</label>
+                                                                        <input type="password" placeholder="***" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {section.id === 'TRUEMONEY' && (
+                                                            <div className="space-y-4 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                                                                <div className="flex items-center space-x-3 mb-2">
+                                                                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">📱</div>
+                                                                    <span className="text-sm font-semibold text-gray-700">TrueMoney Wallet</span>
+                                                                </div>
+                                                                <input
+                                                                    type="tel"
+                                                                    placeholder="08X-XXX-XXXX"
+                                                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 outline-none transition-all"
+                                                                />
+                                                                <p className="text-[11px] text-gray-400 leading-relaxed">
+                                                                    กรุณาตรวจสอบยอดเงินคงเหลือใน Wallet ก่อนทำรายการ ระบบจะส่งคำขอหักเงินไปยังแอป TrueMoney ของคุณ
+                                                                </p>
+                                                            </div>
+                                                        )}
+
+                                                        {section.id === 'COD' && (
+                                                            <div className="text-center py-4 bg-green-50 rounded-2xl border border-green-100">
+                                                                <div className="text-4xl mb-2">🏠</div>
+                                                                <p className="text-sm text-green-700 font-semibold uppercase tracking-wide">Cash on Delivery Available</p>
+                                                                <p className="text-xs text-green-600 mt-1">เตรียมเงินสดให้พอดีกับยอดชำระเมื่อพนักงานไปถึง</p>
+                                                            </div>
+                                                        )}
+
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </section>
                     </div>

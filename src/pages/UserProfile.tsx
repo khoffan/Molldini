@@ -13,7 +13,8 @@ import { Link, useNavigate } from 'react-router';
 import { logoutAction } from '../service/authService';
 import { useEffect } from 'react';
 import { fetchUser } from '../service/userService';
-import LoadingSkelition from '../components/LoadingSkelition';
+import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
+import LoadingCircularSkelition from '../components/loadingSkeleton/LoadingCircularSkelition';
 
 function UserProfile() {
     const dispatch = useDispatch<AppDispatch>();
@@ -38,7 +39,7 @@ function UserProfile() {
     ];
 
     if (loading) {
-        return <LoadingSkelition />;
+        return <LoadingCircularSkelition />;
     }
 
     return (
@@ -54,9 +55,13 @@ function UserProfile() {
                 {/* Main Profile Card */}
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
                     <div className="relative">
-                        <div className="w-32 h-32 rounded-full border-4 border-white shadow-md overflow-hidden bg-blue-100">
-                            <img src={user?.image?.url} alt="avatar" className="w-full h-full object-cover" />
-                        </div>
+                        {user?.image?.url ? (
+                            <img src={user?.image?.url} alt="" className="h-32 w-32 rounded-full object-cover ring-2 ring-transparent group-hover:ring-blue-400 transition-all" />
+                        ) : (
+                            <div className="h-32 w-32 rounded-full bg-blue-600 flex items-center justify-center text-white text-5xl font-bold ring-2 ring-transparent group-hover:ring-blue-400">
+                                {user?.displayName?.charAt(0).toUpperCase()}
+                            </div>
+                        )}
                         <button className="absolute bottom-1 right-1 bg-white p-2 rounded-full shadow-lg border border-gray-100 text-blue-600 hover:bg-blue-50 transition-colors">
                             <Camera size={16} />
                         </button>

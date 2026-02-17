@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { ChevronLeft, User, Home } from 'lucide-react';
 import Swal from 'sweetalert2';
-import { useDispatch } from 'react-redux';
-import type { AppDispatch } from '../store';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../store';
 import { updateAddressData, updateAddressUser } from '../service/userService';
 import type { Address } from '../interface/addressInterface';
 import { fetchAddressById } from '../service/addressService';
@@ -26,6 +26,7 @@ export default function AddAddressUserPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
+    const { user } = useSelector((state: RootState) => state.user);
 
     // 2. Initial State
     const [formData, setFormData] = useState<AddressForm>({
@@ -38,6 +39,21 @@ export default function AddAddressUserPage() {
         postcode: '',
         isDefault: false,
     });
+
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                receiverName: user.displayName,
+                phone: user.phoneNumber || '',
+                detail: '',
+                subDistrict: '',
+                district: '',
+                province: '',
+                postcode: '',
+                isDefault: false,
+            })
+        }
+    }, [user])
 
     useEffect(() => {
         const fetchAddress = async () => {

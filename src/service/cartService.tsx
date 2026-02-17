@@ -34,6 +34,26 @@ const initialState: CartState = {
 };
 
 
+export const fetchCart = createAsyncThunk(
+    'cart/fetchCart',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await api.get("/api/v1/carts");
+            const data = res.data as Carts;
+            return data;
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            } else if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+    }
+)
+
+
+
 export const mergeCartAfterLogin = createAsyncThunk(
     "cart/mergeCartAfterLogin",
     async (_, { getState, rejectWithValue }) => {
@@ -58,6 +78,7 @@ export const mergeCartAfterLogin = createAsyncThunk(
             console.log("Cart merged with database");
             const res = await api.get("/api/v1/carts");
             const dbData = res.data as Carts;
+            saveToLocal(dbData);
             console.log("fetch cart from api and add to local success");
             return dbData;
         } catch (e: unknown) {
@@ -257,7 +278,19 @@ const cartSlice = createSlice({
             .addCase(mergeCartAfterLogin.rejected, (state, action) => {
                 state.error = action.payload as string;
                 state.isSynced = true;
-            });
+            })
+            .addCase(fetchCart.pending, (state) => {
+                state.loading = true
+                state.error = null
+            })
+            .addCase(fetchCart.fulfilled, (state, action) => {
+                state.loading = false
+                state.cart = action.payload
+            })
+            .addCase(fetchCart.rejected, (state, action) => {
+                state.loading = false
+                state.error = action.payload as string
+            })
     }
 });
 

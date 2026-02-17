@@ -1,28 +1,50 @@
 import { useSelector, useDispatch } from "react-redux";
 import type { AppDispatch, RootState } from "../store";
 import type { CartItem } from "../interface/cartInterface";
-import { mergeCartAfterLogin, removeFromCart, updateCartDecrementQuantityDb, updateCartIncrementQuantityDb } from "../service/cartService";
-import { useEffect } from "react";
+import { fetchCart, removeFromCart, updateCartDecrementQuantityDb, updateCartIncrementQuantityDb } from "../service/cartService";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { setOrderFromCartId } from "../service/orderService";
 import Swal from "sweetalert2";
 import { getImageValidate } from "../utils/getImageValidate";
+import LoadingSkelition from "../components/loadingSkeleton/LoadingShrinkBoxSkelition";
+import { showToast } from "../utils/Toast";
 
 
 function Cart() {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
   // ดึงสินค้าทั้งหมดจาก Product Slice มาเพื่อหาข้อมูลชื่อ/รูป/ราคา
   const { cart, loading, error } = useSelector((state: RootState) => state.cart);
   const cartItems = cart?.items || [];
   const allProducts = useSelector((state: RootState) => state.product);
   const productVarients = allProducts.items.map(item => item.variants).flat();
   useEffect(() => {
-    dispatch(mergeCartAfterLogin());
-  }, [dispatch])
+    dispatch(fetchCart());
+  }, [dispatch]);
+
+  // ฟังก์ชันสำหรับ Toggle เลือก/ไม่เลือก
+  const handleSelectItem = (productId: string) => {
+    setSelectedItems(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  // ฟังก์ชันเลือกทั้งหมด
+  const handleSelectAll = () => {
+    if (selectedItems.length === cartItems.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(cartItems.map(item => item.productId));
+    }
+  };
 
   // คำนวณราคารวมทั้งหมด
-  const subtotal = cartItems.reduce((acc, item) => {
+  const subtotal = cartItems.filter(item => selectedItems.includes(item.productId)).reduce((acc, item) => {
     return acc + (productVarients.find(v => v.id === item.productId)?.price || 0) * item.quantity;
   }, 0) ?? 0;
 
@@ -52,16 +74,25 @@ function Cart() {
       //   await dispatch(mergeCartAfterLogin());
       //   console.log("Syncing cart...");
       // }
+      if (selectedItems.length === 0) {
+        showToast({
+          icon: 'warning',
+          title: 'No items selected',
+          text: 'Please select at least one item to checkout.',
+        });
+        return;
+      }
       console.log("Proceed to checkout with total amount:", total);
       console.log("Cart ID for checkout:", id);
       await dispatch(setOrderFromCartId({
         cartId: id,
+        selectedItems,
         shippingAddress: "",
         receiverName: "",
         receiverPhone: "",
         paymentMethod: ""
       }));
-      navigate(`/checkout/${id}`);
+      navigate(`/checkout/${id}?items=${JSON.stringify(selectedItems)}`);
     } catch (err: unknown) {
       console.error("Error during checkout:", err);
       Swal.fire({
@@ -74,20 +105,23 @@ function Cart() {
   }
 
   if (loading) {
-    return (
-      <div className="bg-gray-50 min-h-screen py-10">
-        <div className="max-w-5xl mx-auto px-4">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Loading...</h1>
-        </div>
-      </div>
-    );
+    return <LoadingSkelition />
   }
 
   return (
     <div className="bg-gray-50 min-h-screen py-10">
       <div className="max-w-5xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
-
+        {/* ส่วนหัวตะกร้า: เพิ่มเลือกทั้งหมด */}
+        <div className="flex items-center gap-2 mb-4 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
+          <input
+            type="checkbox"
+            checked={selectedItems.length === cartItems.length && cartItems.length > 0}
+            onChange={handleSelectAll}
+            className="w-5 h-5 cursor-pointer rounded accent-blue-600"
+          />
+          <span className="text-sm font-medium text-gray-700">Select All ({cartItems.length})</span>
+        </div>
         <div className="flex flex-col lg:flex-row gap-8">
           {/* 1. รายการสินค้าในตะกร้า */}
           <div className="flex-1 space-y-4">
@@ -95,6 +129,12 @@ function Cart() {
               const productInfo = productVarients.find(p => p.id === item.productId);
 
               return <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <input
+                  type="checkbox"
+                  checked={selectedItems.includes(item.productId)}
+                  onChange={() => handleSelectItem(item.productId)}
+                  className="w-5 h-5 cursor-pointer rounded accent-blue-600"
+                />
                 <img
                   src={getImageValidate(productInfo?.images[0].url)}
                   alt={productInfo?.variantName ?? ""}

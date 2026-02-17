@@ -96,6 +96,45 @@ export const updateAddressData = createAsyncThunk(
 
 
 
+export const updateUser = createAsyncThunk(
+    "user/updateUser",
+    async ({ displayName, emailVerify, phoneNumber }: { displayName: string, emailVerify: boolean, phoneNumber: string }, { rejectWithValue }) => {
+        try {
+            const response = await api.put(`/api/v1/users/me`, {
+                displayName,
+                emailVerify,
+                phoneNumber
+            });
+            const rawData = response.data;
+            const appUser: AppUser = {
+                uid: rawData.id,
+                providerId: rawData.provider,
+                email: rawData.email,
+                role: rawData.role,
+                firstName: rawData.firstName,
+                lastName: rawData.lastName,
+                displayName: rawData.name,
+                image: rawData.image,
+                emailVerified: rawData.emailVerified,
+                phoneNumber: rawData.phoneNumber,
+                createdAt: rawData.createdAt,
+                lastLogin: rawData.lastLogin,
+                addresses: rawData.addresses,
+                orders: rawData.orders,
+                userDevices: rawData.userDevices,
+            };
+            return appUser;
+        } catch (e: unknown) {
+            if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            } else {
+                return rejectWithValue("An unknown error occurred");
+            }
+        }
+    }
+)
+
+
 export const fetchUser = createAsyncThunk(
     "fetch/user",
     async (_, { rejectWithValue }) => {
@@ -159,7 +198,31 @@ const userSlice = createSlice({
             .addCase(fetchUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
-            });
+            })
+            .addCase(updateUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateUser.fulfilled, (state, action) => {
+                state.user = action.payload;
+                state.loading = false;
+            })
+            .addCase(updateUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(updateAddressData.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateAddressData.fulfilled, (state, action) => {
+                state.user = action.payload;
+                state.loading = false;
+            })
+            .addCase(updateAddressData.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
     },
 });
 

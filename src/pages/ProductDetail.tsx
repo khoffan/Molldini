@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { ShoppingCart, Plus, Minus, ChevronLeft, Star, ShieldCheck, Truck } from 'lucide-react';
-import LoadingSkelition from '../components/LoadingSkelition';
+import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
 import { useDispatch } from 'react-redux';
 import { addCartDb } from '../service/cartService';
 import type { CartItem } from '../interface/cartInterface';

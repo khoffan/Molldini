@@ -4,13 +4,13 @@ importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compa
 
 // 2. ตั้งค่า Firebase (ใช้ Config ชุดเดียวกับหน้าบ้าน)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FB_API_KEY,
-  authDomain: import.meta.env.VITE_FB_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FB_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FB_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FB_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FB_APP_ID,
-  measurementId: import.meta.env.VITE_FB_MEASUREMENT_ID
+  apiKey: '__FB_API_KEY__',
+  authDomain: '__FB_AUTH_DOMAIN__',
+  projectId: '__FB_PROJECT_ID__',
+  storageBucket: '__FB_STORAGE_BUCKET__',
+  messagingSenderId: '__FB_MESSAGING_SENDER_ID__',
+  appId: '__FB_APP_ID__',
+  measurementId: '__FB_MEASUREMENT_ID__'
 };
 
 // 3. Initialize Firebase

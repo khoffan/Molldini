@@ -1,19 +1,52 @@
-import { useState } from 'react';
-import { User, Bell, Lock, Store, Save } from 'lucide-react'; // แนะนำให้ลง lucide-react หรือใช้ SVG แทนได้ครับ
+import { useEffect, useState } from 'react';
+import { User, Bell, Lock, Store, Save, Phone, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
 import { UserRole } from '../interface/userInterface';
 import { setupNotifications } from '../service/notificationService';
+import { fetchUser, updateUser } from '../service/userService';
+import LoadingCircularSkelition from '../components/loadingSkeleton/LoadingCircularSkelition';
+import { sendEmailVerification } from 'firebase/auth';
+import { auth } from '../firebase/firebaseConfig';
+import { Toast } from '../utils/Toast';
+
+interface generalForm {
+    displayName: string;
+    phoneNumber: string;
+}
+
 
 export default function SettingPage() {
     const dispatch = useDispatch<AppDispatch>();
 
     const [activeTab, setActiveTab] = useState('general');
+    const [verifyLoading, setVerifyLoading] = useState(false);
+    const [verifySent, setVerifySent] = useState(false);
+    const [verifyError, setVerifyError] = useState<string | null>(null);
 
-    const { user } = useSelector((state: RootState) => state.user);
+    const handleSendVerification = async () => {
+        if (!auth.currentUser) return;
+        setVerifyLoading(true);
+        setVerifyError(null);
+        try {
+            await sendEmailVerification(auth.currentUser);
+            setVerifySent(true);
+        } catch {
+            setVerifyError('Failed to send verification email. Please try again later.');
+        } finally {
+            setVerifyLoading(false);
+        }
+    };
+
+
+
+    const { user, loading } = useSelector((state: RootState) => state.user);
     const { isAllow } = useSelector((state: RootState) => state.noti)
-    console.log("user", user);
     const isMerchant = user?.role === UserRole.MERCHANT;
+    const [formData, setFormData] = useState<generalForm>({
+        displayName: user?.displayName || '',
+        phoneNumber: user?.phoneNumber || '',
+    });
     let merchant = null;
     if (isMerchant) {
         merchant = user?.merchant
@@ -24,6 +57,59 @@ export default function SettingPage() {
         { id: 'notifications', label: 'Notifications', icon: <Bell size={18} /> },
         { id: 'security', label: 'Security', icon: <Lock size={18} /> },
     ];
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+
+    const saveUpdateProfile = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        console.log(formData, verifySent)
+
+        const displayName = formData.displayName.trim();
+        const phoneNumber = formData.phoneNumber.trim();
+
+
+        if (!/^\d{10}$/.test(phoneNumber)) {
+            Toast.fire({
+                icon: 'error',
+                title: 'Phone number must be exactly 10 digits.'
+            });
+            return;
+        }
+
+
+
+        dispatch(updateUser({ displayName, emailVerify: verifySent, phoneNumber }))
+
+    }
+
+    useEffect(() => {
+        dispatch(fetchUser())
+    }, [dispatch]);
+
+
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                displayName: user.displayName,
+                phoneNumber: user?.phoneNumber || '',
+            })
+        }
+
+    }, [user]);
+
+    if (loading) {
+        return <LoadingCircularSkelition />
+    }
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-8">
@@ -65,19 +151,72 @@ export default function SettingPage() {
                                         <label className="text-sm font-medium text-gray-700">Display Name</label>
                                         <input
                                             type="text"
+                                            name="displayName"
                                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                                             placeholder="Your name"
-                                            value={user?.displayName}
+                                            value={formData.displayName}
+                                            onChange={handleChange}
                                         />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-sm font-medium text-gray-700">Email Address</label>
-                                        <input
-                                            type="email"
-                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 outline-none"
-                                            disabled
-                                            value={user?.email}
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type="email"
+                                                className="w-full px-4 py-2 pr-10 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 outline-none"
+                                                disabled
+                                                value={user?.email}
+
+                                            />
+                                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                                {user?.emailVerified ? (
+                                                    <CheckCircle size={18} className="text-green-500" />
+                                                ) : (
+                                                    <AlertCircle size={18} className="text-amber-500" />
+                                                )}
+                                            </div>
+                                        </div>
+                                        {/* Email Verification Banner */}
+                                        {!user?.emailVerified && (
+                                            <div className="mt-2 flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Mail size={16} className="text-amber-600 shrink-0" />
+                                                    <p className="text-xs text-amber-700">
+                                                        {verifySent
+                                                            ? 'Verification email sent! Check your inbox.'
+                                                            : 'Your email is not verified yet.'}
+                                                    </p>
+                                                </div>
+                                                {!verifySent && (
+                                                    <button
+                                                        onClick={handleSendVerification}
+                                                        disabled={verifyLoading}
+                                                        className="shrink-0 px-3 py-1.5 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors disabled:opacity-50"
+                                                    >
+                                                        {verifyLoading ? 'Sending...' : 'Verify Email'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                        {verifyError && (
+                                            <p className="mt-1 text-xs text-red-500">{verifyError}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                <Phone size={16} className="text-gray-400" />
+                                            </div>
+                                            <input
+                                                type="tel"
+                                                name='phoneNumber'
+                                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                                placeholder="+66 812345678"
+                                                value={formData.phoneNumber}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -171,7 +310,7 @@ export default function SettingPage() {
 
                     {/* Footer Action */}
                     <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
-                        <button className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
+                        <button onClick={saveUpdateProfile} className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
                             <Save size={18} />
                             <span>Save Changes</span>
                         </button>

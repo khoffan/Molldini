@@ -32,10 +32,11 @@ export const fetchOrderById = createAsyncThunk(
 
 export const setOrderFromCartId = createAsyncThunk(
     'order/fetchFromDb',
-    async ({ cartId, shippingAddress, receiverName, receiverPhone, paymentMethod }: { cartId: string, shippingAddress: string, receiverName: string, receiverPhone: string, paymentMethod: string }, { rejectWithValue }) => {
+    async ({ cartId, selectedItems, shippingAddress, receiverName, receiverPhone, paymentMethod }: { cartId: string, selectedItems: string[], shippingAddress: string, receiverName: string, receiverPhone: string, paymentMethod: string }, { rejectWithValue }) => {
         try {
             const res = await api.post(`/api/v1/orders/from-cart/${cartId}`, {
                 shippingAddress,
+                selectedItems,
                 receiverName,
                 receiverPhone,
                 paymentMethod

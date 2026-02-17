@@ -10,6 +10,7 @@ import type { AppDispatch, RootState } from './store'
 import { fetchProducts } from './service/productService'
 import UserProfile from './pages/UserProfile'
 import Login from './pages/LoginPage'
+import Register from './pages/RegisterPage'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth, messaging } from './firebase/firebaseConfig'
 import { syncUserWithBackend, logoutAction, setInitialize } from './service/authService'
@@ -101,6 +102,7 @@ function App() {
       <Route path="/" element={<ProductPage />} />
       <Route element={<GuestRoute />}>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Route>
       <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/merchant/product/:id" element={<MerchantProductStore />} />

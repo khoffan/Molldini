@@ -15,9 +15,11 @@ import type { OrderResponse } from '../interface/orderInterface';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
 import { useEffect, useMemo, useState } from 'react';
-import { fetchOrderById } from '../service/orderService';
-import LoadingSkelition from '../components/LoadingSkelition';
+import { checkoutOrder, fetchOrderById } from '../service/orderService';
+import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
+import Swal from 'sweetalert2';
 
+Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);
 
 export default function OrderDetailPage() {
     const dispatch = useDispatch<AppDispatch>();
@@ -64,6 +66,54 @@ export default function OrderDetailPage() {
             return null;
         }).filter(v => v !== null);
     }, [allOrderItems, allProducts]);
+
+    const createSource = (amount: number, method: string): Promise<any> => {
+        return new Promise((resolve, reject) => {
+            const totalAmout = Math.round(amount * 100);
+
+            Omise.createSource(method, {
+                amount: totalAmout,
+                currency: "THB",
+            }, (statusCode: number, response: any) => {
+                if (statusCode !== 200) {
+                    return reject(response);
+                }
+                return resolve(response);
+            })
+        })
+    }
+
+    const handleSubmitPay = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        if (!order) return;
+        Swal.fire({
+            title: 'กำลังสร้างคำสั่งซื้อ...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+        });
+        try {
+            const source = await createSource(order.invoice.amount, order.invoice.paymentMethod);
+            Swal.close();
+            const chargeResult = await dispatch(checkoutOrder({ source: source.id, orderId: order.id as string })).unwrap();
+            console.log("🚀 ~ handleSubmitPay ~ chargeResult:", chargeResult)
+            if (chargeResult.redirectUrl) {
+                window.location.href = chargeResult.redirectUrl;
+                return;
+            } else {
+                const code = chargeResult.code
+                navigate("/checkout/qr", {
+                    state: {
+                        qrUri: code.image.download_uri,
+                        orderId: order.id,
+                        amount: order.invoice.amount,
+                        expiredAt: chargeResult.expiredAt
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error creating source:', error);
+        }
+    }
 
     if (loading && !order) return <LoadingSkelition />;
 
@@ -162,7 +212,7 @@ export default function OrderDetailPage() {
                         {/* Action Button: Conditional Rendering */}
                         <div className="pt-4">
                             {status === 'UNPAID' ? (
-                                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg shadow-blue-100">
+                                <button onClick={handleSubmitPay} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg shadow-blue-100">
                                     <CreditCard size={18} />
                                     <span>Pay Now</span>
                                 </button>
