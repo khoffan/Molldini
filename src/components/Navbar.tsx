@@ -1,9 +1,17 @@
-import { Link, useNavigate } from "react-router";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { useDispatch, useSelector, } from "react-redux";
 import type { AppDispatch, RootState, } from "../store";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { logoutAction } from "../service/authService";
 import DropdownItem from "./DropdownItem";
+import { searchProducts } from "../service/productService";
+import debounce from 'lodash/debounce';
+import { onMessage } from "firebase/messaging";
+import { messaging } from "../firebase/firebaseConfig";
+import { showToast } from "../utils/Toast";
+import { BellIcon } from "lucide-react";
+import { fetchNoti } from "../service/notificationService";
 
 
 function Navbar() {
@@ -12,14 +20,75 @@ function Navbar() {
   const navigate = useNavigate()
   const dispatch = useDispatch<AppDispatch>()
 
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // สมมติค่าตัวเลขในตะกร้า (เดี๋ยวเราจะใช้ useSelector ดึงจาก Redux)
   const { cart } = useSelector((state: RootState) => state.cart);
+  const { unreadCount } = useSelector((state: RootState) => state.noti);
 
   // สมมติค่าตัวเลขในตะกร้า (เดี๋ยวเราจะใช้ useSelector ดึงจาก Redux)
   const cartItems = cart?.items;
   const cartItemCount = cartItems?.reduce((total, item) => total + item.quantity, 0) ?? 0;
 
   const { user } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    const unsubscript = onMessage(messaging, (payload) => {
+      console.log('Message received. ', payload);
+      showToast({
+        title: "notification",
+        text: payload.notification?.title ?? "",
+      });
+    })
+    dispatch(fetchNoti());
+    return () => unsubscript();
+  }, [dispatch])
+
+  console.log(unreadCount)
+
+  // 1. ใช้ useMemo แทน useCallback เพื่อสร้าง debounced function
+  const updateSearchUrl = useMemo(
+    () =>
+      debounce((query: string) => {
+        if (query) {
+          setSearchParams({ q: query });
+        } else {
+          // สร้าง URLSearchParams ใหม่เพื่อความปลอดภัยในการ Update state
+          const params = new URLSearchParams();
+          setSearchParams(params);
+        }
+      }, 500),
+    [setSearchParams] // ใส่เฉพาะ setSearchParams ก็พอครับ
+  );
+
+  // ล้างการทำงานเมื่อ Component ถูกทำลาย (ป้องกัน Memory Leak)
+  useEffect(() => {
+    return () => {
+      updateSearchUrl.cancel();
+    };
+  }, [updateSearchUrl]);
+
+  // 2. ฟังก์ชัน Handle Search เมื่อกด Enter หรือกดปุ่ม
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      setSearchParams({ q: searchQuery.trim() });
+      // ไม่ต้อง setSearchQuery('') เพื่อให้คำค้นหายังค้างอยู่ใน Input
+    } else {
+      searchParams.delete('q');
+      setSearchParams(searchParams);
+    }
+  };
+
+  // 3. ใช้ useEffect ดักจับ URL เพื่อยิง API (Sync URL กับ Data)
+  useEffect(() => {
+    const q = searchParams.get('q') || '';
+    // ทุกครั้งที่ URL เปลี่ยน (เช่น กด Back/Forward หรือ Refresh) ให้ดึงข้อมูลตาม URL
+    dispatch(searchProducts(q));
+
+    // ให้ Input ล้อตาม URL ด้วย
+    if (q) setSearchQuery(q);
+  }, [searchParams, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -53,15 +122,46 @@ function Navbar() {
             </span>
           </Link>
 
-          {/* Navigation Links (Desktop) */}
-          <div className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Home</Link>
-            <a className="text-gray-600 hover:text-blue-600 font-medium transition-colors cursor-pointer">New Arrivals</a>
-            <a className="text-gray-600 hover:text-blue-600 font-medium transition-colors cursor-pointer">Categories</a>
+          {/* Search Bar & Order Tracking */}
+          <div className="hidden md:flex flex-1 items-center justify-center px-8 space-x-8">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleSearch();
+            }} className="relative w-full max-w-md">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  updateSearchUrl(e.target.value);
+                }}
+                placeholder="Search products..."
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
+              />
+              <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            </form>
+            <Link to="/profile/orders" className="text-sm font-medium text-gray-600 hover:text-blue-600 whitespace-nowrap">
+              Order Tracking
+            </Link>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-5">
+            {/* Noti Icon */}
+            <div className="relative">
+              <div className="p-2 bg-gray-50 rounded-full group-hover:bg-blue-50 transition-colors">
+                <BellIcon />
+              </div>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
             {/* Cart Icon */}
             <Link to="/cart" className="relative cursor-pointer group">
               <div className="p-2 bg-gray-50 rounded-full group-hover:bg-blue-50 transition-colors">

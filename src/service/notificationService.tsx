@@ -3,8 +3,11 @@ import { messaging } from '../firebase/firebaseConfig';
 import { AxiosError } from 'axios';
 import api from '../lib/api';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import type { notiResponse } from '../interface/notiInterface';
 
 interface NotificationState {
+    noti: notiResponse[],
+    unreadCount: number
     isAllow: boolean,
     loading: boolean,
     permissionStatus: NotificationPermission;
@@ -12,6 +15,8 @@ interface NotificationState {
 }
 
 const initialState: NotificationState = {
+    noti: [],
+    unreadCount: 0,
     isAllow: Notification.permission === 'granted',
     permissionStatus: Notification.permission,
     loading: false,
@@ -75,6 +80,24 @@ export const setupNotifications = createAsyncThunk(
     }
 )
 
+export const fetchNoti = createAsyncThunk(
+    "noti/fetchNoti",
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await api.get("/api/v1/notifications");
+            console.log("res.data", res.data)
+            return res.data as notiResponse[];
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            } else if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+    }
+)
+
 const notificationsSlice = createSlice({
     name: 'notifications',
     initialState,
@@ -97,6 +120,20 @@ const notificationsSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
                 state.permissionStatus = Notification.permission;
+            })
+            .addCase(fetchNoti.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchNoti.fulfilled, (state, action) => {
+                state.loading = false;
+                state.noti = action.payload;
+                const unread = action.payload.filter(item => !item.isRead).length;
+                state.unreadCount = unread;
+            })
+            .addCase(fetchNoti.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             })
     }
 })

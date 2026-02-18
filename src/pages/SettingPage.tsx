@@ -8,7 +8,7 @@ import { fetchUser, updateUser } from '../service/userService';
 import LoadingCircularSkelition from '../components/loadingSkeleton/LoadingCircularSkelition';
 import { sendEmailVerification } from 'firebase/auth';
 import { auth } from '../firebase/firebaseConfig';
-import { Toast } from '../utils/Toast';
+import { showToast } from '../utils/Toast';
 
 interface generalForm {
     displayName: string;
@@ -79,7 +79,7 @@ export default function SettingPage() {
 
 
         if (!/^\d{10}$/.test(phoneNumber)) {
-            Toast.fire({
+            showToast({
                 icon: 'error',
                 title: 'Phone number must be exactly 10 digits.'
             });

@@ -54,6 +54,7 @@ export const syncUserWithBackend = createAsyncThunk(
                 lastLogin: rawData.lastLogin,
                 addresses: [],
                 orders: [],
+                userDevices: [],
             };
             return appUser;
         } catch (err: unknown) {

@@ -18,7 +18,7 @@ import ProtectRoute from './components/ProtectRoute'
 import MerchantPage from './pages/merchantPage'
 import { fetchMyMerchant } from './service/merchantService'
 import { fetchCategories } from './service/categoryService'
-import { mergeCartAfterLogin } from './service/cartService'
+import { fetchCart, mergeCartAfterLogin } from './service/cartService'
 import CheckoutPage from './pages/CheckoutPage'
 import ProfileLayout from './pages/ProfileLayout'
 import GuestRoute from './components/GuestRoute'
@@ -33,7 +33,7 @@ import QRcodePage from './pages/QRcodePage'
 import MerchantProductStore from './pages/MerchantProductStore'
 import { setupNotifications } from './service/notificationService'
 import { onMessage } from 'firebase/messaging';
-import { Toast } from './utils/Toast'
+import { showToast } from './utils/Toast'
 import Swal from 'sweetalert2'
 
 
@@ -42,6 +42,7 @@ import Swal from 'sweetalert2'
 function App() {
   const dispatch = useDispatch<AppDispatch>()
   const { isAuthenticated, isSynced } = useSelector((state: RootState) => state.auth)
+  const cart = useSelector((state: RootState) => state.cart)
   useEffect(() => {
     dispatch(fetchProducts())
     dispatch(fetchCategories())
@@ -53,10 +54,13 @@ function App() {
             firebaseUser
           ));
           dispatch(setupNotifications());
+          if (!cart.isSynced) {
+            dispatch(mergeCartAfterLogin());
+          }
           await Promise.all([
             dispatch(fetchUser()),
             dispatch(fetchMyMerchant()),
-            dispatch(mergeCartAfterLogin()),
+            dispatch(fetchCart())
           ])
         }
       } else {
@@ -67,7 +71,7 @@ function App() {
     const unsubscriptionMessage = onMessage(messaging, (payload) => {
       console.log("Foreground message:", payload);
 
-      Toast.fire({
+      showToast({
         icon: 'info', // หรือเช็คจาก payload.data.type เพื่อเปลี่ยนสี icon
         title: payload.notification?.title || "แจ้งเตือนใหม่",
         text: payload.notification?.body,

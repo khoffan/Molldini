@@ -7,7 +7,6 @@ import { useNavigate, useParams } from 'react-router';
 import Swal from 'sweetalert2';
 import { checkoutOrder, updateDataOrder } from '../service/orderService';
 import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
-import { clearCart } from '../service/cartService';
 
 Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);
 
@@ -24,7 +23,7 @@ export default function CheckoutPage() {
         user?.addresses?.find(addr => addr.isDefault)?.id || user?.addresses?.[0]?.id || ""
     );
 
-    const [paymentMethod, setPaymentMethod] = useState<string>("promptpay");
+    const [paymentMethod, setPaymentMethod] = useState<string>("truemoney_jumpapp");
     const [selectedBank, setSelectedBank] = useState<string>("");
     const [selectedShippingId, setSelectedShippingId] = useState<string>("s1"); // [id, setSelectedShippingId]
 
@@ -117,7 +116,7 @@ export default function CheckoutPage() {
                 paymentMethod: method,
             })).unwrap();
 
-            dispatch(clearCart());
+            // dispatch(clearCart());
 
             if (paymentChoice === true && method !== "cod") {
                 console.log("resultOrder: ", resultOrder);

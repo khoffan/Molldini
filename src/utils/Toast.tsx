@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Swal from 'sweetalert2';
 
-export const Toast = Swal.mixin({
+const Toast = Swal.mixin({
     toast: true,
     position: 'top-end',
     showConfirmButton: false,
@@ -20,6 +21,7 @@ export const showToast = ({
     timer = 2000,
     timerProgressBar = true,
     text,
+    didOpen,
 }: {
     isToast?: boolean
     title: string;
@@ -27,7 +29,8 @@ export const showToast = ({
     position?: 'top-end' | 'top-start' | 'bottom-end' | 'bottom-start';
     timer?: number;
     timerProgressBar?: boolean;
-    text: string
+    text?: string | undefined
+    didOpen?: (toast: any) => void;
 }) => {
     Toast.fire({
         toast: isToast,
@@ -38,9 +41,6 @@ export const showToast = ({
         timer,
         timerProgressBar,
         text,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer);
-            toast.addEventListener('mouseleave', Swal.resumeTimer);
-        }
+        didOpen: didOpen,
     });
 }

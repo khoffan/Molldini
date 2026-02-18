@@ -27,16 +27,37 @@ export const fetchProducts = createAsyncThunk(
     "product/fetchProducts",
     async (id: string | undefined, { rejectWithValue }) => {
         try {
-            const endpoint = id ? `/api/v1/products/${id}` : "/api/v1/products";
+            const endpoint = id ? `/api/v1/products/${id}` : `/api/v1/products`;
             const response = await api.get(endpoint);
             console.log("response.data", response.data);
             return response.data as Product | Product[]; // ผลลัพธ์จะเป็น Product[] หรือ Product
         } catch (e: unknown) {
-            const error = e as Error;
-            return rejectWithValue(error.message);
+            if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            } else if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
         }
     }
 );
+
+export const searchProducts = createAsyncThunk(
+    "product/searchProducts",
+    async (keyword: string, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/api/v1/products/search?search=${keyword}`);
+            return response.data as Product[];
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            } else if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+    }
+)
 
 // 2. Thunk สำหรับดึงสินค้าเฉพาะของ Merchant นั้นๆ
 export const fetchProductMerchant = createAsyncThunk(
@@ -168,6 +189,14 @@ const productSlice = createSlice({
                 }
             })
             .addCase(fetchProducts.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(searchProducts.fulfilled, (state, action: PayloadAction<Product[]>) => {
+                state.loading = false;
+                state.items = action.payload;
+            })
+            .addCase(searchProducts.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
