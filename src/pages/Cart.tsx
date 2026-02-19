@@ -136,7 +136,7 @@ function Cart() {
                   className="w-5 h-5 cursor-pointer rounded accent-blue-600"
                 />
                 <img
-                  src={getImageValidate(productInfo?.images[0].url)}
+                  src={getImageValidate(productInfo?.images[0]?.url ?? "")}
                   alt={productInfo?.variantName ?? ""}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;

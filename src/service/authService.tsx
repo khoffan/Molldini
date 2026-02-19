@@ -68,6 +68,12 @@ export const logoutAction = createAsyncThunk(
     "auth/logout",
     async (_, { rejectWithValue }) => {
         try {
+            const localFcmToken = localStorage.getItem("fcmToken");
+            await api.post("/api/v1/users/logout", {
+                fcmToken: localFcmToken
+            });
+
+            localStorage.removeItem("fcmToken");
             await signOut(auth);
             return null;
         } catch (err: unknown) {
@@ -90,6 +96,13 @@ const authSlice = createSlice({
         clearAuthError: (state) => {
             state.error = null;
         },
+        clearState: (state) => {
+            state.user = null;
+            state.loading = false;
+            state.error = null;
+            state.isAuthenticated = false;
+            state.isSynced = false;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -108,13 +121,20 @@ const authSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
-            // Logout Cases
+            .addCase(logoutAction.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
             .addCase(logoutAction.fulfilled, (state) => {
                 state.user = null;
                 state.loading = false;
+            })
+            .addCase(logoutAction.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             });
     },
 });
 
-export const { clearAuthError, setInitialize } = authSlice.actions;
+export const { clearAuthError, setInitialize, clearState } = authSlice.actions;
 export default authSlice.reducer;

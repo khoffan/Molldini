@@ -31,7 +31,7 @@ function ProductDetail() {
 
     let imageUrl: string = "";
     if (Array.isArray(currentVariant.images) && currentVariant.images.length > 0) {
-        imageUrl = getImageValidate(currentVariant.images[0].url);
+        imageUrl = getImageValidate(currentVariant.images[0]?.url ?? '');
     } else {
         imageUrl = "https://placehold.co/400x500?text=Image+Error";
     }

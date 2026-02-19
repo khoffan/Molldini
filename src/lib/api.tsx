@@ -1,6 +1,4 @@
 import axios from "axios";
-import { store } from "../store";
-import { logoutAction } from "../service/authService";
 import { auth } from "../firebase/firebaseConfig";
 
 const api = axios.create({
@@ -25,7 +23,6 @@ api.interceptors.response.use(async (config) => {
         console.log("error", error);
         if (error.response?.status === 401) {
             // เช่น ถ้า Token หมดอายุ ให้เด้งไปหน้า Login
-            store.dispatch(logoutAction());
             window.location.href = '/login';
         }
         return Promise.reject(error);

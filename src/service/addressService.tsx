@@ -54,7 +54,11 @@ export const deletedAddressById = createAsyncThunk(
 const addressSlice = createSlice({
     name: "address",
     initialState: initialState,
-    reducers: {},
+    reducers: {
+        resetAddressState: (state) => {
+            state.addresses = null
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchAddressById.pending, (state) => {

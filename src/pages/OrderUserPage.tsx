@@ -1,20 +1,27 @@
-import { useSelector } from 'react-redux';
-import type { RootState } from '../store'; // ปรับตาม path จริงของคุณ
-import { Package, Clock, CheckCircle2, ChevronRight, ReceiptText, CreditCard } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../store'; // ปรับตาม path จริงของคุณ
+import { Package, Clock, CheckCircle2, ChevronRight, ReceiptText, CreditCard, XCircle, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import type { OrderResponse } from '../interface/orderInterface';
 import type React from 'react';
+import { useEffect } from 'react';
+import { fetchOrderUser } from '../service/orderService';
+import { convertDateUtctoTimezone } from '../utils/convertDateUtctoTimezone';
 // import { fetchProducts } from '../service/productService';
 // import type { Product } from '../interface/productInterface';
 
 export default function OrderUserPage() {
+    const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     // const dispatch = useDispatch<AppDispatch>();
     // ดึงข้อมูล orders จาก state.user.user.orders ตามที่คุณระบุ
-    const { user } = useSelector((state: RootState) => state.user);
-    const orders = user?.orders || [];
+    const { listOrderUser } = useSelector((state: RootState) => state.order);
+    const orders = listOrderUser || [];
+    console.log("listOrderUser => ", orders);
 
-    console.log("orders => ", orders);
+    useEffect(() => {
+        dispatch(fetchOrderUser());
+    }, [dispatch])
 
     // ฟังก์ชันจัดการสีของ Status
     const getStatusStyle = (status: string) => {
@@ -85,22 +92,28 @@ export default function OrderUserPage() {
                                             <p className="font-mono text-sm font-bold text-gray-700">#{order.id?.slice(0, 8).toUpperCase()}</p>
                                         </div>
 
-                                        <div className="flex gap-2">
-                                            {/* สถานะคำสั่งซื้อ */}
-                                            <span className={`px-3 py-1 rounded-lg text-xs font-bold border ${getStatusStyle(order.status)}`}>
-                                                {order.status}
-                                            </span>
+                                        <div className="flex items-center justify-between w-full py-2">
+                                            {/* ฝั่งซ้าย: สถานะคำสั่งซื้อ */}
+                                            <div className="flex items-center gap-2">
+                                                <StatusBadge status={order.status} />
 
-                                            {/* สถานะการจ่ายเงิน (Invoice) */}
-                                            {order.invoice.status === "PAID" ? (
-                                                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100 flex items-center gap-1">
-                                                    <CheckCircle2 size={12} /> จ่ายแล้ว
+                                                {/* ถ้าต้องการโชว์ Label ภาษาอังกฤษกำกับแบบเบาๆ */}
+                                                <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+                                                    {order.status}
                                                 </span>
-                                            ) : (
-                                                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-500 border border-red-100 flex items-center gap-1">
-                                                    <Clock size={12} /> รอชำระเงิน
-                                                </span>
-                                            )}
+                                            </div>
+
+                                            {/* ฝั่งขวา: วันที่สั่งซื้อ/ชำระเงิน */}
+                                            <div className="text-right">
+                                                <div className="flex items-center gap-1.5 text-gray-500">
+                                                    <Calendar size={12} className="text-gray-400" />
+                                                    <p className="text-xs font-medium">
+                                                        {order.invoice?.paidAt
+                                                            ? convertDateUtctoTimezone(order.invoice.paidAt)
+                                                            : "ยังไม่มีข้อมูลการชำระเงิน"}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -146,4 +159,27 @@ export default function OrderUserPage() {
             )}
         </div>
     );
+}
+
+const StatusBadge = ({ status }: { status: string }) => {
+    switch (status) {
+        case "PAID":
+            return (
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100 flex items-center gap-1">
+                    <CheckCircle2 size={12} /> จ่ายแล้ว
+                </span>
+            );
+        case "CANCELLED":
+            return (
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-gray-50 text-gray-500 border border-gray-200 flex items-center gap-1">
+                    <XCircle size={12} /> ยกเลิกแล้ว
+                </span>
+            );
+        default: // คือ PENDING หรือสถานะอื่นๆ ที่ยังไม่ได้จ่าย
+            return (
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-500 border border-red-100 flex items-center gap-1">
+                    <Clock size={12} /> รอชำระเงิน
+                </span>
+            );
+    }
 }

@@ -77,7 +77,7 @@ export default function MerchantProductStore() {
                                 {/* Image Section */}
                                 <div className="relative aspect-[4/5] overflow-hidden">
                                     <img
-                                        src={getImageValidate(product?.images?.[0]?.url)}
+                                        src={getImageValidate(product?.images?.[0]?.url ?? "")}
                                         alt={product.title}
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;

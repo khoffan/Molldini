@@ -29,7 +29,6 @@ const LoginPage: React.FC = () => {
     setLocalLoading(true);
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
-      console.log("result", result);
       dispatch(syncUserWithBackend(result.user));
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {

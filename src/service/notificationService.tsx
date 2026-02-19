@@ -26,6 +26,8 @@ const initialState: NotificationState = {
 
 const saveTokenToBackend = async (token: string) => {
     try {
+        localStorage.setItem("fcmToken", token)
+
         const res = await api.put("/api/v1/update-fcm-token", {
             token: token
         })
@@ -102,7 +104,14 @@ const notificationsSlice = createSlice({
     name: 'notifications',
     initialState,
     reducers: {
-
+        resetNotiState: (state) => {
+            state.noti = []
+            state.unreadCount = 0
+            state.isAllow = false
+            state.permissionStatus = Notification.permission
+            state.loading = false
+            state.error = null
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -138,4 +147,5 @@ const notificationsSlice = createSlice({
     }
 })
 
+export const { resetNotiState } = notificationsSlice.actions
 export default notificationsSlice.reducer

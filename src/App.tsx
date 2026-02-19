@@ -13,17 +13,16 @@ import Login from './pages/LoginPage'
 import Register from './pages/RegisterPage'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth, messaging } from './firebase/firebaseConfig'
-import { syncUserWithBackend, logoutAction, setInitialize } from './service/authService'
+import { syncUserWithBackend, setInitialize } from './service/authService'
 import ProtectRoute from './components/ProtectRoute'
-import MerchantPage from './pages/merchantPage'
-import { fetchMyMerchant } from './service/merchantService'
+import { fetchMyMerchant, resetMerchantState } from './service/merchantService'
 import { fetchCategories } from './service/categoryService'
-import { fetchCart, mergeCartAfterLogin } from './service/cartService'
+import { clearCart, fetchCart, mergeCartAfterLogin } from './service/cartService'
 import CheckoutPage from './pages/CheckoutPage'
 import ProfileLayout from './pages/ProfileLayout'
 import GuestRoute from './components/GuestRoute'
 import AddAddressUserPage from './pages/AddAddressUserPage'
-import { fetchUser } from './service/userService'
+import { clearUserData, fetchUser } from './service/userService'
 import AddressPage from './pages/AddressPage'
 import OrderUserPage from './pages/OrderUserPage'
 import SettingPage from './pages/SettingPage'
@@ -31,10 +30,9 @@ import OrderDetailPage from './pages/OrderDetailPage'
 import SuccessCheckoutPage from './pages/SuccessCheckoutPage'
 import QRcodePage from './pages/QRcodePage'
 import MerchantProductStore from './pages/MerchantProductStore'
-import { setupNotifications } from './service/notificationService'
-import { onMessage } from 'firebase/messaging';
-import { showToast } from './utils/Toast'
-import Swal from 'sweetalert2'
+import MerchantProfilePage from './pages/MerchantProfilePage'
+import { fetchNoti, resetNotiState, setupNotifications } from './service/notificationService'
+import { clearOrderState } from './service/orderService'
 
 
 
@@ -60,35 +58,41 @@ function App() {
           await Promise.all([
             dispatch(fetchUser()),
             dispatch(fetchMyMerchant()),
-            dispatch(fetchCart())
+            dispatch(fetchCart()),
+            dispatch(fetchNoti())
           ])
+        } else {
+          console.log("user sign out")
+          dispatch(clearCart());
+          dispatch(clearUserData())
+          dispatch(clearOrderState())
+          dispatch(resetMerchantState())
+          dispatch(resetNotiState())
         }
-      } else {
-        dispatch(logoutAction())
       }
       dispatch(setInitialize());
     })
-    const unsubscriptionMessage = onMessage(messaging, (payload) => {
-      console.log("Foreground message:", payload);
+    // const unsubscriptionMessage = onMessage(messaging, (payload) => {
+    //   console.log("Foreground message:", payload);
 
-      showToast({
-        icon: 'info', // หรือเช็คจาก payload.data.type เพื่อเปลี่ยนสี icon
-        title: payload.notification?.title || "แจ้งเตือนใหม่",
-        text: payload.notification?.body,
-        // แถม: ถ้าคลิกแล้วให้ลิงก์ไปหน้าออเดอร์
-        didOpen: (toast) => {
-          toast.style.cursor = 'pointer'; // เปลี่ยนเมาส์เป็นรูปมือให้รู้ว่าคลิกได้
-          toast.addEventListener('click', () => {
-            // ใช้ window.location หรือ navigate (ถ้าอยู่ใน Component)
-            window.location.href = '/profile/orders';
-            Swal.close(); // ปิด toast ทันทีที่คลิก
-          });
-        }
-      });
-    })
+    //   showToast({
+    //     icon: 'info', // หรือเช็คจาก payload.data.type เพื่อเปลี่ยนสี icon
+    //     title: payload.notification?.title || "แจ้งเตือนใหม่",
+    //     text: payload.notification?.body,
+    //     // แถม: ถ้าคลิกแล้วให้ลิงก์ไปหน้าออเดอร์
+    //     didOpen: (toast) => {
+    //       toast.style.cursor = 'pointer'; // เปลี่ยนเมาส์เป็นรูปมือให้รู้ว่าคลิกได้
+    //       toast.addEventListener('click', () => {
+    //         // ใช้ window.location หรือ navigate (ถ้าอยู่ใน Component)
+    //         window.location.href = '/profile/orders';
+    //         Swal.close(); // ปิด toast ทันทีที่คลิก
+    //       });
+    //     }
+    //   });
+    // })
     return () => {
       unscription()
-      unsubscriptionMessage()
+      // unsubscriptionMessage()
     }
   }, [dispatch, isSynced])
 
@@ -112,7 +116,7 @@ function App() {
       <Route path="/merchant/product/:id" element={<MerchantProductStore />} />
       <Route path="/cart" element={<Cart />} />
       <Route element={<ProtectRoute />}>
-        <Route path="/merchant" element={<MerchantPage />} />
+        <Route path="/merchant/profile" element={<MerchantProfilePage />} />
         <Route path="/add-product" element={<ProductFormPage />} />
         <Route path="/edit-product/:id" element={<ProductFormPage />} />
         <Route path="/profile" element={<ProfileLayout />}>

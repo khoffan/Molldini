@@ -4,16 +4,51 @@ import api from "../lib/api";
 import { AxiosError } from "axios";
 
 interface OrderState {
+    listOrderUser: OrderResponse[] | null;
+    listOrderMerchant: OrderResponse[] | null;
     order: Order | null;
     loading: boolean;
     error: string | null;
 }
 
 export const initialOrderState: OrderState = {
+    listOrderUser: null,
+    listOrderMerchant: null,
     order: null,
     loading: false,
     error: null,
 };
+
+export const fetchOrderUser = createAsyncThunk(
+    'order/fetchUser',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await api.get('/api/v1/orders/user');
+            return res.data as OrderResponse[];
+        } catch (e: unknown) {
+            if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+    }
+)
+
+export const fetchOrderMerchant = createAsyncThunk(
+    'order/fetchMerchant',
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await api.get('/api/v1/orders/merchant');
+            console.log("🚀 ~ res:", res.data)
+            return res.data as OrderResponse[];
+        } catch (e: unknown) {
+            if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+    }
+)
 
 export const fetchOrderById = createAsyncThunk(
     "order/fetchOrderbyId",
@@ -146,6 +181,30 @@ const orderSlice = createSlice({
                 state.loading = false;
             })
             .addCase(checkoutOrder.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(fetchOrderUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchOrderUser.fulfilled, (state, action) => {
+                state.listOrderUser = action.payload;
+                state.loading = false;
+            })
+            .addCase(fetchOrderUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(fetchOrderMerchant.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchOrderMerchant.fulfilled, (state, action) => {
+                state.listOrderMerchant = action.payload;
+                state.loading = false;
+            })
+            .addCase(fetchOrderMerchant.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             })
