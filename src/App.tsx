@@ -52,21 +52,29 @@ function App() {
       if (firebaseUser && isSynced) return;
 
       if (firebaseUser) {
-        console.log("User is signed in", firebaseUser);
-        if (!isSynced) {
-          await dispatch(syncUserWithBackend(
-            firebaseUser
-          ));
+        // 1. ถ้า sync ไปแล้วไม่ต้องทำอะไรต่อ
+        if (isSynced) {
+          dispatch(setInitialize()); // มั่นใจว่าเปิดแอปได้
+          return;
+        }
+
+        try {
+          // 2. บังคับรอให้ Backend รู้จักเราก่อน (สำคัญมาก)
+          // ฟังก์ชันนี้ควรจะได้รับ Token และ set cookie หรือ header ให้เรียบร้อย
+          await dispatch(syncUserWithBackend(firebaseUser)).unwrap();
+
           dispatch(setupNotifications());
-          if (!cart.isSynced) {
-            dispatch(mergeCartAfterLogin());
-          }
+
+          // 3. หลังจาก Sync สำเร็จค่อยเริ่มดึงข้อมูลอื่น
           await Promise.all([
             dispatch(fetchUser()),
             dispatch(fetchMyMerchant()),
             dispatch(fetchCart()),
             dispatch(fetchNoti())
-          ])
+          ]);
+
+        } catch (error) {
+          console.error("Sync failed:", error);
         }
       } else {
         console.log("user sign out")
