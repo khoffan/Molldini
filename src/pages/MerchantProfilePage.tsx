@@ -67,7 +67,7 @@ export default function MerchantProfilePage() {
             : orders.filter((o) => o.status === orderFilter);
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-12">
+        <div className="min-h-screen bg-main pb-12">
             {/* ── Hero Banner ── */}
             <div className="bg-white border-b border-gray-100">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -153,8 +153,8 @@ export default function MerchantProfilePage() {
                                     key={f.id}
                                     onClick={() => setOrderFilter(f.id)}
                                     className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${orderFilter === f.id
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                                        ? "bg-primary text-white shadow-sm"
+                                        : "bg-surface text-content border border-border-main hover:bg-hover"
                                         }`}
                                 >
                                     {f.label}
@@ -171,7 +171,7 @@ export default function MerchantProfilePage() {
 
                         {/* Empty */}
                         {!orderLoading && filteredOrders.length === 0 && (
-                            <div className="bg-white rounded-3xl p-16 text-center border border-dashed border-gray-200">
+                            <div className="bg-surface rounded-xl shadow-sm p-5 border border-border-main">
                                 <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <ReceiptText className="text-gray-300" size={40} />
                                 </div>
@@ -192,7 +192,10 @@ export default function MerchantProfilePage() {
                                 {filteredOrders.map((order: OrderResponse) => (
                                     <div
                                         key={order.id}
-                                        className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden"
+                                        className="bg-surface rounded-xl p-4 border border-border-main hover:border-primary/30 hover:shadow-md transition-all cursor-pointer"
+                                        onClick={() =>
+                                            navigate(`/profile/orders/${order.id}`)
+                                        }
                                     >
                                         <div className="p-5 md:p-6">
                                             {/* Top: Order ID + Status */}

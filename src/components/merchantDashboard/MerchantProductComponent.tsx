@@ -21,12 +21,12 @@ export function ProductDesktopRow({ product }: { product: Product }) {
     return (
         <>
             <tr
-                className={`hover:bg-gray-50/80 transition-all cursor-pointer ${isExpanded ? 'bg-blue-50/20' : ''}`}
+                className={`hover:bg-surface-hover/80 transition-all cursor-pointer ${isExpanded ? 'bg-primary-light/20' : ''}`}
                 onClick={() => setIsExpanded(!isExpanded)}
             >
                 <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden">
+                        <div className="w-12 h-12 rounded-xl bg-surface-hover border border-border-main shrink-0 overflow-hidden">
                             <img
                                 src={product.variants?.[0]?.images?.[0]?.url || 'https://placehold.co/100'}
                                 className="w-full h-full object-cover"
@@ -34,25 +34,25 @@ export function ProductDesktopRow({ product }: { product: Product }) {
                             />
                         </div>
                         <div>
-                            <p className="font-bold text-gray-900 line-clamp-1">{product.title}</p>
-                            <p className="text-xs text-gray-400 uppercase tracking-wider">{product.category?.name ?? 'ไม่มีหมวดหมู่'}</p>
+                            <p className="font-bold text-content line-clamp-1">{product.title}</p>
+                            <p className="text-xs text-muted uppercase tracking-wider">{product.category?.name ?? 'ไม่มีหมวดหมู่'}</p>
                         </div>
                     </div>
                 </td>
                 <td className="px-6 py-5">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-600">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-muted">
                         <Layers size={16} className="text-blue-500" />
                         {product.variants?.length} รูปแบบ
                     </div>
                 </td>
                 <td className="px-6 py-5">
-                    <span className={`text-sm font-bold ${totalStock <= 5 ? 'text-red-500' : 'text-gray-700'}`}>
+                    <span className={`text-sm font-bold ${totalStock <= 5 ? 'text-red-500' : 'text-content'}`}>
                         {totalStock} ชิ้น
                     </span>
                 </td>
                 <td className="px-6 py-5 text-right">
                     <div className="flex justify-end items-center gap-2">
-                        {isExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+                        {isExpanded ? <ChevronUp size={20} className="text-muted" /> : <ChevronDown size={20} className="text-muted" />}
                     </div>
                 </td>
             </tr>
@@ -60,10 +60,10 @@ export function ProductDesktopRow({ product }: { product: Product }) {
             {/* ส่วนที่ขยายออกมา (Variant Details) */}
             {isExpanded && (
                 <tr>
-                    <td colSpan={4} className="px-6 pb-6 bg-blue-50/20">
-                        <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-hidden">
+                    <td colSpan={4} className="px-6 pb-6 bg-primary-light/20">
+                        <div className="bg-surface rounded-xl border border-primary/20 shadow-sm overflow-hidden">
                             <table className="w-full text-sm">
-                                <thead className="bg-gray-50/50 text-gray-500">
+                                <thead className="bg-surface-hover/50 text-muted">
                                     <tr>
                                         <th className="px-4 py-3 font-bold">ชื่อตัวเลือก (Variant)</th>
                                         <th className="px-4 py-3 font-bold">ราคา</th>
@@ -71,16 +71,16 @@ export function ProductDesktopRow({ product }: { product: Product }) {
                                         <th className="px-4 py-3 font-bold text-right">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50 text-gray-600">
+                                <tbody className="divide-y divide-border-main text-muted">
                                     {product.variants.map((v: ProductVariant, index: number) => (
-                                        <tr key={index} className="hover:bg-gray-50/50">
-                                            <td className="px-4 py-3 font-medium text-gray-800">{v.variantName}</td>
-                                            <td className="px-4 py-3 font-bold text-blue-600">฿{v.price.toLocaleString()}</td>
+                                        <tr key={index} className="hover:bg-surface-hover/50">
+                                            <td className="px-4 py-3 font-medium text-content">{v.variantName}</td>
+                                            <td className="px-4 py-3 font-bold text-primary">฿{v.price.toLocaleString()}</td>
                                             <td className="px-4 py-3 text-center">
                                                 <span className={v.stock <= 5 ? 'text-red-500 font-bold' : ''}>{v.stock}</span>
                                             </td>
                                             <td className="px-4 py-3 text-right">
-                                                <button onClick={() => handleEdit(product.id, product)} className="p-1 hover:text-blue-600 transition-colors"><Edit3 size={16} /></button>
+                                                <button onClick={() => handleEdit(product.id, product)} className="p-1 hover:text-primary transition-colors"><Edit3 size={16} /></button>
                                             </td>
                                         </tr>
                                     ))}
@@ -98,41 +98,41 @@ export function ProductDesktopRow({ product }: { product: Product }) {
 export function ProductMobileCard({ product }: { product: Product }) {
     const [isExpanded, setIsExpanded] = useState(false);
     return (
-        <div className="p-4 bg-white">
+        <div className="p-4 bg-surface">
             <div className="flex items-start gap-4" onClick={() => setIsExpanded(!isExpanded)}>
                 <img
                     src={product.variants?.[0]?.images?.[0]?.url || 'https://placehold.co/100'}
-                    className="w-20 h-20 rounded-2xl object-cover border border-gray-100"
+                    className="w-20 h-20 rounded-2xl object-cover border border-border-main"
                     alt=""
                 />
                 <div className="flex-1 min-w-0 pt-1">
-                    <h4 className="font-bold text-gray-900 truncate mb-1">{product.title}</h4>
+                    <h4 className="font-bold text-content truncate mb-1">{product.title}</h4>
                     <div className="flex flex-wrap gap-2">
-                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md uppercase">
+                        <span className="text-[10px] font-bold text-primary bg-primary-light px-2 py-0.5 rounded-md uppercase">
                             {product.variants?.length} Variants
                         </span>
-                        <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-bold text-muted bg-surface-hover px-2 py-0.5 rounded-md">
                             {product.category?.name || ''}
                         </span>
                     </div>
                 </div>
-                <button className="mt-1 text-gray-300">
+                <button className="mt-1 text-muted">
                     {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </button>
             </div>
 
             {isExpanded && (
-                <div className="mt-4 space-y-2 bg-gray-50 rounded-2xl p-4">
+                <div className="mt-4 space-y-2 bg-surface-hover rounded-2xl p-4">
                     {product.variants.map((v: ProductVariant, index: number) => (
-                        <div key={index} className="flex justify-between items-center bg-white p-3 rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100">
+                        <div key={index} className="flex justify-between items-center bg-surface p-3 rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-border-main">
                             <div>
-                                <p className="text-sm font-bold text-gray-800">{v.variantName}</p>
-                                <p className="text-[10px] text-gray-400">คงเหลือ: {v.stock} ชิ้น</p>
+                                <p className="text-sm font-bold text-content">{v.variantName}</p>
+                                <p className="text-[10px] text-muted">คงเหลือ: {v.stock} ชิ้น</p>
                             </div>
-                            <p className="font-black text-blue-600">฿{v.price.toLocaleString()}</p>
+                            <p className="font-black text-primary">฿{v.price.toLocaleString()}</p>
                         </div>
                     ))}
-                    <button className="w-full py-3 text-sm font-bold text-gray-500 bg-white rounded-xl border border-dashed border-gray-200 mt-2 hover:bg-gray-100 transition-colors">
+                    <button className="w-full py-3 text-sm font-bold text-muted bg-surface rounded-xl border border-dashed border-border-main mt-2 hover:bg-surface-hover transition-colors">
                         แก้ไขข้อมูลสินค้า
                     </button>
                 </div>

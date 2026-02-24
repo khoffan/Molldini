@@ -28,10 +28,10 @@ export default function MerchantProductStore() {
     if (error) return <div className="p-20 text-center text-red-500">Error: {error}</div>;
 
     return (
-        <div className="bg-gray-50 min-h-screen py-12 px-4">
+        <div className="min-h-screen bg-main px-4 py-10">
             <div className="max-w-7xl mx-auto">
                 {/* Merchant Header */}
-                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 mb-12 flex flex-col md:flex-row items-center md:items-start gap-8">
+                <div className="bg-surface rounded-2xl shadow-sm border border-border-main p-6 mb-8 flex flex-col md:flex-row items-center md:items-start gap-8">
                     <div className="w-32 h-32 rounded-full bg-gray-50 border-4 border-white shadow-lg overflow-hidden flex-shrink-0">
                         {merchantInfo?.logoUrl ? (
                             <img src={merchantInfo.logoUrl.url} alt={merchantInfo.name} className="w-full h-full object-cover" />
@@ -43,22 +43,24 @@ export default function MerchantProductStore() {
                     </div>
                     <div className="flex-1 text-center md:text-left space-y-4">
                         <div>
-                            <h1 className="text-3xl font-black text-gray-900">{merchantInfo?.name || 'Unknown Merchant'}</h1>
-                            <p className="text-gray-500 mt-2 max-w-2xl">{merchantInfo?.description || 'ร้านค้านี้ยังไม่มีคำอธิบาย'}</p>
+                            <h1 className="text-xl font-bold text-content">ร้าน {merchantInfo?.name ?? `Merchant #${id?.slice(0, 6)}`}</h1>
+                            <div className="flex items-center gap-3 text-sm text-muted mt-1">
+                                {merchantInfo?.description || 'ร้านค้านี้ยังไม่มีคำอธิบาย'}
+                            </div>
                         </div>
 
-                        <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm font-medium text-gray-600">
+                        <div className="mt-4 flex gap-6 text-sm text-muted">
                             {merchantInfo?.address && (
-                                <div className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-lg">
-                                    <MapPin size={16} className="text-blue-600" />
+                                <div className="flex items-center gap-1">
+                                    <MapPin size={16} className="text-primary" />
                                     <span>{merchantInfo.address.district}, {merchantInfo.address.province}</span>
                                 </div>
                             )}
-                            <div className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-lg">
-                                <Package size={16} className="text-blue-600" />
-                                <span>{merchantProducts.length} สินค้า</span>
+                            <div className="flex items-center gap-1">
+                                <Package size={16} className="text-primary" />
+                                <span><strong className="text-content">{merchantProducts?.length || 0}</strong> สินค้า</span>
                             </div>
-                            <div className="flex items-center gap-1 bg-gray-50 px-3 py-1 rounded-lg">
+                            <div className="flex items-center gap-1">
                                 <Star size={16} className="text-amber-400" fill="currentColor" />
                                 <span>4.8 (120 รีวิว)</span>
                             </div>
@@ -73,7 +75,7 @@ export default function MerchantProductStore() {
                         const hasMultipleVariants = product.variants && product.variants.length > 1;
 
                         return (
-                            <Link to={`/product/${product.id}`} key={product.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100">
+                            <Link to={`/product/${product.id}`} key={product.id} className="group flex flex-col bg-surface rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-border-main">
                                 {/* Image Section */}
                                 <div className="relative aspect-[4/5] overflow-hidden">
                                     <img
@@ -83,7 +85,7 @@ export default function MerchantProductStore() {
                                             const target = e.target as HTMLImageElement;
                                             target.src = "https://placehold.co/400x500?text=Image+Error";
                                         }}
-                                        className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        className="w-full h-48 object-cover bg-main group-hover:scale-105 transition-transform duration-300"
                                     />
                                     {hasMultipleVariants && (
                                         <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
@@ -97,8 +99,8 @@ export default function MerchantProductStore() {
                                 {/* Content Section */}
                                 <div className="p-6 flex flex-col flex-1">
                                     <div className="mb-auto">
-                                        <p className="text-xs font-bold text-blue-600 mb-2 uppercase tracking-wider">{product.category?.name || 'General'}</p>
-                                        <h3 className="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors mb-3">
+                                        <p className="text-xs font-bold text-primary mb-2 uppercase tracking-wider">{product.category?.name || 'General'}</p>
+                                        <h3 className="text-lg font-bold text-content line-clamp-2 group-hover:text-primary transition-colors mb-3">
                                             {product.title}
                                         </h3>
                                     </div>

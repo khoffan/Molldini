@@ -140,53 +140,53 @@ export default function AddAddressUserPage() {
             <div className="flex items-center gap-4 mb-8">
                 <button
                     onClick={() => navigate(-1)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    className="p-2 hover:bg-surface-hover rounded-full transition-colors"
                 >
                     <ChevronLeft size={24} />
                 </button>
-                <h1 className="text-2xl font-black text-gray-900">เพิ่มที่อยู่ใหม่</h1>
+                <h1 className="text-2xl font-black text-content">เพิ่มที่อยู่ใหม่</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
 
                 {/* Section 1: ข้อมูลผู้รับ */}
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
-                    <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                <div className="bg-surface p-6 rounded-3xl border border-border-main shadow-sm space-y-4">
+                    <h2 className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
                         <User size={16} /> ข้อมูลผู้รับ
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">ชื่อ-นามสกุล</label>
+                            <label className="text-sm font-medium text-content">ชื่อ-นามสกุล</label>
                             <input
                                 required
                                 name="receiverName"
                                 value={formData.receiverName}
                                 onChange={handleChange}
                                 placeholder="ชื่อผู้รับสินค้า"
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                className="w-full px-4 py-3 rounded-xl border border-border-main focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label>
+                            <label className="text-sm font-medium text-content">เบอร์โทรศัพท์</label>
                             <input
                                 required
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleChange}
                                 placeholder="08X-XXX-XXXX"
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                className="w-full px-4 py-3 rounded-xl border border-border-main focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                             />
                         </div>
                     </div>
                 </div>
 
                 {/* Section 2: รายละเอียดที่อยู่ */}
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
-                    <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                <div className="bg-surface p-6 rounded-3xl border border-border-main shadow-sm space-y-4">
+                    <h2 className="text-sm font-bold text-primary uppercase tracking-widest flex items-center gap-2">
                         <Home size={16} /> รายละเอียดที่อยู่
                     </h2>
                     <div className="space-y-1">
-                        <label className="text-sm font-medium text-gray-700">ที่อยู่ (เลขที่บ้าน, อาคาร, ถนน)</label>
+                        <label className="text-sm font-medium text-content">ที่อยู่ (เลขที่บ้าน, อาคาร, ถนน)</label>
                         <textarea
                             required
                             name="detail"
@@ -194,26 +194,26 @@ export default function AddAddressUserPage() {
                             onChange={handleChange}
                             rows={2}
                             placeholder="เช่น 123/45 หมู่บ้าน..."
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
+                            className="w-full px-4 py-3 rounded-xl border border-border-main focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">แขวง / ตำบล</label>
-                            <input required name="subDistrict" value={formData.subDistrict} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 transition-all" />
+                            <label className="text-sm font-medium text-content">แขวง / ตำบล</label>
+                            <input required name="subDistrict" value={formData.subDistrict} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-border-main outline-none focus:border-primary transition-all" />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">เขต / อำเภอ</label>
-                            <input required name="district" value={formData.district} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 transition-all" />
+                            <label className="text-sm font-medium text-content">เขต / อำเภอ</label>
+                            <input required name="district" value={formData.district} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-border-main outline-none focus:border-primary transition-all" />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">จังหวัด</label>
-                            <input required name="province" value={formData.province} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 transition-all" />
+                            <label className="text-sm font-medium text-content">จังหวัด</label>
+                            <input required name="province" value={formData.province} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-border-main outline-none focus:border-primary transition-all" />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">รหัสไปรษณีย์</label>
-                            <input required name="postcode" value={formData.postcode} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-blue-500 transition-all" />
+                            <label className="text-sm font-medium text-content">รหัสไปรษณีย์</label>
+                            <input required name="postcode" value={formData.postcode} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-border-main outline-none focus:border-primary transition-all" />
                         </div>
                     </div>
                 </div>
@@ -226,15 +226,15 @@ export default function AddAddressUserPage() {
                         name="isDefault"
                         checked={formData.isDefault}
                         onChange={handleChange}
-                        className="w-5 h-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="w-5 h-5 rounded-md border-border-main text-primary focus:ring-primary"
                     />
-                    <label htmlFor="isDefault" className="text-gray-700 font-medium">ตั้งเป็นที่อยู่หลัก</label>
+                    <label htmlFor="isDefault" className="text-content font-medium">ตั้งเป็นที่อยู่หลัก</label>
                 </div>
 
                 {/* Submit Button */}
                 <button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98]"
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98]"
                 >
                     บันทึกข้อมูลที่อยู่
                 </button>

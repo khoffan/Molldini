@@ -43,9 +43,9 @@ function UserProfile() {
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen pb-20">
+        <div className="bg-main min-h-screen pb-20">
             {/* Header Blue Section */}
-            <div className="bg-blue-600 h-48 w-full relative">
+            <div className="bg-primary h-48 w-full relative">
                 <div className="max-w-4xl mx-auto px-4 h-full flex items-end pb-8">
                     <h1 className="text-white text-2xl font-bold">บัญชีของฉัน</h1>
                 </div>
@@ -53,30 +53,30 @@ function UserProfile() {
 
             <div className="max-w-4xl mx-auto px-4 -mt-4">
                 {/* Main Profile Card */}
-                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
+                <div className="bg-surface rounded-3xl shadow-sm border border-border-main p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
                     <div className="relative">
                         {user?.image?.url ? (
-                            <img src={user?.image?.url} alt="" className="h-32 w-32 rounded-full object-cover ring-2 ring-transparent group-hover:ring-blue-400 transition-all" />
+                            <img src={user?.image?.url} alt="" className="h-32 w-32 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary transition-all" />
                         ) : (
-                            <div className="h-32 w-32 rounded-full bg-blue-600 flex items-center justify-center text-white text-5xl font-bold ring-2 ring-transparent group-hover:ring-blue-400">
+                            <div className="h-32 w-32 rounded-full bg-primary flex items-center justify-center text-white text-5xl font-bold ring-2 ring-transparent group-hover:ring-primary">
                                 {user?.displayName?.charAt(0).toUpperCase()}
                             </div>
                         )}
-                        <button className="absolute bottom-1 right-1 bg-white p-2 rounded-full shadow-lg border border-gray-100 text-blue-600 hover:bg-blue-50 transition-colors">
+                        <button className="absolute bottom-1 right-1 bg-surface p-2 rounded-full shadow-lg border border-border-main text-primary hover:bg-primary-light transition-colors">
                             <Camera size={16} />
                         </button>
                     </div>
 
                     <div className="flex-1 text-center md:text-left">
-                        <h2 className="text-2xl font-black text-gray-900">{user?.displayName}</h2>
-                        <p className="text-gray-500 font-medium">{user?.email}</p>
+                        <h2 className="text-2xl font-black text-content">{user?.displayName}</h2>
+                        <p className="text-muted font-medium">{user?.email}</p>
                         <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4">
-                            <div className="bg-blue-50 px-4 py-2 rounded-xl">
-                                <p className="text-xs text-blue-400 uppercase font-bold tracking-wider">คะแนนสะสม</p>
+                            <div className="bg-primary-light px-4 py-2 rounded-xl">
+                                <p className="text-xs text-primary/70 uppercase font-bold tracking-wider">คะแนนสะสม</p>
                                 {/* <p className="text-lg font-black text-blue-600">{user?.points} <span className="text-xs font-normal">Points</span></p> */}
                             </div>
-                            <div className="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-                                <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">สมาชิกตั้งแต่</p>
+                            <div className="bg-main px-4 py-2 rounded-xl border border-border-main">
+                                <p className="text-xs text-muted uppercase font-bold tracking-wider">สมาชิกตั้งแต่</p>
                                 {/* <p className="text-sm font-bold text-gray-700">{user.memberSince}</p> */}
                             </div>
                         </div>
@@ -85,22 +85,22 @@ function UserProfile() {
 
                 {/* Menu Section */}
                 <div className="mt-8 grid grid-cols-1 gap-4">
-                    <h3 className="text-sm font-bold text-gray-400 uppercase ml-2 mb-2 tracking-widest">การจัดการ</h3>
+                    <h3 className="text-sm font-bold text-muted uppercase ml-2 mb-2 tracking-widest">การจัดการ</h3>
 
                     {menuItems.map((item, index) => (
                         <Link
                             to={item.link}
                             key={index}
-                            className="group flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:border-blue-200 hover:shadow-md transition-all text-left"
+                            className="group flex items-center gap-4 bg-surface p-4 rounded-2xl border border-border-main shadow-sm hover:border-primary/30 hover:shadow-md transition-all text-left"
                         >
-                            <div className="bg-blue-50 p-3 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                            <div className="bg-primary-light p-3 rounded-xl text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                 {item.icon}
                             </div>
                             <div className="flex-1">
-                                <p className="font-bold text-gray-900">{item.label}</p>
-                                <p className="text-sm text-gray-500">{item.desc}</p>
+                                <p className="font-bold text-content">{item.label}</p>
+                                <p className="text-sm text-muted">{item.desc}</p>
                             </div>
-                            <ChevronRight size={20} className="text-gray-300 group-hover:text-blue-600 transition-colors" />
+                            <ChevronRight size={20} className="text-muted group-hover:text-primary transition-colors" />
                         </Link>
                     ))}
 

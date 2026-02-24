@@ -80,10 +80,10 @@ const LoginPage: React.FC = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+        <div className="max-w-md w-full bg-surface rounded-2xl shadow-xl p-8 border border-border-main">
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold text-gray-800">Error</h1>
-            <p className="text-gray-500 mt-2">{error}</p>
+            <h1 className="text-3xl font-bold text-content">Error</h1>
+            <p className="text-muted mt-2">{error}</p>
           </div>
         </div>
       </div>
@@ -96,7 +96,7 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Card */}
-        <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl shadow-blue-900/5 p-8 sm:p-10 border border-white/60">
+        <div className="bg-surface/80 backdrop-blur-lg rounded-3xl shadow-2xl shadow-blue-900/5 p-8 sm:p-10 border border-border-main">
           {/* Logo / Brand */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 mb-4">
@@ -104,10 +104,10 @@ const LoginPage: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-content tracking-tight">
               Welcome back
             </h1>
-            <p className="text-gray-500 mt-1.5 text-sm">
+            <p className="text-muted mt-1.5 text-sm">
               Sign in to your account to continue
             </p>
           </div>
@@ -126,7 +126,7 @@ const LoginPage: React.FC = () => {
           <form onSubmit={handleEmailLogin} className="space-y-4">
             {/* Email Field */}
             <div className="relative">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-medium text-content mb-1.5">
                 Email address
               </label>
               <div className="relative">
@@ -143,7 +143,7 @@ const LoginPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
-                  className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all disabled:opacity-50"
+                  className="block w-full pl-11 pr-4 py-3 bg-surface-hover border border-border-main rounded-xl text-content placeholder-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all disabled:opacity-50"
                 />
               </div>
             </div>
@@ -167,12 +167,12 @@ const LoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
-                  className="block w-full pl-11 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all disabled:opacity-50"
+                  className="block w-full pl-11 pr-12 py-3 bg-surface-hover border border-border-main rounded-xl text-content placeholder-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all disabled:opacity-50"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted hover:text-content transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -212,10 +212,10 @@ const LoginPage: React.FC = () => {
           {/* Divider */}
           <div className="relative my-7">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t border-border-main" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-gray-400 font-medium tracking-wider">
+              <span className="bg-surface px-3 text-muted font-medium tracking-wider">
                 or continue with
               </span>
             </div>
@@ -225,18 +225,18 @@ const LoginPage: React.FC = () => {
           <button
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-gray-700 font-medium py-3 rounded-xl transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2"
+            className="w-full flex items-center justify-center gap-3 bg-surface border border-border-main hover:bg-surface-hover hover:border-content/30 text-content font-medium py-3 rounded-xl transition-all duration-200 shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-border-main focus:ring-offset-2"
           >
             <img src="https://www.svgrepo.com/show/355037/google.svg" className="w-5 h-5" alt="google" />
             {isLoading ? 'Connecting...' : 'Continue with Google'}
           </button>
 
           {/* Register Link */}
-          <p className="text-center text-sm text-gray-500 mt-8">
+          <p className="text-center text-sm text-muted mt-8">
             Don't have an account?{' '}
             <Link
               to="/register"
-              className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+              className="font-semibold text-primary hover:text-primary/80 transition-colors"
             >
               Create account
             </Link>
@@ -244,11 +244,11 @@ const LoginPage: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-muted mt-6">
           By signing in, you agree to our{' '}
-          <a href="#" className="underline hover:text-gray-600 transition-colors">Terms</a>{' '}
+          <a href="#" className="underline hover:text-content transition-colors">Terms</a>{' '}
           and{' '}
-          <a href="#" className="underline hover:text-gray-600 transition-colors">Privacy Policy</a>
+          <a href="#" className="underline hover:text-content transition-colors">Privacy Policy</a>
         </p>
       </div>
     </div>

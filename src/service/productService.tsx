@@ -115,6 +115,26 @@ export const setProduct = createAsyncThunk(
     }
 );
 
+export const setProductImportCsv = createAsyncThunk(
+    'product/importProduct',
+    async (file: File, { rejectWithValue }) => {
+        try {
+            const response = await api.post("/api/v1/products/import-csv", file, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                }
+            });
+            if (response.status != 201) {
+                return rejectWithValue(response.data.message);
+            }
+            return null
+        } catch (e: unknown) {
+            const error = e as Error;
+            return rejectWithValue(error.message);
+        }
+    }
+)
+
 export const updateProductById = createAsyncThunk(
     "update/productbyId",
     async ({ productId, args }: { productId: string, args: ProductArgs }, { rejectWithValue }) => {

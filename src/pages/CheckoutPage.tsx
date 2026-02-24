@@ -213,8 +213,8 @@ export default function CheckoutPage() {
         <div className="bg-[#F8FAFC] min-h-screen py-10 font-sans grid">
             <div className="max-w-[1240px] mx-auto px-4">
                 <header className="mb-10 text-center lg:text-left">
-                    <h1 className="text-4xl font-black text-gray-900 tracking-tight">Checkout</h1>
-                    <p className="text-gray-500 mt-2">กรุณาตรวจสอบข้อมูลการจัดส่งและเลือกช่องทางชำระเงิน</p>
+                    <h1 className="text-4xl font-black text-content tracking-tight">Checkout</h1>
+                    <p className="text-muted mt-2">กรุณาตรวจสอบข้อมูลการจัดส่งและเลือกช่องทางชำระเงิน</p>
                 </header>
 
                 <form onSubmit={handleSubmit} className="lg:grid lg:grid-cols-12 lg:gap-x-8 lg:items-start xl:gap-x-12">
@@ -222,16 +222,16 @@ export default function CheckoutPage() {
                     <div className="lg:col-span-7 xl:col-span-8 space-y-6">
 
                         {/* 1. Address Section */}
-                        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden order-1">
+                        <section className="bg-surface rounded-2xl shadow-sm border border-border-main p-6 overflow-hidden order-1">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                    <MapPin className="text-blue-600" size={20} />
+                                <h2 className="text-lg font-bold text-content flex items-center gap-2">
+                                    <MapPin className="text-primary" size={20} />
                                     ที่อยู่จัดส่ง
                                 </h2>
                                 <button
                                     type="button"
                                     onClick={() => navigate('/profile/address/add')}
-                                    className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
+                                    className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
                                 >
                                     <Plus size={16} /> เพิ่มที่อยู่ใหม่
                                 </button>
@@ -243,21 +243,21 @@ export default function CheckoutPage() {
                                         key={addr.id}
                                         onClick={() => setSelectedAddressId(addr.id)}
                                         className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 group ${selectedAddressId === addr.id
-                                            ? 'border-blue-600 bg-blue-50/30 ring-1 ring-blue-600'
-                                            : 'border-gray-100 hover:border-gray-300 hover:shadow-sm'
+                                            ? 'border-primary bg-primary-light/30 ring-1 ring-primary'
+                                            : 'border-border-main hover:border-content/30 hover:shadow-sm'
                                             }`}
                                     >
                                         <div className="flex justify-between items-start mb-2">
-                                            <span className="font-bold text-gray-900">{addr.receiverName}</span>
+                                            <span className="font-bold text-content">{addr.receiverName}</span>
                                             {selectedAddressId === addr.id && (
-                                                <CheckCircle2 className="text-blue-600" size={18} />
+                                                <CheckCircle2 className="text-primary" size={18} />
                                             )}
                                         </div>
-                                        <p className="text-sm text-gray-500 leading-relaxed mb-2">
+                                        <p className="text-sm text-muted leading-relaxed mb-2">
                                             {addr.detail} {addr.subDistrict} {addr.district} {addr.province} {addr.postcode}
                                         </p>
-                                        <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                                        <p className="text-sm font-medium text-content flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-muted"></span>
                                             {addr.phone}
                                         </p>
                                     </div>
@@ -266,9 +266,9 @@ export default function CheckoutPage() {
                         </section>
 
                         {/* 2. Shipping Method Section */}
-                        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
-                                <Truck className="text-blue-600" size={20} />
+                        <section className="bg-surface rounded-2xl shadow-sm border border-border-main p-6">
+                            <h2 className="text-lg font-bold text-content flex items-center gap-2 mb-6">
+                                <Truck className="text-primary" size={20} />
                                 ตัวเลือกการจัดส่ง
                             </h2>
                             <div className="space-y-3">
@@ -284,21 +284,21 @@ export default function CheckoutPage() {
                                                 setSelectedShippingId(method.id)
                                             }}
                                             className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${selectedShippingId === method.id
-                                                ? 'border-blue-600 bg-blue-50/30'
-                                                : 'border-gray-100 hover:border-gray-200'
+                                                ? 'border-primary bg-primary-light/30'
+                                                : 'border-border-main hover:border-content/30'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center text-xs font-black text-gray-500 border border-gray-100">
+                                                <div className="w-10 h-10 rounded-lg bg-surface-hover flex items-center justify-center text-xs font-black text-muted border border-border-main">
                                                     {method.provider}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-gray-900 text-sm">{method.name}</p>
-                                                    <p className="text-xs text-gray-500">{method.description} • {method.estimatedDays}</p>
+                                                    <p className="font-bold text-content text-sm">{method.name}</p>
+                                                    <p className="text-xs text-muted">{method.description} • {method.estimatedDays}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-bold text-blue-600">
+                                                <p className="font-bold text-primary">
                                                     {method.freeShippingThreshold && total >= method.freeShippingThreshold
                                                         ? "FREE"
                                                         : `฿${method.price}`
@@ -306,7 +306,7 @@ export default function CheckoutPage() {
                                                 </p>
                                                 {selectedShippingId === method.id && (
                                                     <div className="flex justify-end mt-1">
-                                                        <CheckCircle2 className="text-blue-600" size={16} />
+                                                        <CheckCircle2 className="text-primary" size={16} />
                                                     </div>
                                                 )}
                                             </div>
@@ -316,9 +316,9 @@ export default function CheckoutPage() {
                         </section>
 
                         {/* 3. Payment Section */}
-                        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
-                                <CreditCard className="text-blue-600" size={20} />
+                        <section className="bg-surface rounded-2xl shadow-sm border border-border-main p-6">
+                            <h2 className="text-lg font-bold text-content flex items-center gap-2 mb-6">
+                                <CreditCard className="text-primary" size={20} />
                                 ช่องทางชำระเงิน
                             </h2>
                             {/* Container หลัก: บนจอใหญ่จะจำกัดความกว้างไว้ตรงกลางเพื่อให้ดูไม่ใหญ่จนเกินไป */}
@@ -328,26 +328,26 @@ export default function CheckoutPage() {
                                         <div
                                             key={section.id}
                                             className={`border-2 rounded-2xl overflow-hidden transition-all duration-300 shadow-sm ${paymentMethod === section.method
-                                                ? 'border-blue-500 ring-1 ring-blue-500 ring-opacity-50'
-                                                : 'border-gray-100 hover:border-gray-200'
+                                                ? 'border-primary ring-1 ring-primary ring-opacity-50'
+                                                : 'border-border-main hover:border-content/30'
                                                 }`}
                                         >
                                             {/* Header Section */}
                                             <button
                                                 onClick={(e) => handleSelectPayment(e, section.method)}
-                                                className={`w-full flex items-center justify-between p-5 sm:p-6 transition-colors ${paymentMethod === section.method ? 'bg-blue-50/50' : 'bg-white'
+                                                className={`w-full flex items-center justify-between p-5 sm:p-6 transition-colors ${paymentMethod === section.method ? 'bg-primary-light/50' : 'bg-surface'
                                                     }`}
                                             >
                                                 <div className="flex items-center space-x-4">
-                                                    <div className={`p-3 rounded-xl text-3xl shadow-sm ${paymentMethod === section.method ? 'bg-white' : 'bg-gray-50'
+                                                    <div className={`p-3 rounded-xl text-3xl shadow-sm ${paymentMethod === section.method ? 'bg-surface' : 'bg-main'
                                                         }`}>
                                                         {section.icon}
                                                     </div>
                                                     <div className="text-left">
-                                                        <span className="block font-semibold text-gray-900 text-lg">
+                                                        <span className="block font-semibold text-content text-lg">
                                                             {section.label}
                                                         </span>
-                                                        <span className="text-xs text-gray-500 uppercase tracking-wider">
+                                                        <span className="text-xs text-muted uppercase tracking-wider">
                                                             Secure Payment {paymentMethod}
                                                         </span>
                                                     </div>
@@ -355,8 +355,8 @@ export default function CheckoutPage() {
 
                                                 {/* Radio Indicator */}
                                                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === section.method
-                                                    ? 'border-blue-600 bg-blue-600'
-                                                    : 'border-gray-300'
+                                                    ? 'border-primary bg-primary'
+                                                    : 'border-muted'
                                                     }`}>
                                                     {paymentMethod === section.method && (
                                                         <div className="w-2.5 h-2.5 bg-white rounded-full animate-in zoom-in-50" />
@@ -366,19 +366,19 @@ export default function CheckoutPage() {
 
                                             {/* Expandable Content Section */}
                                             {paymentMethod === section.method && (
-                                                <div className="p-6 border-t border-gray-100 bg-gray-50/30 animate-in fade-in slide-in-from-top-4 duration-300">
+                                                <div className="p-6 border-t border-border-main bg-main/30 animate-in fade-in slide-in-from-top-4 duration-300">
                                                     <div className="max-w-md mx-auto"> {/* จำกัดความกว้าง Form ภายในให้พอดีสายตา */}
 
                                                         {section.id === 'PROMPTPAY' && (
-                                                            <div className="text-center py-6 bg-white rounded-2xl border border-gray-200 shadow-inner">
-                                                                <p className="text-sm font-medium text-gray-600 mb-4">สแกนจ่ายผ่านแอปธนาคารทุกธนาคาร</p>
-                                                                <div className="mx-auto w-48 h-48 bg-gray-50 flex items-center justify-center rounded-xl border-2 border-dashed border-gray-300">
+                                                            <div className="text-center py-6 bg-surface rounded-2xl border border-border-main shadow-inner">
+                                                                <p className="text-sm font-medium text-muted mb-4">สแกนจ่ายผ่านแอปธนาคารทุกธนาคาร</p>
+                                                                <div className="mx-auto w-48 h-48 bg-main flex items-center justify-center rounded-xl border-2 border-dashed border-border-main">
                                                                     <div className="text-center">
                                                                         <span className="block text-3xl mb-2">📸</span>
-                                                                        <span className="text-xs text-gray-400">QR Code จะปรากฏที่นี่</span>
+                                                                        <span className="text-xs text-muted">QR Code จะปรากฏที่นี่</span>
                                                                     </div>
                                                                 </div>
-                                                                <p className="mt-4 text-[11px] text-gray-400 italic">* QR Code มีอายุการใช้งาน 15 นาที</p>
+                                                                <p className="mt-4 text-[11px] text-muted italic">* QR Code มีอายุการใช้งาน 15 นาที</p>
                                                             </div>
                                                         )}
 
@@ -388,11 +388,9 @@ export default function CheckoutPage() {
                                                                     <button
                                                                         key={bank.id}
                                                                         onClick={(e) => handleSelectBankMethod(e, bank.method)}
-                                                                        className={`relative flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-200 font-medium shadow-sm border-2 ${
-                                                                            // 🎨 เงื่อนไข: ถ้า bank.method ตรงกับที่เลือก ให้เปลี่ยนสีขอบและพื้นหลัง
-                                                                            selectedBank === bank.method
-                                                                                ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md'
-                                                                                : 'border-gray-100 bg-white text-gray-700 hover:border-blue-200 hover:bg-gray-50'
+                                                                        className={`relative flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-200 font-medium shadow-sm border-2 ${selectedBank === bank.method
+                                                                            ? 'border-primary bg-primary-light text-primary shadow-md'
+                                                                            : 'border-border-main bg-surface text-content hover:border-primary/30 hover:bg-surface-hover'
                                                                             }`}
                                                                     >
                                                                         {/* 🟢 แสดงเครื่องหมายถูกที่มุมขวาบนเมื่อถูกเลือก */}
@@ -416,7 +414,7 @@ export default function CheckoutPage() {
                                                                         )}
 
                                                                         {/* ส่วนของโลโก้จำลอง */}
-                                                                        <div className={`w-12 h-12 rounded-lg mb-2 flex items-center justify-center text-xs font-bold uppercase transition-colors ${selectedBank === bank.method ? 'bg-white text-blue-600' : 'bg-gray-100'
+                                                                        <div className={`w-12 h-12 rounded-lg mb-2 flex items-center justify-center text-xs font-bold uppercase transition-colors ${selectedBank === bank.method ? 'bg-surface text-primary' : 'bg-surface-hover'
                                                                             }`}>
                                                                             {bank.label.substring(0, 2)}
                                                                         </div>
@@ -428,36 +426,36 @@ export default function CheckoutPage() {
                                                         )}
 
                                                         {section.id === 'CREDIT_CARD' && (
-                                                            <div className="space-y-4 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                                                            <div className="space-y-4 bg-surface p-5 rounded-2xl border border-border-main shadow-sm">
                                                                 <div>
-                                                                    <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Card Number</label>
-                                                                    <input type="text" placeholder="0000 0000 0000 0000" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+                                                                    <label className="text-xs font-bold text-muted uppercase mb-1 block">Card Number</label>
+                                                                    <input type="text" placeholder="0000 0000 0000 0000" className="w-full p-3 bg-main border border-border-main rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
                                                                 </div>
                                                                 <div className="grid grid-cols-2 gap-4">
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Expiry Date</label>
-                                                                        <input type="text" placeholder="MM/YY" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
+                                                                        <label className="text-xs font-bold text-muted uppercase mb-1 block">Expiry Date</label>
+                                                                        <input type="text" placeholder="MM/YY" className="w-full p-3 bg-main border border-border-main rounded-xl focus:ring-2 focus:ring-primary outline-none" />
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">CVV</label>
-                                                                        <input type="password" placeholder="***" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
+                                                                        <label className="text-xs font-bold text-muted uppercase mb-1 block">CVV</label>
+                                                                        <input type="password" placeholder="***" className="w-full p-3 bg-main border border-border-main rounded-xl focus:ring-2 focus:ring-primary outline-none" />
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         )}
 
                                                         {section.id === 'TRUEMONEY' && (
-                                                            <div className="space-y-4 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                                                            <div className="space-y-4 bg-surface p-5 rounded-2xl border border-border-main shadow-sm">
                                                                 <div className="flex items-center space-x-3 mb-2">
                                                                     <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">📱</div>
-                                                                    <span className="text-sm font-semibold text-gray-700">TrueMoney Wallet</span>
+                                                                    <span className="text-sm font-semibold text-content">TrueMoney Wallet</span>
                                                                 </div>
                                                                 <input
                                                                     type="tel"
                                                                     placeholder="08X-XXX-XXXX"
-                                                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 outline-none transition-all"
+                                                                    className="w-full p-3 bg-main border border-border-main rounded-xl focus:ring-2 focus:ring-orange-400 outline-none transition-all"
                                                                 />
-                                                                <p className="text-[11px] text-gray-400 leading-relaxed">
+                                                                <p className="text-[11px] text-muted leading-relaxed">
                                                                     กรุณาตรวจสอบยอดเงินคงเหลือใน Wallet ก่อนทำรายการ ระบบจะส่งคำขอหักเงินไปยังแอป TrueMoney ของคุณ
                                                                 </p>
                                                             </div>
@@ -483,52 +481,52 @@ export default function CheckoutPage() {
 
                     {/* Right Column: Order Summary */}
                     <div className="mt-8 lg:mt-0 lg:col-span-5 xl:col-span-4">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-8">
-                            <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                <Package className="text-blue-600" size={20} />
+                        <div className="bg-surface rounded-2xl shadow-sm border border-border-main p-6 sticky top-8">
+                            <h2 className="text-lg font-bold text-content mb-6 flex items-center gap-2">
+                                <Package className="text-primary" size={20} />
                                 สรุปคำสั่งซื้อ
                             </h2>
 
                             <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200">
                                 {order?.subOrders?.flatMap((sub) => sub.orderItems || []).map((item) => (
-                                    <div key={item.id} className="flex gap-3 py-2 border-b border-gray-50 last:border-0">
-                                        <div className="w-14 h-14 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0 overflow-hidden">
+                                    <div key={item.id} className="flex gap-3 py-2 border-b border-border-main last:border-0">
+                                        <div className="w-14 h-14 bg-main rounded-lg border border-border-main shrink-0 overflow-hidden">
                                             <img src={item.image} className="w-full h-full object-contain mix-blend-multiply" alt={item.title} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                                            <p className="text-sm font-medium text-content truncate">{item.title}</p>
                                             <div className="flex justify-between items-center mt-1">
-                                                <p className="text-xs text-gray-500">x{item.quantity}</p>
-                                                <p className="text-sm font-bold text-gray-900">฿{item.price.toLocaleString()}</p>
+                                                <p className="text-xs text-muted">x{item.quantity}</p>
+                                                <p className="text-sm font-bold text-content">฿{item.price.toLocaleString()}</p>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="space-y-3 pt-4 border-t border-gray-100">
-                                <div className="flex justify-between text-sm text-gray-500">
+                            <div className="space-y-3 pt-4 border-t border-border-main">
+                                <div className="flex justify-between text-sm text-muted">
                                     <span>ราคารวมสินค้า</span>
                                     <span>฿{total.toLocaleString()}</span>
                                 </div>
-                                {/* <div className="flex justify-between text-sm text-gray-500">
+                                {/* <div className="flex justify-between text-sm text-muted">
                                     <span>ค่าจัดส่ง</span>
                                     <span>฿0</span>
                                 </div> */}
-                                <div className="flex justify-between items-end pt-3 border-t border-gray-100">
-                                    <span className="text-base font-bold text-gray-900">ยอดสุทธิ</span>
-                                    <span className="text-2xl font-black text-blue-600">฿{total.toLocaleString()}</span>
+                                <div className="flex justify-between items-end pt-3 border-t border-border-main">
+                                    <span className="text-base font-bold text-content">ยอดสุทธิ</span>
+                                    <span className="text-2xl font-black text-primary">฿{total.toLocaleString()}</span>
                                 </div>
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-base mt-6 hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 group active:scale-[0.98]"
+                                className="w-full bg-primary text-white py-4 rounded-xl font-bold text-base mt-6 hover:bg-primary/90 transition-all shadow-lg flex items-center justify-center gap-2 group active:scale-[0.98]"
                             >
                                 ยืนยันการสั่งซื้อ <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
                             </button>
 
-                            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
+                            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted">
                                 <CheckCircle2 size={12} />
                                 <span>Secure SSL Encryption</span>
                             </div>

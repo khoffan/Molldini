@@ -47,8 +47,8 @@ const getNotiMeta = (type: string) => {
         default:
             return {
                 icon: <Info className="h-5 w-5" />,
-                color: "text-gray-500",
-                bg: "bg-gray-50",
+                color: "text-muted",
+                bg: "bg-surface-hover",
             };
     }
 };
@@ -97,14 +97,14 @@ function NotificationDropdown({
     return (
         <div
             ref={dropdownRef}
-            className="absolute left-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden"
+            className="absolute left-0 mt-2 w-96 bg-surface rounded-2xl shadow-2xl border border-border-main z-50 overflow-hidden"
             style={{ maxHeight: "480px" }}
         >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-linear-to-r from-blue-50 to-white">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border-main bg-linear-to-r from-primary-light to-surface">
                 <div className="flex items-center gap-2">
-                    <Bell className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-base font-bold text-gray-900">Notifications</h3>
+                    <Bell className="h-5 w-5 text-primary" />
+                    <h3 className="text-base font-bold text-content">Notifications</h3>
                     {unread.length > 0 && (
                         <span className="ml-1 inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-red-500 text-[10px] font-bold text-white">
                             {unread.length}
@@ -117,13 +117,13 @@ function NotificationDropdown({
             <div className="overflow-y-auto" style={{ maxHeight: "390px" }}>
                 {notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 px-4">
-                        <div className="p-4 rounded-full bg-gray-50 mb-3">
-                            <Bell className="h-8 w-8 text-gray-300" />
+                        <div className="p-4 rounded-full bg-surface-hover mb-3">
+                            <Bell className="h-8 w-8 text-muted" />
                         </div>
-                        <p className="text-sm font-medium text-gray-400">
+                        <p className="text-sm font-medium text-muted">
                             No notifications yet
                         </p>
-                        <p className="text-xs text-gray-300 mt-1">
+                        <p className="text-xs text-muted mt-1">
                             You're all caught up!
                         </p>
                     </div>
@@ -132,8 +132,8 @@ function NotificationDropdown({
                         {/* Unread section */}
                         {unread.length > 0 && (
                             <div>
-                                <div className="px-4 py-2 bg-blue-50/50">
-                                    <p className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider">
+                                <div className="px-4 py-2 bg-primary-light/50">
+                                    <p className="text-[11px] font-semibold text-primary uppercase tracking-wider">
                                         New
                                     </p>
                                 </div>
@@ -152,15 +152,15 @@ function NotificationDropdown({
                                                 {meta.icon}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-gray-900 truncate">
+                                                <p className="text-sm font-semibold text-content truncate">
                                                     {noti.title}
                                                 </p>
-                                                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
+                                                <p className="text-xs text-muted mt-0.5 line-clamp-2 leading-relaxed">
                                                     {noti.body}
                                                 </p>
                                                 <div className="flex items-center gap-1 mt-1.5">
-                                                    <Clock className="h-3 w-3 text-gray-400" />
-                                                    <span className="text-[10px] text-gray-400 font-medium">
+                                                    <Clock className="h-3 w-3 text-muted" />
+                                                    <span className="text-[10px] text-muted font-medium">
                                                         {timeAgo(noti.createdAt)}
                                                     </span>
                                                 </div>
@@ -177,8 +177,8 @@ function NotificationDropdown({
                         {read.length > 0 && (
                             <div>
                                 {unread.length > 0 && (
-                                    <div className="px-4 py-2 bg-gray-50/50">
-                                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    <div className="px-4 py-2 bg-surface-hover/50">
+                                        <p className="text-[11px] font-semibold text-muted uppercase tracking-wider">
                                             Earlier
                                         </p>
                                     </div>
@@ -190,23 +190,23 @@ function NotificationDropdown({
                                             key={noti.id}
                                             to={noti.link || "#"}
                                             onClick={onClose}
-                                            className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-l-[3px] border-transparent"
+                                            className="flex items-start gap-3 px-4 py-3 hover:bg-surface-hover transition-colors border-l-[3px] border-transparent"
                                         >
                                             <div
-                                                className={`shrink-0 mt-0.5 p-2 rounded-xl bg-gray-50 text-gray-400`}
+                                                className={`shrink-0 mt-0.5 p-2 rounded-xl bg-surface-hover text-muted`}
                                             >
                                                 {meta.icon}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium text-gray-700 truncate">
+                                                <p className="text-sm font-medium text-content truncate">
                                                     {noti.title}
                                                 </p>
-                                                <p className="text-xs text-gray-400 mt-0.5 line-clamp-2 leading-relaxed">
+                                                <p className="text-xs text-muted mt-0.5 line-clamp-2 leading-relaxed">
                                                     {noti.body}
                                                 </p>
                                                 <div className="flex items-center gap-1 mt-1.5">
-                                                    <Clock className="h-3 w-3 text-gray-300" />
-                                                    <span className="text-[10px] text-gray-300 font-medium">
+                                                    <Clock className="h-3 w-3 text-muted" />
+                                                    <span className="text-[10px] text-muted font-medium">
                                                         {timeAgo(noti.createdAt)}
                                                     </span>
                                                 </div>

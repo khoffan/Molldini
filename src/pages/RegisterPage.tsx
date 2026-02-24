@@ -124,7 +124,7 @@ const RegisterPage: React.FC = () => {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
             <div className="max-w-md w-full">
                 {/* Card */}
-                <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl shadow-blue-900/5 p-8 sm:p-10 border border-white/60">
+                <div className="bg-surface/80 backdrop-blur-lg rounded-3xl shadow-2xl shadow-blue-900/5 p-8 sm:p-10 border border-border-main">
                     {/* Brand */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 mb-4">
@@ -132,10 +132,10 @@ const RegisterPage: React.FC = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                             </svg>
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-content tracking-tight">
                             Create account
                         </h1>
-                        <p className="text-gray-500 mt-1.5 text-sm">
+                        <p className="text-muted mt-1.5 text-sm">
                             Sign up to get started
                         </p>
                     </div>
@@ -161,7 +161,7 @@ const RegisterPage: React.FC = () => {
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                        <svg className="w-5 h-5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
                                     </div>
@@ -174,7 +174,7 @@ const RegisterPage: React.FC = () => {
                                         value={form.firstName}
                                         onChange={handleChange}
                                         disabled={isLoading}
-                                        className={`block w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all disabled:opacity-50 ${fieldErrors.firstName ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
+                                        className={`block w-full pl-11 pr-4 py-3 bg-surface-hover border rounded-xl text-content placeholder-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all disabled:opacity-50 ${fieldErrors.firstName ? 'border-red-300 bg-red-50/50' : 'border-border-main'
                                             }`}
                                     />
                                 </div>
@@ -190,7 +190,7 @@ const RegisterPage: React.FC = () => {
                                 </label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                        <svg className="w-5 h-5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
                                     </div>
@@ -203,7 +203,7 @@ const RegisterPage: React.FC = () => {
                                         value={form.lastName}
                                         onChange={handleChange}
                                         disabled={isLoading}
-                                        className={`block w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all disabled:opacity-50 ${fieldErrors.lastName ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
+                                        className={`block w-full pl-11 pr-4 py-3 bg-surface-hover border rounded-xl text-content placeholder-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all disabled:opacity-50 ${fieldErrors.lastName ? 'border-red-300 bg-red-50/50' : 'border-border-main'
                                             }`}
                                     />
                                 </div>
@@ -215,7 +215,7 @@ const RegisterPage: React.FC = () => {
 
                         {/* Email Field */}
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label htmlFor="email" className="block text-sm font-medium text-content mb-1.5">
                                 Email address
                             </label>
                             <div className="relative">
@@ -233,7 +233,7 @@ const RegisterPage: React.FC = () => {
                                     value={form.email}
                                     onChange={handleChange}
                                     disabled={isLoading}
-                                    className={`block w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all disabled:opacity-50 ${fieldErrors.email ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
+                                    className={`block w-full pl-11 pr-4 py-3 bg-surface-hover border rounded-xl text-content placeholder-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all disabled:opacity-50 ${fieldErrors.email ? 'border-red-300 bg-red-50/50' : 'border-border-main'
                                         }`}
                                 />
                             </div>
@@ -244,7 +244,7 @@ const RegisterPage: React.FC = () => {
 
                         {/* Password Field */}
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label htmlFor="password" className="block text-sm font-medium text-content mb-1.5">
                                 Password
                             </label>
                             <div className="relative">
@@ -262,13 +262,13 @@ const RegisterPage: React.FC = () => {
                                     value={form.password}
                                     onChange={handleChange}
                                     disabled={isLoading}
-                                    className={`block w-full pl-11 pr-12 py-3 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all disabled:opacity-50 ${fieldErrors.password ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
+                                    className={`block w-full pl-11 pr-12 py-3 bg-surface-hover border rounded-xl text-content placeholder-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all disabled:opacity-50 ${fieldErrors.password ? 'border-red-300 bg-red-50/50' : 'border-border-main'
                                         }`}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted hover:text-content transition-colors"
                                     tabIndex={-1}
                                 >
                                     {showPassword ? (
@@ -290,7 +290,7 @@ const RegisterPage: React.FC = () => {
 
                         {/* Confirm Password Field */}
                         <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-content mb-1.5">
                                 Confirm password
                             </label>
                             <div className="relative">
@@ -308,13 +308,13 @@ const RegisterPage: React.FC = () => {
                                     value={form.confirmPassword}
                                     onChange={handleChange}
                                     disabled={isLoading}
-                                    className={`block w-full pl-11 pr-12 py-3 bg-gray-50 border rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all disabled:opacity-50 ${fieldErrors.confirmPassword ? 'border-red-300 bg-red-50/50' : 'border-gray-200'
+                                    className={`block w-full pl-11 pr-12 py-3 bg-surface-hover border rounded-xl text-content placeholder-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all disabled:opacity-50 ${fieldErrors.confirmPassword ? 'border-red-300 bg-red-50/50' : 'border-border-main'
                                         }`}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted hover:text-content transition-colors"
                                     tabIndex={-1}
                                 >
                                     {showConfirmPassword ? (
@@ -355,11 +355,11 @@ const RegisterPage: React.FC = () => {
                     </form>
 
                     {/* Sign In Link */}
-                    <p className="text-center text-sm text-gray-500 mt-8">
+                    <p className="text-center text-sm text-muted mt-8">
                         Already have an account?{' '}
                         <Link
                             to="/login"
-                            className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                            className="font-semibold text-primary hover:text-primary/80 transition-colors"
                         >
                             Sign in
                         </Link>
@@ -367,11 +367,11 @@ const RegisterPage: React.FC = () => {
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-xs text-gray-400 mt-6">
+                <p className="text-center text-xs text-muted mt-6">
                     By creating an account, you agree to our{' '}
-                    <a href="#" className="underline hover:text-gray-600 transition-colors">Terms</a>{' '}
+                    <a href="#" className="underline hover:text-content transition-colors">Terms</a>{' '}
                     and{' '}
-                    <a href="#" className="underline hover:text-gray-600 transition-colors">Privacy Policy</a>
+                    <a href="#" className="underline hover:text-content transition-colors">Privacy Policy</a>
                 </p>
             </div>
         </div>

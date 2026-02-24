@@ -33,11 +33,11 @@ export default function ProductPage() {
   if (error) return <div className="p-20 text-center text-red-500">Error: {error}</div>;
 
   return (
-    <div className="bg-gray-50 min-h-screen py-12 px-4">
+    <div className="bg-main min-h-screen py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <header className="mb-12 text-start">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Featured Collection</h1>
-          <p className="mt-4 text-gray-600">ค้นพบสินค้าที่ตอบโจทย์สไตล์ในแบบของคุณ</p>
+          <h1 className="text-4xl font-extrabold text-content tracking-tight">Featured Collection</h1>
+          <p className="mt-4 text-muted">ค้นพบสินค้าที่ตอบโจทย์สไตล์ในแบบของคุณ</p>
         </header>
 
         <CategoryTag categories={categories} selectedId={selectedCat} onSelect={(value) => setSelectedCat(value)} />
@@ -49,7 +49,7 @@ export default function ProductPage() {
             const hasMultipleVariants = product.variants && product.variants.length > 1;
 
             return (
-              <Link to={`/product/${product.id}`} key={product.id} className="group flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100">
+              <Link to={`/product/${product.id}`} key={product.id} className="group flex flex-col bg-surface rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-border-main">
                 {/* Image Section */}
                 <div className="relative aspect-[4/5] overflow-hidden">
                   <img
@@ -63,8 +63,8 @@ export default function ProductPage() {
                     className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   {hasMultipleVariants && (
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-                      <p className="text-[10px] font-bold uppercase text-gray-600">
+                    <div className="absolute top-3 left-3 bg-surface/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+                      <p className="text-[10px] font-bold uppercase text-muted">
                         {product.variants.length} Options
                       </p>
                     </div>
@@ -74,20 +74,20 @@ export default function ProductPage() {
                 {/* Content Section */}
                 <div className="p-6 flex flex-col flex-1">
                   <div className="mb-auto">
-                    <p className="text-xs font-bold text-blue-600 mb-2 uppercase tracking-wider">{product.category?.name || 'General'}</p>
-                    <h3 className="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors mb-3">
+                    <p className="text-xs font-bold text-primary mb-2 uppercase tracking-wider">{product.category?.name || 'General'}</p>
+                    <h3 className="text-lg font-bold text-content line-clamp-2 group-hover:text-primary transition-colors mb-3">
                       {product.title}
                     </h3>
 
-                    <button onClick={(e) => handleMerchantPage(e, product.merchantId!)} className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-50 cursor-pointer">
-                      <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100 flex-shrink-0">
+                    <button onClick={(e) => handleMerchantPage(e, product.merchantId!)} className="flex items-center gap-2 mb-4 pb-4 border-b border-border-main cursor-pointer">
+                      <div className="w-6 h-6 rounded-full bg-surface-hover flex items-center justify-center overflow-hidden border border-border-main shrink-0">
                         {product.merchant?.logoUrl ? (
                           <img src={product.merchant.logoUrl.url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <Store size={12} className="text-gray-400" />
+                          <Store size={12} className="text-muted" />
                         )}
                       </div>
-                      <span className="text-xs text-gray-500 font-medium truncate">
+                      <span className="text-xs text-muted font-medium truncate">
                         {product.merchant?.name || 'Molldini Official'}
                       </span>
                     </button>
@@ -96,7 +96,7 @@ export default function ProductPage() {
                   {/* Variants Preview (แสดงจุดสีหรือขนาดคร่าวๆ) */}
                   <div className="mt-4 flex gap-2">
                     {product.variants?.slice(0, 4).map((v) => (
-                      <div key={v.id} className="w-4 h-4 rounded-full border border-gray-200 bg-gray-100 flex items-center justify-center text-[8px] font-bold">
+                      <div key={v.id} className="w-4 h-4 rounded-full border border-border-main bg-surface-hover flex items-center justify-center text-[8px] font-bold">
                         {v.sku?.[0]}
                       </div>
                     ))}
@@ -104,8 +104,8 @@ export default function ProductPage() {
 
                   <div className="mt-6 flex items-center justify-between gap-4">
                     <div>
-                      <p className="text-xs text-gray-400">Starting from</p>
-                      <p className="text-xl font-black text-gray-900">
+                      <p className="text-xs text-muted">Starting from</p>
+                      <p className="text-xl font-black text-content">
                         ฿{defaultVariant?.price.toLocaleString() ?? 'N/A'}
                       </p>
                     </div>

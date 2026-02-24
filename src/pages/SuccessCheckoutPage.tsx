@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { CheckCircle2, Package, ShoppingBag, ReceiptText } from 'lucide-react';
 import { useDispatch } from 'react-redux';
@@ -19,8 +19,6 @@ export default function SuccessCheckoutPage() {
     const [order, setOrder] = useState<OrderSummary | null>(null);
 
     useEffect(() => {
-        // TODO: Fetch order detail โดยใช้ orderId
-        // fetchOrder(orderId).then(data => setOrder(data));
         const result = async () => {
             try {
                 if (!id) return;
@@ -39,78 +37,69 @@ export default function SuccessCheckoutPage() {
         result()
     }, [dispath, id]);
 
-    console.log(order)
-
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-            <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div className="min-h-screen bg-main flex items-center justify-center p-4">
+            <div className="max-w-md w-full bg-surface rounded-3xl shadow-xl overflow-hidden border border-border-main">
                 {/* Top Success Banner */}
                 <div className="bg-green-500 p-8 flex flex-col items-center">
                     <div className="bg-white/20 p-3 rounded-full mb-4 animate-bounce">
                         <CheckCircle2 size={48} className="text-white" />
                     </div>
                     <h1 className="text-2xl font-bold text-white text-center">
-                        Order Successful!
+                        คำสั่งซื้อสำเร็จ!
                     </h1>
                     <p className="text-green-100 text-sm mt-2">
-                        Thank you for your purchase.
+                        ขอบคุณสำหรับการสั่งซื้อ
                     </p>
                 </div>
 
                 <div className="p-8">
                     {/* Order Info Details */}
                     <div className="space-y-6">
-                        <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-                            <span className="text-gray-500 text-sm font-medium">Order ID</span>
-                            <span className="text-gray-900 font-mono font-bold text-sm bg-gray-100 px-3 py-1 rounded-lg">
+                        <div className="flex justify-between items-center border-b border-border-main pb-4">
+                            <span className="text-muted text-sm font-medium">Order ID</span>
+                            <span className="text-content font-mono font-bold text-sm bg-main px-3 py-1 rounded-lg">
                                 #{id?.slice(-8).toUpperCase()}
                             </span>
                         </div>
 
                         <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-900 flex items-center">
-                                <Package size={16} className="mr-2 text-blue-500" />
+                            <h3 className="text-sm font-semibold text-content flex items-center">
+                                <Package size={16} className="mr-2 text-primary" />
                                 Shipping Information
                             </h3>
-                            <div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-600 leading-relaxed">
-                                <p className="font-bold text-gray-800 mb-1">{order?.receiverName || 'Loading...'}</p>
+                            <div className="bg-main rounded-xl p-4 text-sm text-muted leading-relaxed">
+                                <p className="font-bold text-content mb-1">{order?.receiverName || 'Loading...'}</p>
                                 <p>{order?.shippingAddress || 'Fetching address details...'}</p>
                             </div>
                         </div>
 
                         <div className="flex justify-between items-center py-4">
-                            <span className="text-gray-900 font-semibold uppercase tracking-wider text-xs">Total Amount</span>
-                            <span className="text-2xl font-black text-blue-600">
+                            <span className="text-content font-semibold uppercase tracking-wider text-xs">Total Amount</span>
+                            <span className="text-2xl font-black text-primary">
                                 ฿{order?.totalPrice?.toLocaleString() || '0.00'}
                             </span>
                         </div>
                     </div>
 
-                    <hr className="my-6 border-dashed border-gray-200" />
+                    <hr className="my-6 border-dashed border-border-main" />
 
                     {/* Action Buttons */}
                     <div className="grid grid-cols-1 gap-3">
-                        <Link
-                            to={`/profile/orders/${id}`}
-                            className="w-full bg-gray-900 text-white font-semibold py-3.5 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-all shadow-lg shadow-gray-200"
-                        >
-                            <ReceiptText size={18} className="mr-2" />
-                            View Order Details
+                        <Link to="/orders" className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg">
+                            <ReceiptText size={18} />
+                            ดูคำสั่งซื้อ
                         </Link>
-
-                        <Link
-                            to="/"
-                            className="w-full bg-white border border-gray-200 text-gray-600 font-semibold py-3.5 rounded-xl flex items-center justify-center hover:bg-gray-50 transition-all"
-                        >
+                        <Link to="/" className="flex-1 flex items-center justify-center gap-2 bg-surface border border-border-main hover:bg-surface-hover text-content font-bold py-3 px-6 rounded-2xl transition-all">
                             <ShoppingBag size={18} className="mr-2" />
                             Continue Shopping
                         </Link>
                     </div>
 
                     {/* Support Info */}
-                    <p className="text-center text-xs text-gray-400 mt-8 leading-relaxed">
+                    <p className="text-center text-xs text-muted mt-8 leading-relaxed">
                         A confirmation email has been sent to your inbox.<br />
-                        Need help? <Link to="/contact" className="text-blue-500 font-medium hover:underline">Contact Support</Link>
+                        Need help? <Link to="/contact" className="text-primary font-medium hover:underline">Contact Support</Link>
                     </p>
                 </div>
             </div>

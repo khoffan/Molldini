@@ -109,18 +109,18 @@ function Cart() {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen py-10">
+    <div className="bg-main min-h-screen py-10">
       <div className="max-w-5xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+        <h1 className="text-3xl font-bold text-content mb-8">Shopping Cart</h1>
         {/* ส่วนหัวตะกร้า: เพิ่มเลือกทั้งหมด */}
-        <div className="flex items-center gap-2 mb-4 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
+        <div className="flex items-center gap-2 mb-4 bg-surface p-3 rounded-lg shadow-sm border border-border-main">
           <input
             type="checkbox"
             checked={selectedItems.length === cartItems.length && cartItems.length > 0}
             onChange={handleSelectAll}
             className="w-5 h-5 cursor-pointer rounded accent-blue-600"
           />
-          <span className="text-sm font-medium text-gray-700">Select All ({cartItems.length})</span>
+          <span className="text-sm font-medium text-content">Select All ({cartItems.length})</span>
         </div>
         <div className="flex flex-col lg:flex-row gap-8">
           {/* 1. รายการสินค้าในตะกร้า */}
@@ -128,7 +128,7 @@ function Cart() {
             {Array.isArray(cartItems) && cartItems.length > 0 && productVarients.length > 0 && cartItems.map((item: CartItem) => {
               const productInfo = productVarients.find(p => p.id === item.productId);
 
-              return <div key={item.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+              return <div key={item.id} className="bg-surface p-4 rounded-xl shadow-sm border border-border-main flex items-center gap-4">
                 <input
                   type="checkbox"
                   checked={selectedItems.includes(item.productId)}
@@ -147,15 +147,15 @@ function Cart() {
                 />
 
                 <div className="flex-1">
-                  <h3 className="font-bold text-gray-800">{productInfo?.variantName}</h3>
-                  <p className="text-blue-600 font-bold">฿{productInfo?.price.toLocaleString()}</p>
+                  <h3 className="font-bold text-content">{productInfo?.variantName}</h3>
+                  <p className="text-primary font-bold">฿{productInfo?.price.toLocaleString()}</p>
                 </div>
 
                 {/* ส่วนปรับจำนวน */}
-                <div className="flex items-center border rounded-lg">
-                  <button onClick={() => handleDecrement(item.productId)} className="px-3 py-1 hover:bg-gray-100">-</button>
+                <div className="flex items-center border border-border-main rounded-lg">
+                  <button onClick={() => handleDecrement(item.productId)} className="px-3 py-1 hover:bg-surface-hover">-</button>
                   <span className="px-3 font-medium">{item.quantity}</span>
-                  <button onClick={() => handleIncrement(item.productId)} className="px-3 py-1 hover:bg-gray-100">+</button>
+                  <button onClick={() => handleIncrement(item.productId)} className="px-3 py-1 hover:bg-surface-hover">+</button>
                 </div>
 
                 <button onClick={() => handleDeleteItem(item.productId)} className="text-red-400 hover:text-red-600 p-2">
@@ -169,10 +169,10 @@ function Cart() {
 
           {/* 2. ส่วนสรุปยอดสั่งซื้อ (Order Summary) */}
           <div className="w-full lg:w-80">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-surface p-6 rounded-xl shadow-sm border border-border-main">
               <h2 className="text-xl font-bold mb-4">Order Summary</h2>
 
-              <div className="space-y-3 border-b pb-4 mb-4 text-gray-600">
+              <div className="space-y-3 border-b border-border-main pb-4 mb-4 text-muted">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span>฿{subtotal.toLocaleString()}</span>
@@ -183,12 +183,12 @@ function Cart() {
                 </div> */}
               </div>
 
-              <div className="flex justify-between font-bold text-lg text-gray-900 mb-6">
+              <div className="flex justify-between font-bold text-lg text-content mb-6">
                 <span>Total</span>
                 <span>฿{total.toLocaleString()}</span>
               </div>
 
-              <button onClick={(e) => handleCheckOut(e, cart?.id ?? "")} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100">
+              <button onClick={(e) => handleCheckOut(e, cart?.id ?? "")} className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-lg">
                 Checkout
               </button>
             </div>

@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
-import { setProduct, updateProductById, type ProductArgs } from "../service/productService";
+import { setProduct, updateProductById, setProductImportCsv, type ProductArgs } from "../service/productService";
 import type { RootState, AppDispatch } from "../store";
 import Swal from 'sweetalert2';
-import { Plus, Trash2, Package, FolderPlus, X, ImagePlus, LinkIcon } from "lucide-react"; // แนะนำให้ลง lucide-react ครับ
+import { Plus, Trash2, Package, FolderPlus, X, ImagePlus, LinkIcon, FileUp } from "lucide-react";
 import { fetchCategories, createCategory } from "../service/categoryService";
 import type { Category } from "../interface/categoryInterface";
 import type { Product, ProductVariant } from "../interface/productInterface";
@@ -82,6 +82,31 @@ function ProductFormPage() {
     const { categories } = useSelector((state: RootState) => state.category);
 
     const [variantFiles, setVariantFiles] = useState<Record<number, File>>({});
+    const csvInputRef = useRef<HTMLInputElement>(null);
+    const [csvLoading, setCsvLoading] = useState(false);
+
+    // ฟังก์ชัน Import CSV
+    const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setCsvLoading(true);
+        try {
+            await dispatch(setProductImportCsv(file)).unwrap();
+            Swal.fire({
+                title: 'สำเร็จ!',
+                text: 'นำเข้าสินค้าจากไฟล์ CSV เรียบร้อยแล้ว',
+                icon: 'success',
+                confirmButtonColor: '#2563eb',
+            }).then(() => navigate('/merchant'));
+        } catch (err: unknown) {
+            Swal.fire({ title: 'เกิดข้อผิดพลาด', text: (err as Error).message || 'ไม่สามารถนำเข้าไฟล์ได้', icon: 'error' });
+        } finally {
+            setCsvLoading(false);
+            // Reset input เพื่อให้เลือกไฟล์เดิมซ้ำได้
+            if (csvInputRef.current) csvInputRef.current.value = '';
+        }
+    };
 
     // ฟังก์ชันจัดการรูปหลัก
     const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,23 +306,43 @@ function ProductFormPage() {
         }
     };
     return (
-        <div className="bg-gray-50 min-h-screen py-10 px-4">
+        <div className="bg-main min-h-screen py-10 px-4">
             <div>{error}</div>
-            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">เพิ่มสินค้าใหม่</h1>
-                    <p className="text-gray-500">กำหนดข้อมูลหลักและตัวเลือกสินค้า (Variants)</p>
+            <div className="max-w-4xl mx-auto bg-surface rounded-xl shadow-sm border border-border-main overflow-hidden">
+                <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 pt-6">
+                    <div>
+                        <h1 className="text-2xl font-bold text-content">{id ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</h1>
+                        <p className="text-muted">กำหนดข้อมูลหลักและตัวเลือกสินค้า (Variants)</p>
+                    </div>
+                    <div>
+                        <input
+                            type="file"
+                            accept=".csv"
+                            ref={csvInputRef}
+                            className="hidden"
+                            onChange={handleImportCsv}
+                        />
+                        <button
+                            type="button"
+                            disabled={csvLoading}
+                            onClick={() => csvInputRef.current?.click()}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-all shadow-lg disabled:bg-gray-400 disabled:shadow-none"
+                        >
+                            <FileUp className="w-5 h-5" />
+                            {csvLoading ? 'กำลังนำเข้า...' : 'นำเข้า CSV'}
+                        </button>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handleSubmit} className="space-y-8 px-6 pb-6">
                     {/* --- ส่วนข้อมูลหลัก --- */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* --- ส่วนรูปภาพหลัก --- */}
-                        <div className="mb-8 p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
-                            <label className="block text-sm font-bold text-gray-700 mb-4">รูปภาพสินค้าหลัก</label>
+                        <div className="mb-8 p-6 border-2 border-dashed border-border-main rounded-2xl bg-main">
+                            <label className="block text-sm font-bold text-content mb-4">รูปภาพสินค้าหลัก</label>
                             <div className="flex flex-col md:flex-row gap-6 items-start">
                                 {/* Preview & Upload Area */}
-                                <div className="relative w-full md:w-48 h-48 bg-white rounded-xl border overflow-hidden flex items-center justify-center group">
+                                <div className="relative w-full md:w-48 h-48 bg-surface rounded-xl border border-border-main overflow-hidden flex items-center justify-center group">
                                     {mainImagePreview ? (
                                         <>
                                             <img src={mainImagePreview} className="w-full h-full object-cover" alt="Preview" />
@@ -310,7 +355,7 @@ function ProductFormPage() {
                                             </button>
                                         </>
                                     ) : (
-                                        <label className="cursor-pointer flex flex-col items-center text-gray-400 hover:text-blue-500 transition-colors">
+                                        <label className="cursor-pointer flex flex-col items-center text-muted hover:text-primary transition-colors">
                                             <ImagePlus className="w-10 h-10 mb-2" />
                                             <span className="text-xs font-medium">เลือกรูปภาพ</span>
                                             <input type="file" className="hidden" accept="image/*" onChange={handleMainImageChange} />
@@ -320,64 +365,65 @@ function ProductFormPage() {
 
                                 {/* หรือใส่เป็น URL */}
                                 <div className="flex-1 w-full space-y-3">
-                                    <p className="text-sm text-gray-500">หรือระบุ URL ของรูปภาพ</p>
+                                    <p className="text-content font-medium">ลากไฟล์มาวาง หรือ คลิกเพื่อเลือก</p>
+                                    <p className="text-muted text-sm mt-1">รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 5MB</p>
                                     <div className="relative">
-                                        <LinkIcon className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                        <LinkIcon className="absolute left-3 top-2.5 w-4 h-4 text-muted" />
                                         <input
                                             type="url"
                                             placeholder="https://example.com/image.jpg"
-                                            className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                                            value={formData.imageUrl || ""} // ถ้ามี field image ใน formData
+                                            className="w-full pl-10 pr-4 py-2 border border-border-main rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+                                            value={formData.imageUrl || ""}
                                             onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-400 font-light italic">* หากเลือกอัปโหลดไฟล์ ระบบจะใช้รูปจากไฟล์เป็นหลัก</p>
+                                    <p className="text-sm text-muted mb-4">
+                                        อัปโหลดไฟล์ CSV เพื่อเพิ่มสินค้าหลายรายการพร้อมกันไฟล์เป็นหลัก</p>
                                 </div>
                             </div>
                         </div>
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อสินค้าหลัก</label>
+                            <label className="block text-sm font-medium text-content mb-1">ชื่อสินค้า *</label>
                             <input
                                 type="text" required
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full px-4 py-2.5 border border-border-main rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                 value={formData.title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                             />
                         </div>
                         {/* หมวดหมู่ (Dynamic) */}
                         <div className="md:col-span-1">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่สินค้า</label>
-                            <div className="flex gap-2">
-                                <select
-                                    required
-                                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all"
-                                    value={formData.categoryId}
-                                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                                >
-                                    <option value="">เลือกหมวดหมู่</option>
-                                    {Array.isArray(categories) && categories.map((cat: Category) => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </option>
-                                    ))}
-                                </select>
+                            <label className="block text-sm font-medium text-content mb-1">แบรนด์</label>
+                            <select
+                                required
+                                className="flex-1 px-4 py-2.5 border border-border-main rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-surface transition-all"
+                                value={formData.categoryId}
+                                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                            >
+                                <option value="">เลือกหมวดหมู่</option>
+                                {Array.isArray(categories) && categories.map((cat: Category) => (
+                                    <option key={cat.id} value={cat.id}>
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </select>
 
-                                {/* ปุ่มเพิ่มหมวดหมู่ */}
-                                <button
-                                    type="button"
-                                    onClick={handleAddNewCategory}
-                                    className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all group"
-                                    title="เพิ่มหมวดหมู่ใหม่"
-                                >
-                                    <FolderPlus className="w-5 h-5" />
-                                </button>
-                            </div>
+                            {/* ปุ่มเพิ่มหมวดหมู่ */}
+                            <button
+                                type="button"
+                                onClick={handleAddNewCategory}
+                                className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
+                                title="เพิ่มหมวดหมู่ใหม่"
+                            >
+                                <FolderPlus className="w-5 h-5" />
+                            </button>
                         </div>
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">รายละเอียดสินค้า</label>
+                            <label className="block text-sm font-medium text-content mb-1">รายละเอียด</label>
                             <textarea
                                 rows={3}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="อธิบายรายละเอียดสินค้า..."
+                                className="w-full px-4 py-2.5 border border-border-main rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             />
@@ -386,13 +432,13 @@ function ProductFormPage() {
 
                     {/* --- ส่วนจัดการ Variants --- */}
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center border-b pb-2">
-                            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <div className="flex justify-between items-center border-b border-border-main pb-2">
+                            <h2 className="text-lg font-semibold text-content flex items-center gap-2">
                                 <Package className="w-5 h-5" /> ตัวเลือกสินค้า (Variants)
                             </h2>
                             <button
                                 type="button" onClick={addVariant}
-                                className="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 flex items-center gap-1 font-semibold transition-colors"
+                                className="text-sm bg-primary-light text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 flex items-center gap-1 font-semibold transition-colors"
                             >
                                 <Plus className="w-4 h-4" /> เพิ่มตัวเลือก
                             </button>
@@ -400,21 +446,21 @@ function ProductFormPage() {
 
                         <div className="space-y-4">
                             {variants.map((variant, index) => (
-                                <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-200 relative group">
+                                <div key={index} className="p-4 bg-main rounded-xl border border-border-main relative group">
                                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                         <div className="md:col-span-1">
-                                            <label className="text-xs font-bold text-gray-500 uppercase">ชื่อตัวเลือก (เช่น สี, ไซส์)</label>
+                                            <label className="text-xs font-bold text-muted uppercase">ชื่อตัวเลือก (เช่น สี, ไซส์)</label>
                                             <input
                                                 type="text" required
-                                                className="w-full mt-1 px-3 py-1.5 border rounded-md text-sm"
+                                                className="w-full mt-1 px-3 py-1.5 border border-border-main rounded-md text-sm"
                                                 value={variant.variantName}
                                                 onChange={(e) => updateVariant(index, 'variantName', e.target.value)}
                                                 placeholder="แดง, L, หรือชุดเซ็ต"
                                             />
                                         </div>
                                         <div className="md:col-span-1">
-                                            <label className="text-xs font-bold text-gray-500 uppercase">รูปตัวเลือก</label>
-                                            <div className="mt-1 relative aspect-square w-full bg-white rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden group">
+                                            <label className="text-xs font-bold text-muted uppercase">รูปตัวเลือก</label>
+                                            <div className="mt-1 relative aspect-square w-full bg-surface rounded-lg border-2 border-dashed border-border-main flex items-center justify-center overflow-hidden group">
                                                 {(variant as any).imagePreview || variant.image ? (
                                                     <img
                                                         src={(variant as any).imagePreview || variant.image}
@@ -422,7 +468,7 @@ function ProductFormPage() {
                                                         alt="Variant"
                                                     />
                                                 ) : (
-                                                    <label className="cursor-pointer text-gray-400 hover:text-blue-500">
+                                                    <label className="cursor-pointer text-muted hover:text-primary">
                                                         <Plus className="w-6 h-6" />
                                                         <input
                                                             type="file" className="hidden"
@@ -434,41 +480,39 @@ function ProductFormPage() {
                                         </div>
 
                                         <div className="md:col-span-1">
-                                            <label className="text-xs font-bold text-gray-500 uppercase">ชื่อตัวเลือก</label>
-                                            {/* ... input ชื่อตัวเลือก ... */}
-
+                                            <label className="text-xs font-bold text-muted uppercase">ชื่อตัวเลือก</label>
                                             {/* เพิ่มช่องใส่ URL เล็กๆ ใต้ชื่อตัวเลือก */}
                                             <input
                                                 type="text"
                                                 placeholder="ลิงก์รูป (URL)"
-                                                className="w-full mt-2 px-2 py-1 border rounded text-[10px]"
+                                                className="w-full mt-2 px-2 py-1 border border-border-main rounded text-[10px]"
                                                 value={variant.image}
                                                 onChange={(e) => updateVariant(index, 'image', e.target.value)}
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase">ราคา (฿)</label>
+                                            <label className="text-xs font-bold text-muted uppercase">ราคา (฿)</label>
                                             <input
                                                 type="number" required
-                                                className="w-full mt-1 px-3 py-1.5 border rounded-md text-sm"
+                                                className="w-full mt-1 px-3 py-1.5 border border-border-main rounded-md text-sm"
                                                 value={variant.price}
                                                 onChange={(e) => updateVariant(index, 'price', e.target.value)}
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase">สต็อก</label>
+                                            <label className="text-xs font-bold text-muted uppercase">สต็อก</label>
                                             <input
                                                 type="number" required
-                                                className="w-full mt-1 px-3 py-1.5 border rounded-md text-sm"
+                                                className="w-full mt-1 px-3 py-1.5 border border-border-main rounded-md text-sm"
                                                 value={variant.stock}
                                                 onChange={(e) => updateVariant(index, 'stock', e.target.value)}
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase">SKU (ถ้ามี)</label>
+                                            <label className="text-xs font-bold text-muted uppercase">SKU (ถ้ามี)</label>
                                             <input
                                                 type="text"
-                                                className="w-full mt-1 px-3 py-1.5 border rounded-md text-sm"
+                                                className="w-full mt-1 px-3 py-1.5 border border-border-main rounded-md text-sm"
                                                 value={variant.sku || ""}
                                                 onChange={(e) => updateVariant(index, 'sku', e.target.value)}
                                             />
@@ -478,7 +522,7 @@ function ProductFormPage() {
                                     {variants.length > 1 && (
                                         <button
                                             type="button" onClick={() => removeVariant(index)}
-                                            className="absolute -right-2 -top-2 bg-white text-red-500 p-1.5 rounded-full shadow-sm border border-red-100 hover:bg-red-50 transition-colors"
+                                            className="absolute -right-2 -top-2 bg-surface text-red-500 p-1.5 rounded-full shadow-sm border border-red-100 hover:bg-red-50 transition-colors"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -489,16 +533,16 @@ function ProductFormPage() {
                     </div>
 
                     {/* --- Action Buttons --- */}
-                    <div className="flex gap-4 pt-6 border-t">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-border-main">
                         <button
                             type="button" onClick={() => navigate(-1)}
-                            className="flex-1 px-4 py-3 border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                            className="px-6 py-2.5 bg-surface border border-border-main text-content rounded-lg hover:bg-surface-hover transition-colors font-medium"
                         >
                             ยกเลิก
                         </button>
                         <button
                             type="submit" disabled={loading}
-                            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:bg-gray-400"
+                            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
                         >
                             {loading ? "กำลังบันทึก..." : "ยืนยันการเพิ่มสินค้า"}
                         </button>

@@ -114,8 +114,8 @@ export default function SettingPage() {
     return (
         <div className="max-w-5xl mx-auto px-4 py-8">
             <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-                <p className="text-gray-500">Manage your account settings and preferences.</p>
+                <h1 className="text-2xl font-bold text-content">Settings</h1>
+                <p className="text-muted">Manage your account settings and preferences.</p>
             </div>
 
             <div className="flex flex-col md:flex-row gap-8">
@@ -126,8 +126,8 @@ export default function SettingPage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${activeTab === tab.id
-                                ? 'bg-blue-50 text-blue-600'
-                                : 'text-gray-600 hover:bg-gray-50'
+                                ? 'bg-primary-light text-primary'
+                                : 'text-muted hover:bg-surface-hover'
                                 }`}
                         >
                             {tab.icon}
@@ -137,33 +137,33 @@ export default function SettingPage() {
                 </aside>
 
                 {/* Settings Content */}
-                <main className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <main className="flex-1 bg-surface rounded-xl shadow-sm border border-border-main overflow-hidden">
                     <div className="p-6">
                         {activeTab === 'general' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h3 className="text-lg font-medium text-gray-900">Profile Information</h3>
-                                    <p className="text-sm text-gray-500">Update your personal details.</p>
+                                    <h3 className="text-lg font-medium text-content">Profile Information</h3>
+                                    <p className="text-sm text-muted">Update your personal details.</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-sm font-medium text-gray-700">Display Name</label>
+                                        <label className="text-sm font-medium text-content">Display Name</label>
                                         <input
                                             type="text"
                                             name="displayName"
-                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                            className="w-full px-4 py-2 border border-border-main rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                             placeholder="Your name"
                                             value={formData.displayName}
                                             onChange={handleChange}
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-sm font-medium text-gray-700">Email Address</label>
+                                        <label className="text-sm font-medium text-content">Email Address</label>
                                         <div className="relative">
                                             <input
                                                 type="email"
-                                                className="w-full px-4 py-2 pr-10 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 outline-none"
+                                                className="w-full px-4 py-2 pr-10 border border-border-main rounded-lg bg-main text-muted outline-none"
                                                 disabled
                                                 value={user?.email}
 
@@ -203,15 +203,15 @@ export default function SettingPage() {
                                         )}
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                                        <label className="text-sm font-medium text-content">Phone Number</label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                                <Phone size={16} className="text-gray-400" />
+                                                <Phone size={16} className="text-muted" />
                                             </div>
                                             <input
                                                 type="tel"
                                                 name='phoneNumber'
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                                className="w-full pl-10 pr-4 py-2 border border-border-main rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                                                 placeholder="+66 812345678"
                                                 value={formData.phoneNumber}
                                                 onChange={handleChange}
@@ -225,20 +225,20 @@ export default function SettingPage() {
                         {activeTab === 'notifications' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h3 className="text-lg font-medium text-gray-900">Notifications</h3>
-                                    <p className="text-sm text-gray-500">Choose what updates you want to receive.</p>
+                                    <h3 className="text-lg font-medium text-content">Notifications</h3>
+                                    <p className="text-sm text-muted">Choose what updates you want to receive.</p>
                                 </div>
 
                                 {/* 🔔 ส่วนเพิ่ม: Web Push Notification Status */}
-                                <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl mb-6">
+                                <div className="p-4 bg-primary-light border border-primary/20 rounded-xl mb-6">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-3">
-                                            <div className={`p-2 rounded-full ${isAllow ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                                            <div className={`p-2 rounded-full ${isAllow ? 'bg-green-100 text-green-600' : 'bg-primary-light text-primary'}`}>
                                                 <Bell size={20} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-semibold text-gray-900">Browser Push Notifications</p>
-                                                <p className="text-xs text-gray-600">{isAllow ? 'Status: Active' : 'Enable to get real-time alerts'}</p>
+                                                <p className="text-sm font-semibold text-content">Browser Push Notifications</p>
+                                                <p className="text-xs text-muted">{isAllow ? 'Status: Active' : 'Enable to get real-time alerts'}</p>
                                             </div>
                                         </div>
 
@@ -247,7 +247,7 @@ export default function SettingPage() {
                                             disabled={isAllow}
                                             className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isAllow
                                                 ? 'bg-green-500 text-white cursor-default'
-                                                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                                                : 'bg-primary text-white hover:bg-primary/90 shadow-sm'
                                                 }`}
                                         >
                                             {isAllow ? 'ON' : 'ENABLE'}
@@ -268,10 +268,10 @@ export default function SettingPage() {
                                         { id: 'merchant', title: 'Merchant Updates', desc: 'New features and tips for your shop.' },
                                         { id: 'stock', title: 'Stock Alerts', desc: 'Notify when products are low in stock.' }
                                     ].map((item) => (
-                                        <div key={item.id} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                                        <div key={item.id} className="flex items-center justify-between py-3 border-b border-border-main last:border-0">
                                             <div>
-                                                <p className="text-sm font-medium text-gray-900">{item.title}</p>
-                                                <p className="text-xs text-gray-500">{item.desc}</p>
+                                                <p className="text-sm font-medium text-content">{item.title}</p>
+                                                <p className="text-xs text-muted">{item.desc}</p>
                                             </div>
                                             <label className="relative inline-flex items-center cursor-pointer">
                                                 <input
@@ -279,7 +279,7 @@ export default function SettingPage() {
                                                     className="sr-only peer"
                                                 // ในอนาคตใช้ value จาก DB: defaultChecked={userSettings[item.id]} 
                                                 />
-                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                             </label>
                                         </div>
                                     ))}
@@ -291,17 +291,17 @@ export default function SettingPage() {
                         {activeTab === 'store' && isMerchant && (
                             <div className="space-y-6">
                                 <div>
-                                    <h3 className="text-lg font-medium text-gray-900">Store Details</h3>
-                                    <p className="text-sm text-gray-500">Configure your public store profile.</p>
+                                    <h3 className="text-lg font-medium text-content">Store Details</h3>
+                                    <p className="text-sm text-muted">Configure your public store profile.</p>
                                 </div>
                                 <div className="grid grid-cols-1 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-sm font-medium text-gray-700">Store Name</label>
-                                        <input type="text" className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="My Awesome Shop" value={merchant?.name} />
+                                        <label className="text-sm font-medium text-content">Store Name</label>
+                                        <input type="text" className="w-full px-4 py-2 border border-border-main rounded-lg outline-none focus:ring-2 focus:ring-primary" placeholder="My Awesome Shop" value={merchant?.name} />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-sm font-medium text-gray-700">Business Address</label>
-                                        <textarea className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" rows={3} placeholder="123 Store St..." value={merchant?.address?.detail} />
+                                        <label className="text-sm font-medium text-content">Business Address</label>
+                                        <textarea className="w-full px-4 py-2 border border-border-main rounded-lg outline-none focus:ring-2 focus:ring-primary" rows={3} placeholder="123 Store St..." value={merchant?.address?.detail} />
                                     </div>
                                 </div>
                             </div>
@@ -309,8 +309,8 @@ export default function SettingPage() {
                     </div>
 
                     {/* Footer Action */}
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
-                        <button onClick={saveUpdateProfile} className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
+                    <div className="px-6 py-4 bg-main border-t border-border-main flex justify-end">
+                        <button onClick={saveUpdateProfile} className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
                             <Save size={18} />
                             <span>Save Changes</span>
                         </button>

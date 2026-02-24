@@ -33,6 +33,8 @@ import MerchantProductStore from './pages/MerchantProductStore'
 import MerchantProfilePage from './pages/MerchantProfilePage'
 import { fetchNoti, resetNotiState, setupNotifications } from './service/notificationService'
 import { clearOrderState } from './service/orderService'
+import PolicyPage from './pages/PolicyPage'
+import TermPage from './pages/TermPage'
 
 
 
@@ -108,6 +110,8 @@ function App() {
   const element = (
     <Routes>
       <Route path="/" element={<ProductPage />} />
+      <Route path="/policy" element={<PolicyPage />} />
+      <Route path="/terms" element={<TermPage />} />
       <Route element={<GuestRoute />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

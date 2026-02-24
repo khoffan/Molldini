@@ -123,14 +123,14 @@ export default function OrderDetailPage() {
             <div className="flex items-center justify-between mb-8">
                 <button
                     onClick={() => navigate(-1)}
-                    className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                    className="flex items-center text-muted hover:text-content transition-colors"
                 >
                     <ArrowLeft size={20} className="mr-2" />
                     <span>Back to Orders</span>
                 </button>
                 <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500">Order ID:</span>
-                    <span className="text-sm font-mono font-medium text-gray-900">{id}</span>
+                    <span className="text-sm text-muted">Order ID:</span>
+                    <span className="text-sm font-mono font-medium text-content">{id}</span>
                 </div>
             </div>
 
@@ -138,12 +138,12 @@ export default function OrderDetailPage() {
                 {/* Left Column: Order Info & Items */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Order Status Card */}
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    <div className="bg-surface rounded-2xl p-6 border border-border-main shadow-sm">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-semibold text-gray-900">Order Status</h2>
+                            <h2 className="text-lg font-semibold text-content">Order Status</h2>
                             <StatusBadge status={status} />
                         </div>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
+                        <div className="flex items-center space-x-4 text-sm text-muted">
                             <div className="flex items-center">
                                 <Clock size={16} className="mr-1" />
                                 {new Date().toLocaleDateString()}
@@ -156,16 +156,16 @@ export default function OrderDetailPage() {
                     </div>
 
                     {/* Items List */}
-                    <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                        <div className="p-6 border-b border-gray-50">
-                            <h3 className="font-semibold text-gray-900">Items Summary</h3>
+                    <div className="bg-surface rounded-2xl overflow-hidden border border-border-main shadow-sm">
+                        <div className="p-6 border-b border-border-main">
+                            <h3 className="font-semibold text-content">Items Summary</h3>
                         </div>
-                        <div className="divide-y divide-gray-50">
+                        <div className="divide-y divide-border-main">
                             {order?.subOrders?.map((subOrder) => (
                                 <div key={subOrder.id}>
                                     {/* Merchant Header */}
-                                    <div className="px-6 py-3 bg-gray-50">
-                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <div className="px-6 py-3 bg-main">
+                                        <p className="text-xs font-bold text-muted uppercase tracking-wider">
                                             ร้าน: {subOrder.merchantName || 'Unknown'}
                                         </p>
                                     </div>
@@ -173,14 +173,14 @@ export default function OrderDetailPage() {
                                         const variantData = variantList.find((variant) => variant.id === item.productVariantId);
                                         return (
                                             <div key={item.id} className="p-6 flex items-center space-x-4">
-                                                <img src={item.image} alt={item.title} className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0" />
+                                                <img src={item.image} alt={item.title} className="w-16 h-16 bg-main rounded-lg shrink-0" />
                                                 <div className="flex-1">
-                                                    <h4 className="text-sm font-medium text-gray-900">{item.title}</h4>
-                                                    <p className="text-xs text-gray-500">{variantData?.variantName}</p>
+                                                    <h4 className="text-sm font-medium text-content">{item.title}</h4>
+                                                    <p className="text-xs text-muted">{variantData?.variantName}</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-sm font-semibold text-gray-900">฿{item.price}</p>
-                                                    <p className="text-xs text-gray-500">x{item.quantity}</p>
+                                                    <p className="text-sm font-semibold text-content">฿{item.price}</p>
+                                                    <p className="text-xs text-muted">x{item.quantity}</p>
                                                 </div>
                                             </div>
                                         )
@@ -194,31 +194,31 @@ export default function OrderDetailPage() {
                 {/* Right Column: Payment & Actions */}
                 <div className="space-y-6">
                     {/* Summary Card */}
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm space-y-4">
-                        <h3 className="font-semibold text-gray-900 mb-4">Price Summary</h3>
+                    <div className="bg-surface rounded-2xl p-6 border border-border-main shadow-sm space-y-4">
+                        <h3 className="font-semibold text-content mb-4">Price Summary</h3>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Subtotal</span>
-                            <span className="text-gray-900 font-medium">{order?.totalPrice}</span>
+                            <span className="text-muted">Subtotal</span>
+                            <span className="text-content font-medium">{order?.totalPrice}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Shipping</span>
-                            <span className="text-gray-900 font-medium">฿40</span>
+                            <span className="text-muted">Shipping</span>
+                            <span className="text-content font-medium">฿40</span>
                         </div>
-                        <div className="pt-4 border-t border-gray-100 flex justify-between items-end">
-                            <span className="text-base font-semibold text-gray-900">Total</span>
-                            <span className="text-2xl font-bold text-blue-600">฿{order?.invoice.amount}</span>
+                        <div className="pt-4 border-t border-border-main flex justify-between items-end">
+                            <span className="text-base font-semibold text-content">Total</span>
+                            <span className="text-2xl font-bold text-primary">฿{order?.invoice.amount}</span>
                         </div>
 
                         {/* Action Button: Conditional Rendering */}
                         <div className="pt-4">
                             {status === 'UNPAID' ? (
-                                <button onClick={handleSubmitPay} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg shadow-blue-100">
+                                <button onClick={handleSubmitPay} className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg">
                                     <CreditCard size={18} />
                                     <span>Pay Now</span>
                                 </button>
                             ) : (
                                 <div className="space-y-3">
-                                    <button className="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-2.5 rounded-xl transition-all flex items-center justify-center space-x-2">
+                                    <button className="w-full bg-surface border border-border-main hover:bg-surface-hover text-content font-medium py-2.5 rounded-xl transition-all flex items-center justify-center space-x-2">
                                         <Receipt size={18} />
                                         <span>View Invoice</span>
                                     </button>
@@ -226,7 +226,7 @@ export default function OrderDetailPage() {
                                         <a
                                             href={order.invoice.paymentMethod}
                                             target="_blank"
-                                            className="w-full text-blue-600 text-sm font-medium flex items-center justify-center hover:underline"
+                                            className="w-full text-primary text-sm font-medium flex items-center justify-center hover:underline"
                                         >
                                             <ExternalLink size={14} className="mr-1" />
                                             View Payment Slip
@@ -238,12 +238,12 @@ export default function OrderDetailPage() {
                     </div>
 
                     {/* Shipping Info Card (Optional) */}
-                    <div className="bg-gray-50 rounded-2xl p-6 border border-dashed border-gray-200">
-                        <div className="flex items-center space-x-2 mb-3 text-gray-900 font-medium">
+                    <div className="bg-main rounded-2xl p-6 border border-dashed border-border-main">
+                        <div className="flex items-center space-x-2 mb-3 text-content font-medium">
                             <Truck size={18} />
                             <span>Shipping Address</span>
                         </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">
+                        <p className="text-sm text-muted leading-relaxed">
                             {order?.shippingAddress}
                         </p>
                     </div>
