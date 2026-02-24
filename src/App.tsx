@@ -47,6 +47,8 @@ function App() {
     dispatch(fetchProducts())
     dispatch(fetchCategories())
     const unscription = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log("User is signed in", firebaseUser);
+      console.log("isSynced", isSynced);
       if (firebaseUser && isSynced) return;
 
       if (firebaseUser) {
