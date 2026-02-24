@@ -121,11 +121,7 @@ export const setProductImportCsv = createAsyncThunk(
         try {
             const formData = new FormData();
             formData.append("file", file);
-            const response = await api.post("/api/v1/products/import-csv", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                }
-            });
+            const response = await api.post("/api/v1/products/import-csv", formData);
             if (response.status != 201) {
                 return rejectWithValue(response.data.message);
             }
