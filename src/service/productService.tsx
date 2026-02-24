@@ -119,7 +119,9 @@ export const setProductImportCsv = createAsyncThunk(
     'product/importProduct',
     async (file: File, { rejectWithValue }) => {
         try {
-            const response = await api.post("/api/v1/products/import-csv", file, {
+            const formData = new FormData();
+            formData.append("file", file);
+            const response = await api.post("/api/v1/products/import-csv", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 }
