@@ -23,6 +23,7 @@ import {
     Store,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import RegistrationForm from "../components/RegistrationForm";
 
 type TabId = "dashboard" | "orders" | "settings";
 
@@ -54,8 +55,42 @@ export default function MerchantProfilePage() {
 
     if (!merchant) {
         return (
-            <div className="flex h-[60vh] items-center justify-center">
-                <p className="text-gray-400">ไม่พบข้อมูลร้านค้า</p>
+            <div className="min-h-screen bg-main py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+                <div className="max-w-4xl mx-auto">
+                    {/* Header Section */}
+                    <div className="mb-10 text-center lg:text-left">
+                        <h1 className="text-3xl font-bold text-content">Become a Merchant</h1>
+                        <p className="mt-2 text-gray-500 dark:text-gray-400">
+                            Start your business with Molldini and reach customers worldwide.
+                        </p>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-800 shadow-2xl rounded-3xl overflow-hidden border border-gray-100 dark:border-slate-700">
+                        <div className="flex flex-col md:flex-row">
+
+                            {/* Left Side: Info/Incentive (Hidden on mobile) */}
+                            <div className="hidden md:flex md:w-1/3 bg-primary p-10 flex-col justify-between text-white">
+                                <div>
+                                    <h3 className="text-xl font-semibold mb-4">Why sell with us?</h3>
+                                    <ul className="space-y-4 text-sm opacity-90">
+                                        <li>✓ Low commission rates</li>
+                                        <li>✓ Easy CSV product import</li>
+                                        <li>✓ 24/7 Merchant support</li>
+                                    </ul>
+                                </div>
+                                <div className="text-xs opacity-70">
+                                    Molldini Merchant Partner Program v1.0
+                                </div>
+                            </div>
+
+                            {/* Right Side: The Form */}
+                            <div className="flex-1 p-8 lg:p-12">
+                                <RegistrationForm />
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
