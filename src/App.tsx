@@ -63,14 +63,14 @@ function App() {
             dispatch(fetchCart()),
             dispatch(fetchNoti())
           ])
-        } else {
-          console.log("user sign out")
-          dispatch(clearCart());
-          dispatch(clearUserData())
-          dispatch(clearOrderState())
-          dispatch(resetMerchantState())
-          dispatch(resetNotiState())
         }
+      } else {
+        console.log("user sign out")
+        dispatch(clearCart());
+        dispatch(clearUserData())
+        dispatch(clearOrderState())
+        dispatch(resetMerchantState())
+        dispatch(resetNotiState())
       }
       dispatch(setInitialize());
     })
