@@ -92,13 +92,23 @@ function ProductFormPage() {
 
         setCsvLoading(true);
         try {
-            await dispatch(setProductImportCsv(file)).unwrap();
-            Swal.fire({
-                title: 'สำเร็จ!',
-                text: 'นำเข้าสินค้าจากไฟล์ CSV เรียบร้อยแล้ว',
-                icon: 'success',
-                confirmButtonColor: '#2563eb',
-            }).then(() => navigate('/merchant'));
+            const isImport = await dispatch(setProductImportCsv(file)).unwrap();
+            if (isImport) {
+                Swal.fire({
+                    title: 'สำเร็จ!',
+                    text: 'นำเข้าสินค้าจากไฟล์ CSV เรียบร้อยแล้ว',
+                    icon: 'success',
+                    confirmButtonColor: '#2563eb',
+                }).then(() => navigate('/merchant/profile', { replace: true }));
+            } else {
+                Swal.fire({
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถนำเข้าไฟล์ได้',
+                    icon: 'error',
+                    confirmButtonColor: '#2563eb',
+                }).then(() => navigate('/merchant/profile', { replace: true }));
+            }
+
         } catch (err: unknown) {
             Swal.fire({ title: 'เกิดข้อผิดพลาด', text: (err as Error).message || 'ไม่สามารถนำเข้าไฟล์ได้', icon: 'error' });
         } finally {

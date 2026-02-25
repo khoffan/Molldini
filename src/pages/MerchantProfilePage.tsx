@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import RegistrationForm from "../components/RegistrationForm";
+import { fetchProductMerchant } from "../service/productService";
+import { fetchMyMerchant } from "../service/merchantService";
+import LoadingCircularSkelition from "../components/loadingSkeleton/LoadingCircularSkelition";
 
 type TabId = "dashboard" | "orders" | "settings";
 
@@ -41,7 +44,7 @@ export default function MerchantProfilePage() {
     const [activeTab, setActiveTab] = useState<TabId>("dashboard");
     const [orderFilter, setOrderFilter] = useState<OrderFilter>("ALL");
 
-    const { merchant } = useSelector((state: RootState) => state.merchant);
+    const { merchant, loading: merchantLoading } = useSelector((state: RootState) => state.merchant);
     const { listOrderMerchant, loading: orderLoading } = useSelector(
         (state: RootState) => state.order
     );
@@ -51,6 +54,7 @@ export default function MerchantProfilePage() {
         if (activeTab === "orders") {
             dispatch(fetchOrderMerchant());
         }
+        dispatch(fetchMyMerchant());
     }, [activeTab, dispatch]);
 
     if (!merchant) {
@@ -104,7 +108,7 @@ export default function MerchantProfilePage() {
     return (
         <div className="min-h-screen bg-main pb-12">
             {/* ── Hero Banner ── */}
-            <div className="bg-white border-b border-gray-100">
+            <div className="bg-surface border-b border-surface-200">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                         {merchant.logoUrl ? (
@@ -115,14 +119,14 @@ export default function MerchantProfilePage() {
                             />
                         ) : (
                             <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
-                                <Store className="w-9 h-9 text-white" />
+                                <Store className="w-9 h-9 text-content" />
                             </div>
                         )}
                         <div className="flex-1 min-w-0">
-                            <h1 className="text-2xl font-black text-gray-900 truncate">
+                            <h1 className="text-2xl font-black text-content truncate">
                                 {merchant.name}
                             </h1>
-                            <p className="text-gray-500 text-sm mt-1 line-clamp-2">
+                            <p className="text-content-200 text-sm mt-1 line-clamp-2">
                                 {merchant.description || "ยังไม่มีคำอธิบายร้านค้า"}
                             </p>
                             <div className="flex flex-wrap items-center gap-3 mt-3">
@@ -144,7 +148,7 @@ export default function MerchantProfilePage() {
             </div>
 
             {/* ── Tab Bar ── */}
-            <div className="bg-white border-b border-gray-100 sticky top-16 z-30">
+            <div className="bg-surface border-b border-surface sticky top-16 z-30">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <nav className="flex gap-1 -mb-px overflow-x-auto">
                         {TABS.map((tab) => (
@@ -153,7 +157,7 @@ export default function MerchantProfilePage() {
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
                                     ? "border-blue-600 text-blue-600"
-                                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                    : "border-transparent text-content hover:text-content-200 hover:border-gray-300"
                                     }`}
                             >
                                 {tab.icon}
@@ -168,7 +172,11 @@ export default function MerchantProfilePage() {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
                 {/* ─── Dashboard Tab ─── */}
                 {activeTab === "dashboard" && (
-                    <MerchantDashboard merchant={merchant} />
+                    merchantLoading ? (
+                        <LoadingCircularSkelition />
+                    ) : (
+                        <MerchantDashboard merchant={merchant} />
+                    )
                 )}
 
                 {/* ─── Orders Tab ─── */}
@@ -320,43 +328,43 @@ export default function MerchantProfilePage() {
 
                 {/* ─── Settings Tab ─── */}
                 {activeTab === "settings" && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="bg-surface rounded-2xl shadow-sm border border-surface-200 overflow-hidden">
                         <div className="p-6 space-y-8">
                             {/* Store Info */}
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                                <h3 className="text-lg font-bold text-content mb-1">
                                     ข้อมูลร้านค้า
                                 </h3>
-                                <p className="text-sm text-gray-500 mb-6">
+                                <p className="text-sm text-content-200 mb-6">
                                     รายละเอียดร้านค้าของคุณ
                                 </p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        <label className="text-xs font-semibold text-content-200 uppercase tracking-wider">
                                             ชื่อร้านค้า
                                         </label>
-                                        <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-800 font-medium border border-gray-100">
+                                        <div className="px-4 py-3 bg-surface-200 rounded-xl text-content font-medium border border-surface-200">
                                             {merchant.name}
                                         </div>
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        <label className="text-xs font-semibold text-content-200 uppercase tracking-wider">
                                             Merchant ID
                                         </label>
-                                        <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-500 font-mono text-sm border border-gray-100 truncate">
+                                        <div className="px-4 py-3 bg-surface-200 rounded-xl text-content font-mono text-sm border border-surface-200 truncate">
                                             {merchant.id}
                                         </div>
                                     </div>
 
                                     <div className="space-y-1.5 md:col-span-2">
-                                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                        <label className="text-xs font-semibold text-content-200 uppercase tracking-wider">
                                             คำอธิบายร้านค้า
                                         </label>
-                                        <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-700 border border-gray-100 min-h-15">
+                                        <div className="px-4 py-3 bg-surface-200 rounded-xl text-content border border-surface-200 min-h-15">
                                             {merchant.description || (
-                                                <span className="text-gray-400 italic">
+                                                <span className="text-content-200 italic">
                                                     ยังไม่มีคำอธิบาย
                                                 </span>
                                             )}
@@ -366,8 +374,8 @@ export default function MerchantProfilePage() {
                             </div>
 
                             {/* Address */}
-                            <div className="border-t border-gray-100 pt-6">
-                                <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
+                            <div className="border-t border-surface-200 pt-6">
+                                <h3 className="text-lg font-bold text-content mb-1 flex items-center gap-2">
                                     <MapPin size={18} className="text-blue-600" />
                                     ที่อยู่ร้านค้า
                                 </h3>
@@ -397,19 +405,19 @@ export default function MerchantProfilePage() {
                                             },
                                         ].map((field) => (
                                             <div key={field.label} className="space-y-1.5">
-                                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                                <label className="text-xs font-semibold text-content-200 uppercase tracking-wider">
                                                     {field.label}
                                                 </label>
-                                                <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-700 border border-gray-100">
+                                                <div className="px-4 py-3 bg-surface-200 rounded-xl text-content border border-surface-200">
                                                     {field.value || "-"}
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="mt-4 flex items-center gap-3 p-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                                        <Globe className="text-gray-300" size={24} />
-                                        <p className="text-gray-400">ยังไม่ได้ระบุที่อยู่ร้านค้า</p>
+                                    <div className="mt-4 flex items-center gap-3 p-6 bg-surface-200 rounded-xl border border-dashed border-surface-200">
+                                        <Globe className="text-content-200" size={24} />
+                                        <p className="text-content-200">ยังไม่ได้ระบุที่อยู่ร้านค้า</p>
                                     </div>
                                 )}
                             </div>

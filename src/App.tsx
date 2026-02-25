@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router'
+import { Navigate, Route, Routes } from 'react-router'
 import ProductPage from './pages/Product'
 import Cart from './pages/Cart'
 import Navbar from './components/Navbar'
@@ -35,6 +35,7 @@ import { fetchNoti, resetNotiState, setupNotifications } from './service/notific
 import { clearOrderState } from './service/orderService'
 import PolicyPage from './pages/PolicyPage'
 import TermPage from './pages/TermPage'
+import NotFoundPage from './pages/NotFounadPage'
 
 
 
@@ -152,6 +153,7 @@ function App() {
         <Route path='/checkout/qr' element={<QRcodePage />} />
         <Route path='/success/:id' element={<SuccessCheckoutPage />} />
       </Route>
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 

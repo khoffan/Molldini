@@ -4,12 +4,17 @@ import type { Merchant } from '../../interface/merchantInterface'; // ปรั�
 import { Plus, Package, ShoppingBag, MapPin, Globe } from 'lucide-react';
 import { ProductDesktopRow, ProductMobileCard } from './MerchantProductComponent';
 import type { Product } from '../../interface/productInterface';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { fetchMyMerchant } from '../../service/merchantService';
+import type { AppDispatch } from '../../store';
 
 interface Props {
     merchant: Merchant;
 }
 
 function MerchantDashboard({ merchant }: Props) {
+    const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate()
     // คำนวณสถิติจริงจากข้อมูลที่มีใน merchant object
     const totalProducts = merchant.products?.length || 0;

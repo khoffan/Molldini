@@ -121,14 +121,22 @@ export const setProductImportCsv = createAsyncThunk(
         try {
             const formData = new FormData();
             formData.append("file", file);
-            const response = await api.post("/api/v1/products/import-csv", formData);
-            if (response.status != 201) {
-                return rejectWithValue(response.data.message);
+            const response = await api.post("/api/v1/products/import-csv", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            if (response.status == 200) {
+                return true
             }
-            return null
+            return false
         } catch (e: unknown) {
-            const error = e as Error;
-            return rejectWithValue(error.message);
+            if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            } else if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
         }
     }
 )
