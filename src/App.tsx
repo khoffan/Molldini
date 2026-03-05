@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router'
+import { Route, Routes } from 'react-router'
 import ProductPage from './pages/Product'
 import Cart from './pages/Cart'
 import Navbar from './components/Navbar'
@@ -12,12 +12,12 @@ import UserProfile from './pages/UserProfile'
 import Login from './pages/LoginPage'
 import Register from './pages/RegisterPage'
 import { onAuthStateChanged } from 'firebase/auth'
-import { auth, messaging } from './firebase/firebaseConfig'
+import { auth } from './firebase/firebaseConfig'
 import { syncUserWithBackend, setInitialize } from './service/authService'
 import ProtectRoute from './components/ProtectRoute'
 import { fetchMyMerchant, resetMerchantState } from './service/merchantService'
 import { fetchCategories } from './service/categoryService'
-import { clearCart, fetchCart, mergeCartAfterLogin } from './service/cartService'
+import { clearCart, fetchCart } from './service/cartService'
 import CheckoutPage from './pages/CheckoutPage'
 import ProfileLayout from './pages/ProfileLayout'
 import GuestRoute from './components/GuestRoute'
@@ -43,7 +43,6 @@ import NotFoundPage from './pages/NotFounadPage'
 function App() {
   const dispatch = useDispatch<AppDispatch>()
   const { isAuthenticated, isSynced } = useSelector((state: RootState) => state.auth)
-  const cart = useSelector((state: RootState) => state.cart)
   useEffect(() => {
     dispatch(fetchProducts())
     dispatch(fetchCategories())

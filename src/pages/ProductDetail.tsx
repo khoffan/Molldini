@@ -102,7 +102,7 @@ function ProductDetail() {
 
                         {/* 📸 ฝั่งซ้าย: รูปภาพสินค้า (ไม่ Map ซ้ำแล้ว) */}
                         <div className="lg:w-1/2 p-4 lg:p-12 bg-surface">
-                            <div className="aspect-square rounded-3xl overflow-hidden bg-main border border-border-main group">
+                            <div className="aspect-square rounded-3xl overflow-hidden bg-white border border-border-main group">
                                 <img
                                     src={imageUrl}
                                     alt={currentVariant.variantName}

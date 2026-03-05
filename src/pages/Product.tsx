@@ -7,6 +7,7 @@ import CategoryTag from '../components/categoryTag';
 import { getImageValidate } from '../utils/getImageValidate';
 import { Store } from 'lucide-react';
 import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
+import { fetchCategories } from '../service/categoryService';
 
 export default function ProductPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,6 +29,7 @@ export default function ProductPage() {
 
   useEffect(() => {
     dispatch(fetchProducts());
+    dispatch(fetchCategories());
   }, [dispatch]);
 
   if (error) return <div className="p-20 text-center text-red-500">Error: {error}</div>;

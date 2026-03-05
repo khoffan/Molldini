@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/immutability */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { MapPin, Plus, CreditCard, ChevronRight, CheckCircle2, Truck, Package } from 'lucide-react';
@@ -27,9 +28,8 @@ export default function CheckoutPage() {
     const [selectedBank, setSelectedBank] = useState<string>("");
     const [selectedShippingId, setSelectedShippingId] = useState<string>("s1"); // [id, setSelectedShippingId]
 
-    const total = order?.totalPrice || 0;
 
-    console.log("order data => ", order)
+
 
     const createSource = (amount: number, method: string): Promise<any> => {
         return new Promise((resolve, reject) => {
@@ -83,6 +83,7 @@ export default function CheckoutPage() {
         if (paymentChoice === undefined || paymentChoice === null) return;
 
         const address = user?.addresses?.find(a => a.id === selectedAddressId);
+        // const shippingMethod = mockShippingMethods.find(m => m.id === selectedShippingId);
 
         Swal.fire({
             title: 'กำลังสร้างคำสั่งซื้อ...',
@@ -177,7 +178,8 @@ export default function CheckoutPage() {
             estimatedDays: "2-3 วัน",
             minOrderAmount: 0,
             freeShippingThreshold: 1000,
-            sortOrder: 10
+            sortOrder: 10,
+            image: "https://cdn.brandfetch.io/idzqDyW4sQ/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1700855441017"
         },
         {
             id: "s2",
@@ -187,11 +189,24 @@ export default function CheckoutPage() {
             price: 70,
             estimatedDays: "1-2 วัน",
             minOrderAmount: 200, // ต้องซื้อครบ 200 ถึงจะขึ้นตัวเลือกนี้
-            freeShippingThreshold: 2000,
-            sortOrder: 20
+            freeShippingThreshold: 4000,
+            sortOrder: 20,
+            image: "https://cdn.brandfetch.io/idWh9MmD5j/w/236/h/53/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1732604587406"
         },
         {
             id: "s3",
+            name: "Standard Delivery",
+            provider: "J&T Express",
+            description: "จัดส่งด่วนพิเศษ ได้รับไว",
+            price: 70,
+            estimatedDays: "1-2 วัน",
+            minOrderAmount: 100, // ต้องซื้อครบ 200 ถึงจะขึ้นตัวเลือกนี้
+            freeShippingThreshold: 6000,
+            sortOrder: 20,
+            image: "https://cdn.brandfetch.io/idJ7kFPKaZ/w/521/h/521/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1768878791269"
+        },
+        {
+            id: "s4",
             name: "Lalamove Express",
             provider: "LALAMOVE",
             description: "ส่งด่วนด้วยรถมอเตอร์ไซค์ (เฉพาะพื้นที่)",
@@ -199,9 +214,16 @@ export default function CheckoutPage() {
             estimatedDays: "ภายใน 3 ชม.",
             minOrderAmount: 500,
             freeShippingThreshold: null,
-            sortOrder: 30
+            sortOrder: 30,
+            image: "https://cdn.brandfetch.io/idUoPQNwIr/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1767342240419"
         }
     ];
+
+    const amount = order?.totalPrice || 0;
+    const shippingMethod = mockShippingMethods.find(m => m.id === selectedShippingId);
+    const isFree = shippingMethod?.freeShippingThreshold && amount >= shippingMethod.freeShippingThreshold;
+    const shippingCost = isFree ? 0 : shippingMethod?.price || 0;
+    const total = amount + shippingCost;
 
 
 
@@ -290,7 +312,7 @@ export default function CheckoutPage() {
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-lg bg-surface-hover flex items-center justify-center text-xs font-black text-muted border border-border-main">
-                                                    {method.provider}
+                                                    <img src={method.image} alt={method.name} className="w-full h-full object-contain" />
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-content text-sm">{method.name}</p>
