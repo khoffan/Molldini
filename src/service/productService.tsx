@@ -29,7 +29,6 @@ export const fetchProducts = createAsyncThunk(
         try {
             const endpoint = id ? `/api/v1/products/${id}` : `/api/v1/products`;
             const response = await api.get(endpoint);
-            console.log("response.data", response.data);
             return response.data as Product | Product[]; // ผลลัพธ์จะเป็น Product[] หรือ Product
         } catch (e: unknown) {
             if (e instanceof Error) {
@@ -64,7 +63,7 @@ export const fetchProductMerchant = createAsyncThunk(
     "product/fetchProductMerchant",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get("/api/v1/products/merchant");
+            const response = await api.get("/api/v1/products/merchant", {},);
             return response.data as Product[];
         } catch (e: unknown) {
             const error = e as Error;

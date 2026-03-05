@@ -44,28 +44,32 @@ function App() {
   const dispatch = useDispatch<AppDispatch>()
   const { isAuthenticated, isSynced } = useSelector((state: RootState) => state.auth)
   useEffect(() => {
-    dispatch(fetchProducts())
-    dispatch(fetchCategories())
+    // ดึงข้อมูล Public ก่อน
+    dispatch(fetchProducts());
+    dispatch(fetchCategories());
+
+    let isSyncInProgress = false; // ป้องกันการรันซ้อนภายในรอบเดียว
+
     const unscription = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("User is signed in", firebaseUser);
-      console.log("isSynced", isSynced);
-      if (firebaseUser && isSynced) return;
+      console.log("Auth State Changed. User:", firebaseUser?.uid);
 
       if (firebaseUser) {
-        // 1. ถ้า sync ไปแล้วไม่ต้องทำอะไรต่อ
-        if (isSynced) {
-          dispatch(setInitialize()); // มั่นใจว่าเปิดแอปได้
-          return;
-        }
+        // 1. ตรวจสอบว่า Sync ไปแล้วหรือยัง หรือกำลัง Sync อยู่หรือไม่
+        // ใช้ Store state (isSynced) และ local variable (isSyncInProgress) ควบคู่กัน
+        console.log(isSynced || isSyncInProgress);
+        if (isSynced || isSyncInProgress) return;
 
         try {
-          // 2. บังคับรอให้ Backend รู้จักเราก่อน (สำคัญมาก)
-          // ฟังก์ชันนี้ควรจะได้รับ Token และ set cookie หรือ header ให้เรียบร้อย
+          isSyncInProgress = true;
+
+          // 2. รับ Token และ Sync กับ Backend
+          // มั่นใจว่าใน syncUserWithBackend มีการตั้งค่า axios.defaults.headers.common['Authorization']
           await dispatch(syncUserWithBackend(firebaseUser)).unwrap();
 
+          // 3. เรียก Notifications
           dispatch(setupNotifications());
 
-          // 3. หลังจาก Sync สำเร็จค่อยเริ่มดึงข้อมูลอื่น
+          // 4. ดึงข้อมูลส่วนตัว (เรียกหลังจาก Sync สำเร็จเท่านั้น)
           await Promise.all([
             dispatch(fetchUser()),
             dispatch(fetchMyMerchant()),
@@ -75,40 +79,24 @@ function App() {
 
         } catch (error) {
           console.error("Sync failed:", error);
+        } finally {
+          isSyncInProgress = false;
+          dispatch(setInitialize());
         }
       } else {
-        console.log("user sign out")
+        // User Sign Out
+        console.log("User signed out");
         dispatch(clearCart());
-        dispatch(clearUserData())
-        dispatch(clearOrderState())
-        dispatch(resetMerchantState())
-        dispatch(resetNotiState())
+        dispatch(clearUserData());
+        dispatch(clearOrderState());
+        dispatch(resetMerchantState());
+        dispatch(resetNotiState());
+        dispatch(setInitialize());
       }
-      dispatch(setInitialize());
-    })
-    // const unsubscriptionMessage = onMessage(messaging, (payload) => {
-    //   console.log("Foreground message:", payload);
+    });
 
-    //   showToast({
-    //     icon: 'info', // หรือเช็คจาก payload.data.type เพื่อเปลี่ยนสี icon
-    //     title: payload.notification?.title || "แจ้งเตือนใหม่",
-    //     text: payload.notification?.body,
-    //     // แถม: ถ้าคลิกแล้วให้ลิงก์ไปหน้าออเดอร์
-    //     didOpen: (toast) => {
-    //       toast.style.cursor = 'pointer'; // เปลี่ยนเมาส์เป็นรูปมือให้รู้ว่าคลิกได้
-    //       toast.addEventListener('click', () => {
-    //         // ใช้ window.location หรือ navigate (ถ้าอยู่ใน Component)
-    //         window.location.href = '/profile/orders';
-    //         Swal.close(); // ปิด toast ทันทีที่คลิก
-    //       });
-    //     }
-    //   });
-    // })
-    return () => {
-      unscription()
-      // unsubscriptionMessage()
-    }
-  }, [dispatch, isSynced])
+    return () => unscription();
+  }, [dispatch]); // เอา isSynced ออกจากตรงนี้เด็ดขาด!
 
   if (!isAuthenticated) {
     return (

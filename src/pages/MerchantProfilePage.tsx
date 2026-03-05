@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import RegistrationForm from "../components/RegistrationForm";
-import { fetchProductMerchant } from "../service/productService";
 import { fetchMyMerchant } from "../service/merchantService";
 import LoadingCircularSkelition from "../components/loadingSkeleton/LoadingCircularSkelition";
 

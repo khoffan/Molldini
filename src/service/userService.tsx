@@ -139,7 +139,7 @@ export const fetchUser = createAsyncThunk(
     "fetch/user",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/api/v1/profile`);
+            const response = await api.get(`/api/v1/profile`,);
             const rawData = response.data;
             const appUser: AppUser = {
                 uid: rawData.id,

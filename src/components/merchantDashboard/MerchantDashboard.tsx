@@ -4,30 +4,25 @@ import type { Merchant } from '../../interface/merchantInterface'; // ปรั�
 import { Plus, Package, ShoppingBag, MapPin, Globe } from 'lucide-react';
 import { ProductDesktopRow, ProductMobileCard } from './MerchantProductComponent';
 import type { Product } from '../../interface/productInterface';
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { fetchMyMerchant } from '../../service/merchantService';
-import type { AppDispatch } from '../../store';
+import { useMemo } from 'react';
 
 interface Props {
     merchant: Merchant;
 }
 
 function MerchantDashboard({ merchant }: Props) {
-    const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate()
     // คำนวณสถิติจริงจากข้อมูลที่มีใน merchant object
     const totalProducts = merchant.products?.length || 0;
 
-    const totalStock = merchant.products?.reduce((acc, prod) => {
-        // 1. คำนวณสต็อกรวมของ "Product นี้" จากทุก Variants ก่อน
-        const productTotal = prod.variants?.reduce((variantAcc, variant) => {
-            return variantAcc + (Number(variant.stock) || 0);
+    const totalStock = useMemo(() => {
+        return merchant.products?.reduce((acc, prod) => {
+            const productTotal = prod.variants?.reduce((variantAcc, variant) => {
+                return variantAcc + (Number(variant.stock) || 0);
+            }, 0) || 0;
+            return acc + productTotal;
         }, 0) || 0;
-
-        // 2. นำสต็อกรวมของ Product นี้ไปบวกเข้ากับยอดรวมทั้งหมด (acc)
-        return acc + productTotal;
-    }, 0) || 0;
+    }, [merchant.products]); // คำนวณใหม่เมื่อสินค้าเปลี่ยนเท่านั้น
 
     return (
         <div className="space-y-8">
