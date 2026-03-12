@@ -55,7 +55,20 @@ export const fetchOrderById = createAsyncThunk(
     async (orderId: string, { rejectWithValue }) => {
         try {
             const res = await api.get(`/api/v1/orders/${orderId}`);
-            return res.data as OrderResponse;
+            const order: Order = {
+                id: res.data.id,
+                userId: res.data.userId,
+                status: res.data.status,
+                totalPrice: res.data.totalPrice,
+                subOrders: res.data.subOrders,
+                shippingAddress: res.data.shippingAddress,
+                reciveInfo: res.data.reciveInfo,
+                email: res.data.email,
+                recivePhone: res.data.recivePhone,
+                createdAt: res.data.createdAt,
+                updatedAt: res.data.updatedAt,
+            }
+            return order;
         } catch (e: unknown) {
             if (e instanceof AxiosError) {
                 return rejectWithValue(e.response?.data?.message || e.message);
@@ -144,6 +157,16 @@ const orderSlice = createSlice({
             state.order = null;
             state.loading = false;
             state.error = null;
+        },
+        setOrderLocalCheckout: (state) => {
+            const orderParse = JSON.stringify(state.order);
+            localStorage.setItem("order", orderParse);
+        },
+        fetchOrderLocalCheckout: (state) => {
+            const orderParse = localStorage.getItem("order");
+            if (orderParse) {
+                state.order = JSON.parse(orderParse);
+            }
         }
     },
     extraReducers: (builder) => {
@@ -208,8 +231,19 @@ const orderSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
+            .addCase(fetchOrderById.pending, (state) => {
+                state.loading = false;
+            })
+            .addCase(fetchOrderById.fulfilled, (state, action) => {
+                state.order = action.payload;
+                state.loading = false;
+            })
+            .addCase(fetchOrderById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string
+            })
     }
 });
 
 export default orderSlice.reducer;
-export const { clearOrderState } = orderSlice.actions;
+export const { clearOrderState, setOrderLocalCheckout, fetchOrderLocalCheckout } = orderSlice.actions;

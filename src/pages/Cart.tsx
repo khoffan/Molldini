@@ -4,7 +4,7 @@ import type { CartItem } from "../interface/cartInterface";
 import { fetchCart, removeFromCart, updateCartDecrementQuantityDb, updateCartIncrementQuantityDb } from "../service/cartService";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { setOrderFromCartId } from "../service/orderService";
+import { setOrderFromCartId, setOrderLocalCheckout } from "../service/orderService";
 import Swal from "sweetalert2";
 import { getImageValidate } from "../utils/getImageValidate";
 import LoadingSkelition from "../components/loadingSkeleton/LoadingShrinkBoxSkelition";
@@ -84,17 +84,16 @@ function Cart() {
         });
         return;
       }
-      console.log("Proceed to checkout with total amount:", total);
-      console.log("Cart ID for checkout:", id);
-      await dispatch(setOrderFromCartId({
+      const result = await dispatch(setOrderFromCartId({
         cartId: id,
         selectedItems,
         shippingAddress: "",
         receiverName: "",
         receiverPhone: "",
         paymentMethod: ""
-      }));
-      navigate(`/checkout/${id}?items=${JSON.stringify(selectedItems)}`);
+      })).unwrap();
+      dispatch(setOrderLocalCheckout());
+      navigate(`/checkout/${result.id}?items=${JSON.stringify(selectedItems)}`);
     } catch (err: unknown) {
       console.error("Error during checkout:", err);
       Swal.fire({

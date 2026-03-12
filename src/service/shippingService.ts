@@ -20,7 +20,6 @@ export const fetchShipping = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const res = await api.get('/api/v1/shippings');
-            console.log("shipping data =>", res.data)
             return res.data as IShipping[];
         } catch (e: unknown) {
             if (e instanceof AxiosError) {

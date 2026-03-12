@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/immutability */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { MapPin, Plus, CreditCard, ChevronRight, CheckCircle2, Truck, Package } from 'lucide-react';
+import { MapPin, Plus, CreditCard, ChevronRight, CheckCircle2, Truck, Package, Lock } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { useNavigate, useParams } from 'react-router';
 import Swal from 'sweetalert2';
-import { checkoutOrder, updateDataOrder } from '../service/orderService';
+import { checkoutOrder, fetchOrderLocalCheckout, updateDataOrder } from '../service/orderService';
 import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
 import { fetchPayment } from '../service/paymentService';
 import { fetchShipping } from '../service/shippingService';
@@ -32,9 +32,11 @@ export default function CheckoutPage() {
     const [selectedBank, setSelectedBank] = useState<string>("");
     const [selectedShippingId, setSelectedShippingId] = useState<string>("s1"); // [id, setSelectedShippingId]
 
+
     useEffect(() => {
         dispatch(fetchPayment());
         dispatch(fetchShipping());
+        dispatch(fetchOrderLocalCheckout());
     }, [dispatch])
 
 
@@ -228,12 +230,13 @@ export default function CheckoutPage() {
 
 
 
+
     if (loading) {
         return <LoadingSkelition />
     }
 
     return (
-        <div className="bg-[#F8FAFC] min-h-screen py-10 font-sans grid">
+        <div className="bg-bg min-h-screen py-10 font-sans grid">
             <div className="max-w-[1240px] mx-auto px-4">
                 <header className="mb-10 text-center lg:text-left">
                     <h1 className="text-4xl font-black text-content tracking-tight">Checkout</h1>
@@ -504,56 +507,125 @@ export default function CheckoutPage() {
 
                     {/* Right Column: Order Summary */}
                     <div className="mt-8 lg:mt-0 lg:col-span-5 xl:col-span-4">
-                        <div className="bg-surface rounded-2xl shadow-sm border border-border-main p-6 sticky top-8">
-                            <h2 className="text-lg font-bold text-content mb-6 flex items-center gap-2">
-                                <Package className="text-primary" size={20} />
-                                สรุปคำสั่งซื้อ
-                            </h2>
+                        <div className="
+                                /* Mobile: Sticky/Fixed Bottom Sheet */
+                                fixed bottom-0 left-0 right-0 z-50 
+                                bg-surface border-t border-border-main shadow-[0_-10px_40px_rgba(0,0,0,0.15)]
+                                rounded-t-[24px] transition-all duration-300
+                                
+                                /* Desktop: Normal Sticky Sidebar */
+                                lg:relative lg:bottom-auto lg:z-20 
+                                lg:rounded-2xl lg:border lg:p-6 lg:shadow-sm lg:sticky lg:top-8 lg:bg-surface
+                            ">
+                            {/* Handle bar สำหรับ Mobile ให้ดูเหมือนแผ่นที่ดึงขึ้นมาได้ */}
+                            <div className="w-12 h-1.5 bg-border-main rounded-full mx-auto my-3 lg:hidden" />
 
-                            <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200">
-                                {order?.subOrders?.flatMap((sub) => sub.orderItems || []).map((item) => (
-                                    <div key={item.id} className="flex gap-3 py-2 border-b border-border-main last:border-0">
-                                        <div className="w-14 h-14 bg-main rounded-lg border border-border-main shrink-0 overflow-hidden">
-                                            <img src={item.image} className="w-full h-full object-contain mix-blend-multiply" alt={item.title} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-content truncate">{item.title}</p>
-                                            <div className="flex justify-between items-center mt-1">
-                                                <p className="text-xs text-muted">x{item.quantity}</p>
-                                                <p className="text-sm font-bold text-content">฿{item.price.toLocaleString()}</p>
+                            <div className="p-4 lg:p-0">
+                                <h2 className="text-lg font-bold text-content mb-4 flex items-center gap-2">
+                                    <Package className="text-primary" size={20} />
+                                    สรุปคำสั่งซื้อ
+                                </h2>
+
+                                {/* สถาพรายการสินค้า: แสดงผลทั้ง Mobile และ Desktop */}
+                                <div className="
+                                        space-y-3 mb-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200
+                                        /* Mobile: จำกัดความสูงให้เตี้ยลงหน่อยจะได้ไม่บังจอทั้งหมด */
+                                        max-h-[160px] 
+                                        /* Desktop: ขยายความสูงได้เต็มที่ */
+                                        lg:max-h-[400px]
+                                    ">
+                                    {order?.subOrders?.flatMap((sub) => sub.orderItems || []).map((item) => (
+                                        <div key={item.id} className="flex gap-3 py-2 border-b border-border-main/50 last:border-0">
+                                            <div className="w-12 h-12 lg:w-14 lg:h-14 bg-main rounded-lg border border-border-main shrink-0 overflow-hidden">
+                                                <img src={item.image} className="w-full h-full object-contain mix-blend-multiply" alt={item.title} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-content truncate">{item.title}</p>
+                                                <div className="flex justify-between items-center mt-1">
+                                                    <p className="text-xs text-muted font-medium">จำนวน {item.quantity}</p>
+                                                    <p className="text-sm font-bold text-content">฿{item.price.toLocaleString()}</p>
+                                                </div>
                                             </div>
                                         </div>
+                                    ))}
+                                </div>
+
+                                {/* ส่วนสรุปราคาสุดท้าย */}
+                                <div className="pt-4 border-t border-border-main space-y-4">
+
+                                    {/* 1. Desktop Price Breakdown (ซ่อนใน Mobile เพื่อความกะทัดรัด) */}
+                                    <div className="hidden lg:flex flex-col gap-2">
+                                        <div className="flex justify-between text-sm text-muted">
+                                            <span>ราคารวมสินค้า</span>
+                                            <span className="font-medium text-content">฿{total.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-muted">
+                                            <span>ค่าจัดส่ง</span>
+                                            <span className="text-emerald-600 font-medium">ฟรี</span>
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
 
-                            <div className="space-y-3 pt-4 border-t border-border-main">
-                                <div className="flex justify-between text-sm text-muted">
-                                    <span>ราคารวมสินค้า</span>
-                                    <span>฿{total.toLocaleString()}</span>
+                                    {/* 2. Main Action Area: เปลี่ยน Layout ตามหน้าจอ */}
+                                    <div className="
+        /* Mobile: แถวแนวนอน ยอดเงินซ้าย ปุ่มขวา */
+        flex flex-row items-center justify-between gap-4
+        /* Desktop: แถวแนวตั้ง ทุกอย่างเต็มความกว้าง */
+        lg:flex-col lg:items-stretch lg:gap-4
+    ">
+
+                                        {/* ส่วนแสดงราคาสุทธิ */}
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] lg:text-xs text-muted uppercase font-black tracking-widest">
+                                                ยอดชำระสุทธิ
+                                            </span>
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-sm lg:text-base font-bold text-primary">฿</span>
+                                                <span className="text-2xl lg:text-3xl font-black text-primary leading-none">
+                                                    {total.toLocaleString()}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* ปุ่มยืนยันการสั่งซื้อ */}
+                                        <button
+                                            type="submit"
+                                            className="
+                /* Mobile: กว้างพอเหมาะ */
+                px-6 py-3.5 
+                /* Desktop: กว้างเต็ม Column */
+                lg:w-full lg:py-4 lg:mt-2
+                
+                bg-primary text-white rounded-xl lg:rounded-2xl
+                font-bold text-base lg:text-lg
+                transition-all duration-200
+                shadow-[0_10px_20px_-10px_rgba(var(--primary-rgb),0.5)]
+                hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]
+                flex items-center justify-center gap-2 group
+            "
+                                        >
+                                            <span className="whitespace-nowrap">ยืนยันการสั่งซื้อ</span>
+                                            <ChevronRight size={20} className="transition-transform group-hover:translate-x-1" />
+                                        </button>
+                                    </div>
+
+                                    {/* 3. Desktop Security Note (ซ่อนใน Mobile) */}
+                                    <div className="hidden lg:flex items-center justify-center gap-2 pt-2 text-[11px] text-muted font-bold uppercase tracking-tighter">
+                                        <Lock size={12} className="text-emerald-500" />
+                                        <span>Secure Checkout</span>
+                                        <span className="mx-1">•</span>
+                                        <span>Buyer Protection</span>
+                                    </div>
                                 </div>
-                                {/* <div className="flex justify-between text-sm text-muted">
-                                    <span>ค่าจัดส่ง</span>
-                                    <span>฿0</span>
-                                </div> */}
-                                <div className="flex justify-between items-end pt-3 border-t border-border-main">
-                                    <span className="text-base font-bold text-content">ยอดสุทธิ</span>
-                                    <span className="text-2xl font-black text-primary">฿{total.toLocaleString()}</span>
+
+                                <div className="hidden lg:flex mt-4 items-center justify-center gap-2 text-[10px] text-muted uppercase tracking-widest font-bold">
+                                    <CheckCircle2 size={12} />
+                                    <span>Secure SSL Encryption</span>
                                 </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full bg-primary text-white py-4 rounded-xl font-bold text-base mt-6 hover:bg-primary/90 transition-all shadow-lg flex items-center justify-center gap-2 group active:scale-[0.98]"
-                            >
-                                ยืนยันการสั่งซื้อ <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                            </button>
-
-                            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted">
-                                <CheckCircle2 size={12} />
-                                <span>Secure SSL Encryption</span>
                             </div>
                         </div>
+
+                        {/* ส่วนที่สำคัญมาก: Spacer สำหรับ Mobile เพื่อไม่ให้เนื้อหาหลักโดนทับตายตัว */}
+                        <div className="h-[320px] lg:hidden" />
                     </div>
                 </form>
             </div>
