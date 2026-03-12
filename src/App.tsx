@@ -67,7 +67,7 @@ function App() {
           await dispatch(syncUserWithBackend(firebaseUser)).unwrap();
 
           // 3. เรียก Notifications
-          dispatch(setupNotifications());
+          // dispatch(setupNotifications());
 
           // 4. ดึงข้อมูลส่วนตัว (เรียกหลังจาก Sync สำเร็จเท่านั้น)
           await Promise.all([
