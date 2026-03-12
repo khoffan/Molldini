@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChevronDown, ChevronUp, Edit3, Layers } from "lucide-react";
-import { useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import type { Product, ProductVariant } from "../../interface/productInterface";
 import { useNavigate } from "react-router";
 
 // --- Component สำหรับ Desktop Row ---
-export function ProductDesktopRow({ product }: { product: Product }) {
+export const ProductDesktopRow = memo(({ product }: { product: Product }) => {
     const navigate = useNavigate();
     const [isExpanded, setIsExpanded] = useState(false);
-    const totalStock = product.variants?.reduce((sum: number, v: any) => sum + v.stock, 0) || 0;
+    const totalStock = useMemo(() => {
+        return product.variants?.reduce((sum: number, v: any) => sum + v.stock, 0) || 0;
+    }, [product.variants]);
 
     const handleEdit = (id: string, product: Product) => {
         navigate("/edit-product/" + id, {
@@ -18,11 +20,14 @@ export function ProductDesktopRow({ product }: { product: Product }) {
         });
     }
 
+    const toggleExpand = useCallback(() => setIsExpanded(p => !p), []);
+
+
     return (
         <>
             <tr
                 className={`hover:bg-surface-hover/80 transition-all cursor-pointer ${isExpanded ? 'bg-primary-light/20' : ''}`}
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={toggleExpand}
             >
                 <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
@@ -93,13 +98,15 @@ export function ProductDesktopRow({ product }: { product: Product }) {
         </>
     );
 }
+)
 
 // --- Component สำหรับ Mobile Card ---
-export function ProductMobileCard({ product }: { product: Product }) {
+export const ProductMobileCard = memo(({ product }: { product: Product }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const toggleExpand = useCallback(() => setIsExpanded(p => !p), []);
     return (
         <div className="p-4 bg-surface">
-            <div className="flex items-start gap-4" onClick={() => setIsExpanded(!isExpanded)}>
+            <div className="flex items-start gap-4" onClick={toggleExpand}>
                 <img
                     src={product.variants?.[0]?.images?.[0]?.url || 'https://placehold.co/100'}
                     className="w-20 h-20 rounded-2xl object-cover border border-border-main"
@@ -139,4 +146,4 @@ export function ProductMobileCard({ product }: { product: Product }) {
             )}
         </div>
     );
-}
+})

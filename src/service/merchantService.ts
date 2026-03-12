@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import api from "../lib/api";
-import type { Merchant, CreateMerchantInput } from "../interface/merchantInterface";
+import type { Merchant, CreateMerchantInput, UpdateMerchantInput } from "../interface/merchantInterface";
 import { AxiosError } from "axios";
 
 interface MerchantState {
@@ -53,6 +53,24 @@ export const fetchMyMerchant = createAsyncThunk(
     }
 );
 
+export const updateMerchant = createAsyncThunk(
+    "merchant/updateMerchant",
+    async (data: UpdateMerchantInput, { rejectWithValue }) => {
+        try {
+            const response = await api.patch(`/api/v1/merchants/update`, data);
+            return response.data as Merchant;
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            } else if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            } else {
+                return rejectWithValue("An unknown error occurred");
+            }
+        }
+    }
+)
+
 const merchantSlice = createSlice({
     name: "merchant",
     initialState,
@@ -90,6 +108,14 @@ const merchantSlice = createSlice({
                 state.merchant = action.payload;
             })
             .addCase(fetchMyMerchant.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(updateMerchant.fulfilled, (state, action: PayloadAction<Merchant>) => {
+                state.loading = false;
+                state.merchant = action.payload;
+            })
+            .addCase(updateMerchant.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

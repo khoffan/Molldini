@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/immutability */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapPin, Plus, CreditCard, ChevronRight, CheckCircle2, Truck, Package } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
@@ -8,6 +8,8 @@ import { useNavigate, useParams } from 'react-router';
 import Swal from 'sweetalert2';
 import { checkoutOrder, updateDataOrder } from '../service/orderService';
 import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
+import { fetchPayment } from '../service/paymentService';
+import { fetchShipping } from '../service/shippingService';
 
 Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);
 
@@ -19,6 +21,8 @@ export default function CheckoutPage() {
     // ดึงข้อมูล User และ Saved Addresses
     const { user } = useSelector((state: RootState) => state.user);
     const { order, loading } = useSelector((state: RootState) => state.order);
+    const { payments } = useSelector((state: RootState) => state.payment);
+    const { shippings } = useSelector((state: RootState) => state.shipping);
     // 📍 State สำหรับเลือกที่อยู่ (Default เลือกอันที่เป็น isDefault)
     const [selectedAddressId, setSelectedAddressId] = useState<string>(
         user?.addresses?.find(addr => addr.isDefault)?.id || user?.addresses?.[0]?.id || ""
@@ -28,7 +32,10 @@ export default function CheckoutPage() {
     const [selectedBank, setSelectedBank] = useState<string>("");
     const [selectedShippingId, setSelectedShippingId] = useState<string>("s1"); // [id, setSelectedShippingId]
 
-
+    useEffect(() => {
+        dispatch(fetchPayment());
+        dispatch(fetchShipping());
+    }, [dispatch])
 
 
     const createSource = (amount: number, method: string): Promise<any> => {
@@ -160,67 +167,61 @@ export default function CheckoutPage() {
         }
     };
 
-    const paymentSections = [
-        { id: 'PROMPTPAY', label: 'PromptPay', icon: '🏧', method: "promptpay" },
-        { id: 'MOBILE_BANKING', label: 'Mobile Banking', icon: '📱', method: "mobile_banking", children: [{ id: "scb", label: "SCB", method: "mobile_banking_scb" }, { id: "kbank", label: "K-Bank", method: "mobile_banking_kbank" }, { id: "ktb", label: "Krung Thai", method: "mobile_banking_ktb" }, { id: "kma", label: "Krungsri", method: "mobile_banking_bay" }] },
-        { id: 'TRUEMONEY', label: 'TrueMoney', icon: '💰', method: "truemoney_jumpapp" },
-        { id: 'CREDIT_CARD', label: 'Credit Card', icon: '💳', method: "credit_card" },
-        { id: 'COD', label: 'เก็บเงินปลายทาง', icon: '🚚', method: "cod" }
-    ];
+    const paymentSections = payments;
 
-    const mockShippingMethods = [
-        {
-            id: "s1",
-            name: "Standard Delivery",
-            provider: "FLASH",
-            description: "จัดส่งธรรมดา ราคาประหยัด",
-            price: 35,
-            estimatedDays: "2-3 วัน",
-            minOrderAmount: 0,
-            freeShippingThreshold: 1000,
-            sortOrder: 10,
-            image: "https://cdn.brandfetch.io/idzqDyW4sQ/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1700855441017"
-        },
-        {
-            id: "s2",
-            name: "Express Delivery",
-            provider: "KERRY",
-            description: "จัดส่งด่วนพิเศษ ได้รับไว",
-            price: 70,
-            estimatedDays: "1-2 วัน",
-            minOrderAmount: 200, // ต้องซื้อครบ 200 ถึงจะขึ้นตัวเลือกนี้
-            freeShippingThreshold: 4000,
-            sortOrder: 20,
-            image: "https://cdn.brandfetch.io/idWh9MmD5j/w/236/h/53/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1732604587406"
-        },
-        {
-            id: "s3",
-            name: "Standard Delivery",
-            provider: "J&T Express",
-            description: "จัดส่งด่วนพิเศษ ได้รับไว",
-            price: 70,
-            estimatedDays: "1-2 วัน",
-            minOrderAmount: 100, // ต้องซื้อครบ 200 ถึงจะขึ้นตัวเลือกนี้
-            freeShippingThreshold: 6000,
-            sortOrder: 20,
-            image: "https://cdn.brandfetch.io/idJ7kFPKaZ/w/521/h/521/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1768878791269"
-        },
-        {
-            id: "s4",
-            name: "Lalamove Express",
-            provider: "LALAMOVE",
-            description: "ส่งด่วนด้วยรถมอเตอร์ไซค์ (เฉพาะพื้นที่)",
-            price: 150,
-            estimatedDays: "ภายใน 3 ชม.",
-            minOrderAmount: 500,
-            freeShippingThreshold: null,
-            sortOrder: 30,
-            image: "https://cdn.brandfetch.io/idUoPQNwIr/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1767342240419"
-        }
-    ];
+    // const mockShippingMethods = [
+    //     {
+    //         id: "s1",
+    //         name: "Standard Delivery",
+    //         provider: "FLASH",
+    //         description: "จัดส่งธรรมดา ราคาประหยัด",
+    //         price: 35,
+    //         estimatedDays: "2-3 วัน",
+    //         minOrderAmount: 0,
+    //         freeShippingThreshold: 1000,
+    //         sortOrder: 10,
+    //         image: "https://cdn.brandfetch.io/idzqDyW4sQ/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1700855441017"
+    //     },
+    //     {
+    //         id: "s2",
+    //         name: "Express Delivery",
+    //         provider: "KERRY",
+    //         description: "จัดส่งด่วนพิเศษ ได้รับไว",
+    //         price: 70,
+    //         estimatedDays: "1-2 วัน",
+    //         minOrderAmount: 200, // ต้องซื้อครบ 200 ถึงจะขึ้นตัวเลือกนี้
+    //         freeShippingThreshold: 4000,
+    //         sortOrder: 20,
+    //         image: "https://cdn.brandfetch.io/idWh9MmD5j/w/236/h/53/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1732604587406"
+    //     },
+    //     {
+    //         id: "s3",
+    //         name: "Standard Delivery",
+    //         provider: "J&T Express",
+    //         description: "จัดส่งด่วนพิเศษ ได้รับไว",
+    //         price: 70,
+    //         estimatedDays: "1-2 วัน",
+    //         minOrderAmount: 100, // ต้องซื้อครบ 200 ถึงจะขึ้นตัวเลือกนี้
+    //         freeShippingThreshold: 6000,
+    //         sortOrder: 20,
+    //         image: "https://cdn.brandfetch.io/idJ7kFPKaZ/w/521/h/521/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1768878791269"
+    //     },
+    //     {
+    //         id: "s4",
+    //         name: "Lalamove Express",
+    //         provider: "LALAMOVE",
+    //         description: "ส่งด่วนด้วยรถมอเตอร์ไซค์ (เฉพาะพื้นที่)",
+    //         price: 150,
+    //         estimatedDays: "ภายใน 3 ชม.",
+    //         minOrderAmount: 500,
+    //         freeShippingThreshold: null,
+    //         sortOrder: 30,
+    //         image: "https://cdn.brandfetch.io/idUoPQNwIr/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1767342240419"
+    //     }
+    // ];
 
     const amount = order?.totalPrice || 0;
-    const shippingMethod = mockShippingMethods.find(m => m.id === selectedShippingId);
+    const shippingMethod = shippings.find(m => m.id === selectedShippingId);
     const isFree = shippingMethod?.freeShippingThreshold && amount >= shippingMethod.freeShippingThreshold;
     const shippingCost = isFree ? 0 : shippingMethod?.price || 0;
     const total = amount + shippingCost;
@@ -294,7 +295,7 @@ export default function CheckoutPage() {
                                 ตัวเลือกการจัดส่ง
                             </h2>
                             <div className="space-y-3">
-                                {mockShippingMethods
+                                {shippings
                                     .filter(method => total >= method.minOrderAmount)
                                     .sort((a, b) => a.sortOrder - b.sortOrder)
                                     .map((method) => (
@@ -312,7 +313,7 @@ export default function CheckoutPage() {
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-lg bg-surface-hover flex items-center justify-center text-xs font-black text-muted border border-border-main">
-                                                    <img src={method.image} alt={method.name} className="w-full h-full object-contain" />
+                                                    <img src={method.image?.url} alt={method.name} className="w-full h-full object-contain" />
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-content text-sm">{method.name}</p>
@@ -363,7 +364,7 @@ export default function CheckoutPage() {
                                                 <div className="flex items-center space-x-4">
                                                     <div className={`p-3 rounded-xl text-3xl shadow-sm ${paymentMethod === section.method ? 'bg-surface' : 'bg-main'
                                                         }`}>
-                                                        {section.icon}
+                                                        {section.icon?.url}
                                                     </div>
                                                     <div className="text-left">
                                                         <span className="block font-semibold text-content text-lg">
@@ -406,7 +407,7 @@ export default function CheckoutPage() {
 
                                                         {section.id === 'MOBILE_BANKING' && (
                                                             <div className="grid grid-cols-2 gap-3">
-                                                                {section.children?.map(bank => (
+                                                                {section.paymentChilds.map(bank => (
                                                                     <button
                                                                         key={bank.id}
                                                                         onClick={(e) => handleSelectBankMethod(e, bank.method)}

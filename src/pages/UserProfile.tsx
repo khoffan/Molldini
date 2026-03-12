@@ -13,7 +13,6 @@ import { Link, useNavigate } from 'react-router';
 import { logoutAction } from '../service/authService';
 import { useEffect } from 'react';
 import { fetchUser } from '../service/userService';
-import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
 import LoadingCircularSkelition from '../components/loadingSkeleton/LoadingCircularSkelition';
 
 function UserProfile() {

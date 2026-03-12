@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { AppDispatch, RootState } from "../store";
 import type { CartItem } from "../interface/cartInterface";
 import { fetchCart, removeFromCart, updateCartDecrementQuantityDb, updateCartIncrementQuantityDb } from "../service/cartService";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { setOrderFromCartId } from "../service/orderService";
 import Swal from "sweetalert2";
@@ -44,9 +44,11 @@ function Cart() {
   };
 
   // คำนวณราคารวมทั้งหมด
-  const subtotal = cartItems.filter(item => selectedItems.includes(item.productId)).reduce((acc, item) => {
-    return acc + (productVarients.find(v => v.id === item.productId)?.price || 0) * item.quantity;
-  }, 0) ?? 0;
+  const subtotal = useMemo(() => {
+    return cartItems.filter(item => selectedItems.includes(item.productId)).reduce((acc, item) => {
+      return acc + (productVarients.find(v => v.id === item.productId)?.price || 0) * item.quantity;
+    }, 0);
+  }, [cartItems, productVarients, selectedItems]);
 
 
   const total = subtotal;

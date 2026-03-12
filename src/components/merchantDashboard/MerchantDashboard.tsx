@@ -144,7 +144,4 @@ function MerchantDashboard({ merchant }: Props) {
         </div>
     );
 }
-
-
-
 export default MerchantDashboard;

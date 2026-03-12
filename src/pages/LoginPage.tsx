@@ -93,7 +93,7 @@ const LoginPage: React.FC = () => {
   const isLoading = localLoading || loading;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Card */}
         <div className="bg-surface/80 backdrop-blur-lg rounded-3xl shadow-2xl shadow-blue-900/5 p-8 sm:p-10 border border-border-main">

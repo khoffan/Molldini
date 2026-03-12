@@ -19,13 +19,15 @@ import {
     CreditCard,
     ReceiptText,
     MapPin,
-    Globe,
     Store,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import RegistrationForm from "../components/RegistrationForm";
-import { fetchMyMerchant } from "../service/merchantService";
+import { fetchMyMerchant, updateMerchant } from "../service/merchantService";
 import LoadingCircularSkelition from "../components/loadingSkeleton/LoadingCircularSkelition";
+import MerchantSettingsForm from "../components/merchantDashboard/MerchantSettingsForm";
+import type { UpdateMerchantInput } from "../interface/merchantInterface";
+import Swal from "sweetalert2";
 
 type TabId = "dashboard" | "orders" | "settings";
 
@@ -55,6 +57,11 @@ export default function MerchantProfilePage() {
         }
         dispatch(fetchMyMerchant());
     }, [activeTab, dispatch]);
+
+    const saveEditMerchant = (data: UpdateMerchantInput) => {
+        dispatch(updateMerchant(data));
+        Swal.fire('บันทึกสําเร็จ!', '', 'success');
+    }
 
     if (!merchant) {
         return (
@@ -327,101 +334,12 @@ export default function MerchantProfilePage() {
 
                 {/* ─── Settings Tab ─── */}
                 {activeTab === "settings" && (
-                    <div className="bg-surface rounded-2xl shadow-sm border border-surface-200 overflow-hidden">
-                        <div className="p-6 space-y-8">
-                            {/* Store Info */}
-                            <div>
-                                <h3 className="text-lg font-bold text-content mb-1">
-                                    ข้อมูลร้านค้า
-                                </h3>
-                                <p className="text-sm text-content-200 mb-6">
-                                    รายละเอียดร้านค้าของคุณ
-                                </p>
+                    <MerchantSettingsForm
+                        merchant={merchant}
+                        onSave={async (data) => {
+                            saveEditMerchant(data)
+                        }} />
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-content-200 uppercase tracking-wider">
-                                            ชื่อร้านค้า
-                                        </label>
-                                        <div className="px-4 py-3 bg-surface-200 rounded-xl text-content font-medium border border-surface-200">
-                                            {merchant.name}
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-content-200 uppercase tracking-wider">
-                                            Merchant ID
-                                        </label>
-                                        <div className="px-4 py-3 bg-surface-200 rounded-xl text-content font-mono text-sm border border-surface-200 truncate">
-                                            {merchant.id}
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1.5 md:col-span-2">
-                                        <label className="text-xs font-semibold text-content-200 uppercase tracking-wider">
-                                            คำอธิบายร้านค้า
-                                        </label>
-                                        <div className="px-4 py-3 bg-surface-200 rounded-xl text-content border border-surface-200 min-h-15">
-                                            {merchant.description || (
-                                                <span className="text-content-200 italic">
-                                                    ยังไม่มีคำอธิบาย
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Address */}
-                            <div className="border-t border-surface-200 pt-6">
-                                <h3 className="text-lg font-bold text-content mb-1 flex items-center gap-2">
-                                    <MapPin size={18} className="text-blue-600" />
-                                    ที่อยู่ร้านค้า
-                                </h3>
-
-                                {merchant.address ? (
-                                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {[
-                                            {
-                                                label: "รายละเอียด",
-                                                value: merchant.address.detail,
-                                            },
-                                            {
-                                                label: "ตำบล/แขวง",
-                                                value: merchant.address.subDistrict,
-                                            },
-                                            {
-                                                label: "อำเภอ/เขต",
-                                                value: merchant.address.district,
-                                            },
-                                            {
-                                                label: "จังหวัด",
-                                                value: merchant.address.province,
-                                            },
-                                            {
-                                                label: "รหัสไปรษณีย์",
-                                                value: merchant.address.postcode,
-                                            },
-                                        ].map((field) => (
-                                            <div key={field.label} className="space-y-1.5">
-                                                <label className="text-xs font-semibold text-content-200 uppercase tracking-wider">
-                                                    {field.label}
-                                                </label>
-                                                <div className="px-4 py-3 bg-surface-200 rounded-xl text-content border border-surface-200">
-                                                    {field.value || "-"}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="mt-4 flex items-center gap-3 p-6 bg-surface-200 rounded-xl border border-dashed border-surface-200">
-                                        <Globe className="text-content-200" size={24} />
-                                        <p className="text-content-200">ยังไม่ได้ระบุที่อยู่ร้านค้า</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
                 )}
             </div>
         </div>

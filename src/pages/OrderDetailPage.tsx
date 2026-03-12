@@ -9,7 +9,8 @@ import {
     Truck,
     Clock,
     CheckCircle2,
-    ExternalLink
+    ExternalLink,
+    XCircle
 } from 'lucide-react';
 import type { OrderResponse } from '../interface/orderInterface';
 import { useDispatch, useSelector } from 'react-redux';
@@ -47,7 +48,7 @@ export default function OrderDetailPage() {
     }, [id, dispatch])
 
     // Mock status สำหรับทำ UI (ในงานจริงใช้จาก orderData.status)
-    const status = order?.invoice.status || 'UNPAID';
+    const status = order?.status || 'UNPAID';
     const allProducts = useSelector((state: RootState) => state.product.items);
 
     // Flatten all orderItems from subOrders
@@ -255,25 +256,24 @@ export default function OrderDetailPage() {
 
 // Sub-component สำหรับ Badge Status
 const StatusBadge = ({ status }: { status: string }) => {
-    const configs: Record<string, { label: string, classes: string, icon: any }> = {
-        UNPAID: {
-            label: 'Waiting for Payment',
-            classes: 'bg-amber-50 text-amber-600 border-amber-100',
-            icon: <Clock size={14} />
-        },
-        PAID: {
-            label: 'Paid',
-            classes: 'bg-blue-50 text-blue-600 border-blue-100',
-            icon: <CheckCircle2 size={14} />
-        },
-    };
-
-    const config = configs[status] || configs.UNPAID;
-
-    return (
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center space-x-1.5 ${config.classes}`}>
-            {config.icon}
-            <span>{config.label}</span>
-        </span>
-    );
-};
+    switch (status) {
+        case "PAID":
+            return (
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100 flex items-center gap-1">
+                    <CheckCircle2 size={12} /> จ่ายแล้ว
+                </span>
+            );
+        case "CANCELLED":
+            return (
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-gray-50 text-gray-500 border border-gray-200 flex items-center gap-1">
+                    <XCircle size={12} /> ยกเลิกแล้ว
+                </span>
+            );
+        default: // คือ PENDING หรือสถานะอื่นๆ ที่ยังไม่ได้จ่าย
+            return (
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-500 border border-red-100 flex items-center gap-1">
+                    <Clock size={12} /> รอชำระเงิน
+                </span>
+            );
+    }
+}

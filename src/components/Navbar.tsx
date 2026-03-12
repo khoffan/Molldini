@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { useDispatch, useSelector, } from "react-redux";
 import type { AppDispatch, RootState, } from "../store";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { logoutAction } from "../service/authService";
 import DropdownItem from "./DropdownItem";
 import { searchProducts } from "../service/productService";
@@ -11,7 +11,6 @@ import { onMessage } from "firebase/messaging";
 import { messaging } from "../firebase/firebaseConfig";
 import { showToast } from "../utils/Toast";
 import { BellIcon } from "lucide-react";
-import { fetchNoti } from "../service/notificationService";
 import NotificationDropdown from "./NotificationDropdown";
 import { getImageValidate } from "../utils/getImageValidate";
 import ThemeToggle from "./ThemeToggle";
@@ -21,7 +20,6 @@ function Navbar() {
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const [notiOpen, setNotiOpen] = useState<boolean>(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
   const dispatch = useDispatch<AppDispatch>()
 
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -125,6 +123,7 @@ function Navbar() {
       window.location.href = "/";
 
     } catch (error) {
+      console.log(error);
       showToast({
         title: "เกิดข้อผิดพลาดในการออกจากระบบ",
         icon: "error"
@@ -133,6 +132,8 @@ function Navbar() {
   }
 
   const closeMenu = () => setIsOpen(false)
+
+  const closeNoti = useCallback(() => setNotiOpen(!notiOpen), [notiOpen]);
 
   return (
     <nav className="bg-surface border-b border-border-main sticky top-0 z-50 transition-colors duration-300">
@@ -180,7 +181,7 @@ function Navbar() {
             {/* Noti Icon */}
             <div className="relative">
               <button
-                onClick={() => setNotiOpen(!notiOpen)}
+                onClick={closeNoti}
                 className="p-2 bg-surface-hover rounded-full hover:bg-primary-light transition-colors cursor-pointer focus:outline-none"
               >
                 <BellIcon className="h-6 w-6 text-content" />

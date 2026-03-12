@@ -135,6 +135,7 @@ function App() {
           <Route path='orders' element={<OrderUserPage />} />
           <Route path='orders/:id' element={<OrderDetailPage />} />
         </Route>
+        <Route path='/order/:id' element={<OrderDetailPage />} />
         <Route path='/settings' element={<SettingPage />} />
         <Route path="/checkout/:id" element={<CheckoutPage />} />
         <Route path='/checkout/qr' element={<QRcodePage />} />

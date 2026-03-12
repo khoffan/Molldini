@@ -100,6 +100,23 @@ export const fetchNoti = createAsyncThunk(
     }
 )
 
+export const readNoti = createAsyncThunk(
+    'noti/readNoti',
+    async (notiId: string, { rejectWithValue }) => {
+        try {
+            await api.patch(`/api/v1/notifications/${notiId}/read`);
+            return true;
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            } else if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+    }
+);
+
 const notificationsSlice = createSlice({
     name: 'notifications',
     initialState,
@@ -144,6 +161,21 @@ const notificationsSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload as string;
             })
+            .addCase(readNoti.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(readNoti.fulfilled, (state,) => {
+                state.loading = false;
+                state.error = null;
+                const unreadNoti = state.noti.filter(item => !item.isRead).map(item => ({ ...item, isRead: true }));
+                state.unreadCount = unreadNoti.length;
+                state.noti = unreadNoti;
+            })
+            .addCase(readNoti.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            });
     }
 })
 

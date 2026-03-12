@@ -10,6 +10,9 @@ import {
     CheckCircle,
     Clock,
 } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { readNoti } from "../service/notificationService";
+import type { AppDispatch } from "../store";
 
 interface NotificationDropdownProps {
     notifications: notiResponse[];
@@ -71,6 +74,8 @@ function NotificationDropdown({
     isOpen,
     onClose,
 }: NotificationDropdownProps) {
+    const dispatch = useDispatch<AppDispatch>();
+
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Close on outside click
@@ -91,8 +96,15 @@ function NotificationDropdown({
 
     if (!isOpen) return null;
 
+    console.log("notilist =>", notifications);
+
     const unread = notifications.filter((n) => !n.isRead);
     const read = notifications.filter((n) => n.isRead);
+
+    const handleReadNoti = (notiId: string) => {
+        dispatch(readNoti(notiId));
+        onClose();
+    }
 
     return (
         <div
@@ -143,7 +155,7 @@ function NotificationDropdown({
                                         <Link
                                             key={noti.id}
                                             to={noti.link || "#"}
-                                            onClick={onClose}
+                                            onClick={() => handleReadNoti(noti.id)}
                                             className="flex items-start gap-3 px-4 py-3 hover:bg-blue-50/40 transition-colors border-l-[3px] border-blue-500 bg-blue-50/20"
                                         >
                                             <div
@@ -189,7 +201,7 @@ function NotificationDropdown({
                                         <Link
                                             key={noti.id}
                                             to={noti.link || "#"}
-                                            onClick={onClose}
+                                            onClick={() => handleReadNoti(noti.id)}
                                             className="flex items-start gap-3 px-4 py-3 hover:bg-surface-hover transition-colors border-l-[3px] border-transparent"
                                         >
                                             <div
