@@ -17,8 +17,8 @@ interface NotificationState {
 const initialState: NotificationState = {
     noti: [],
     unreadCount: 0,
-    isAllow: Notification.permission === 'granted',
-    permissionStatus: Notification.permission,
+    isAllow: "Notification" in window && Notification.permission === 'granted',
+    permissionStatus: "Notification" in window ? Notification.permission : 'default',
     loading: false,
     error: null
 }
@@ -56,8 +56,14 @@ export const setupNotifications = createAsyncThunk(
             if (Notification.permission === 'denied') {
                 return rejectWithValue("Permission blocked. Please enable it in browser settings.");
             }
-            // 1. เรียก Popup ของ Browser เพื่อขออนุญาต
-            const permission = await Notification.requestPermission();
+
+            let permission: NotificationPermission = Notification.permission;
+            
+            // 1. ถ้ายังไม่ได้อนุญาต ให้เรียก Popup ของ Browser เพื่อขออนุญาต (ต้องทำผ่าน User Gesture)
+            if (permission !== 'granted') {
+                permission = await Notification.requestPermission();
+            }
+
             if (permission === 'granted') {
                 console.log('Notification permission granted.');
 
@@ -124,8 +130,8 @@ const notificationsSlice = createSlice({
         resetNotiState: (state) => {
             state.noti = []
             state.unreadCount = 0
-            state.isAllow = false
-            state.permissionStatus = Notification.permission
+            state.isAllow = "Notification" in window && Notification.permission === 'granted'
+            state.permissionStatus = "Notification" in window ? Notification.permission : 'default'
             state.loading = false
             state.error = null
         }

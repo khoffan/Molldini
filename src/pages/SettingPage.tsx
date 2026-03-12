@@ -41,7 +41,7 @@ export default function SettingPage() {
 
 
     const { user, loading } = useSelector((state: RootState) => state.user);
-    const { isAllow } = useSelector((state: RootState) => state.noti)
+    const { permissionStatus } = useSelector((state: RootState) => state.noti)
     const isMerchant = user?.role === UserRole.MERCHANT;
     const [formData, setFormData] = useState<generalForm>({
         displayName: user?.displayName || '',
@@ -233,29 +233,36 @@ export default function SettingPage() {
                                 <div className="p-4 bg-primary-light border border-primary/20 rounded-xl mb-6">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-3">
-                                            <div className={`p-2 rounded-full ${isAllow ? 'bg-green-100 text-green-600' : 'bg-primary-light text-primary'}`}>
+                                            <div className={`p-2 rounded-full ${permissionStatus === 'granted' ? 'bg-green-100 text-green-600' : 'bg-primary-light text-primary'}`}>
                                                 <Bell size={20} />
                                             </div>
                                             <div>
                                                 <p className="text-sm font-semibold text-content">Browser Push Notifications</p>
-                                                <p className="text-xs text-muted">{isAllow ? 'Status: Active' : 'Enable to get real-time alerts'}</p>
+                                                <p className="text-xs text-muted">
+                                                    {permissionStatus === 'granted' ? 'Status: Active' : 
+                                                     permissionStatus === 'denied' ? 'Status: Blocked' : 
+                                                     'Enable to get real-time alerts'}
+                                                </p>
                                             </div>
                                         </div>
 
                                         <button
                                             onClick={() => dispatch(setupNotifications())}
-                                            disabled={isAllow}
-                                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isAllow
+                                            disabled={permissionStatus === 'granted' || permissionStatus === 'denied'}
+                                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                                permissionStatus === 'granted'
                                                 ? 'bg-green-500 text-white cursor-default'
+                                                : permissionStatus === 'denied'
+                                                ? 'bg-gray-400 text-white cursor-not-allowed'
                                                 : 'bg-primary text-white hover:bg-primary/90 shadow-sm'
                                                 }`}
                                         >
-                                            {isAllow ? 'ON' : 'ENABLE'}
+                                            {permissionStatus === 'granted' ? 'ON' : permissionStatus === 'denied' ? 'BLOCKED' : 'ENABLE'}
                                         </button>
                                     </div>
 
                                     {/* กรณีโดนบล็อก แสดงคำแนะนำที่นี่ */}
-                                    {Notification.permission === 'denied' && (
+                                    {permissionStatus === 'denied' && (
                                         <p className="mt-3 text-[10px] text-red-500 bg-red-50 p-2 rounded border border-red-100">
                                             ⚠️ <strong>Permission Blocked:</strong> Please click the tune/lock icon in your browser address bar to allow notifications for Molldini.
                                         </p>

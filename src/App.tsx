@@ -66,7 +66,9 @@ function App() {
           // มั่นใจว่าใน syncUserWithBackend มีการตั้งค่า axios.defaults.headers.common['Authorization']
           await dispatch(syncUserWithBackend(firebaseUser)).unwrap();
 
-          // 3. เรียก Notifications
+          // 3. แบบ Auto-prompt (เรียกตอนโหลด) ถูกปิดไว้
+          // Safari iOS ไม่อนุญาตให้ขอ Permission อัตโนมัติ 
+          // ต้องขอผ่าน User Gesture (เช่น OnClick) เท่านั้น
           // dispatch(setupNotifications());
 
           // 4. ดึงข้อมูลส่วนตัว (เรียกหลังจาก Sync สำเร็จเท่านั้น)
