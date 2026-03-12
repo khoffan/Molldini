@@ -137,7 +137,7 @@ function Navbar() {
 
   return (
     <nav className="bg-surface border-b border-border-main sticky top-0 z-50 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
 
           {/* Logo Section */}
@@ -148,7 +148,7 @@ function Navbar() {
           </Link>
 
           {/* Search Bar & Order Tracking */}
-          <div className="hidden md:flex flex-1 items-center justify-center px-8 space-x-8">
+          <div className="flex flex-1 items-center justify-center px-4 md:px-8 space-x-2 md:space-x-8">
             <form onSubmit={(e) => {
               e.preventDefault();
               handleSearch();
@@ -169,57 +169,71 @@ function Navbar() {
                 </svg>
               </button>
             </form>
-            <Link to="/profile/orders" className="text-sm font-medium text-muted hover:text-primary whitespace-nowrap">
+            <Link to="/profile/orders" className="hidden md:block text-sm font-medium text-muted hover:text-primary whitespace-nowrap">
               Order Tracking
             </Link>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-3">
-            {/* Theme Toggle */}
-            <ThemeToggle />
-            {/* Noti Icon */}
-            <div className="relative">
-              <button
-                onClick={closeNoti}
-                className="p-2 bg-surface-hover rounded-full hover:bg-primary-light transition-colors cursor-pointer focus:outline-none"
-              >
-                <BellIcon className="h-6 w-6 text-content" />
-              </button>
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-surface pointer-events-none">
-                  {unreadCount}
-                </span>
-              )}
-              <NotificationDropdown
-                notifications={noti}
-                isOpen={notiOpen}
-                onClose={() => setNotiOpen(false)}
-              />
-            </div>
-            {/* Cart Icon */}
-            <Link to="/cart" className="relative cursor-pointer group">
-              <div className="p-2 bg-surface-hover rounded-full group-hover:bg-primary-light transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-content group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+          {/* Action Buttons & Dropdown */}
+          <div className="flex items-center space-x-2 md:space-x-3" ref={dropdownRef}>
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center space-x-3">
+              {/* Theme Toggle */}
+              <ThemeToggle />
+              {/* Noti Icon */}
+              <div className="relative">
+                <button
+                  onClick={closeNoti}
+                  className="p-2 bg-surface-hover rounded-full hover:bg-primary-light transition-colors cursor-pointer focus:outline-none"
+                >
+                  <BellIcon className="h-6 w-6 text-content" />
+                </button>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-surface pointer-events-none">
+                    {unreadCount}
+                  </span>
+                )}
+                <NotificationDropdown
+                  notifications={noti}
+                  isOpen={notiOpen}
+                  onClose={() => setNotiOpen(false)}
+                />
               </div>
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-surface">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
+              {/* Cart Icon */}
+              <Link to="/cart" className="relative cursor-pointer group">
+                <div className="p-2 bg-surface-hover rounded-full group-hover:bg-primary-light transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-content group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-surface">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+            </div>
 
-            {/* 2. User Section: เช็คว่า Login หรือยัง */}
-            <div className="border-l pl-5 ml-2 border-border-main relative" ref={dropdownRef}>
-              {user ? (
-                <>
-                  {/* Avatar Button */}
-                  <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="flex items-center space-x-2 group focus:outline-none"
-                  >
+            {/* Desktop Login Button */}
+            {!user && (
+              <div className="hidden md:block border-l pl-5 ml-2 border-border-main">
+                <Link
+                  to="/login"
+                  className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-full text-sm font-medium transition-all shadow-sm active:scale-95"
+                >
+                  Sign In
+                </Link>
+              </div>
+            )}
+
+            {/* Profile / Mobile Menu Trigger */}
+            <div className={`relative ${user ? 'border-l pl-3 ml-2 md:pl-5 border-border-main' : ''}`}>
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center space-x-2 group focus:outline-none"
+              >
+                {user ? (
+                  <>
                     {user.image?.url ? (
                       <img src={getImageValidate(user.image.url)} alt="" className="h-8 w-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-primary/60 transition-all" />
                     ) : (
@@ -231,15 +245,64 @@ function Navbar() {
                       <p className="text-sm font-semibold text-content leading-none group-hover:text-primary">{user.displayName}</p>
                       <p className="text-[10px] text-muted uppercase tracking-wide">{user.role}</p>
                     </div>
-                    <svg className={`h-4 w-4 text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className={`h-4 w-4 text-muted hidden sm:block transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
-                  </button>
+                  </>
+                ) : (
+                  <div className="p-2 bg-surface-hover rounded-full hover:bg-primary-light transition-colors group-hover:text-primary md:hidden">
+                    <svg className="h-6 w-6 text-content" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </div>
+                )}
+              </button>
 
-                  {/* Dropdown Menu */}
-                  {isOpen && (
-                    <div className="absolute right-0 mt-3 w-52 bg-surface rounded-xl shadow-xl border border-border-main py-2 z-50 overflow-hidden transform origin-top-right transition-all">
-                      <div className="px-4 py-2 border-b border-border-main mb-1">
+              {/* Shared Dropdown Menu */}
+              {isOpen && (
+                <div className="absolute right-0 mt-3 w-64 md:w-52 bg-surface rounded-xl shadow-xl border border-border-main py-2 z-50 overflow-hidden transform origin-top-right transition-all">
+                  
+                  {/* Mobile Actions inside Dropdown */}
+                  <div className="md:hidden flex items-center justify-around px-4 py-3 border-b border-border-main bg-surface-hover/30">
+                    <ThemeToggle />
+                    
+                    {/* Mobile Noti */}
+                    <div className="relative">
+                      <button onClick={closeNoti} className="p-2 bg-surface rounded-full shadow-sm hover:bg-primary-light transition-colors border border-border-main">
+                        <BellIcon className="h-4 w-4 text-content" />
+                      </button>
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-2 ring-surface pointer-events-none">
+                          {unreadCount}
+                        </span>
+                      )}
+                      {notiOpen && (
+                         <div className="absolute right-0 mt-2 w-64 md:w-80">
+                           <NotificationDropdown
+                             notifications={noti}
+                             isOpen={notiOpen}
+                             onClose={() => setNotiOpen(false)}
+                           />
+                         </div>
+                      )}
+                    </div>
+
+                    {/* Mobile Cart */}
+                    <Link to="/cart" onClick={closeMenu} className="relative p-2 bg-surface rounded-full shadow-sm hover:bg-primary-light transition-colors border border-border-main">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-content" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      {cartItemCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-2 ring-surface">
+                          {cartItemCount}
+                        </span>
+                      )}
+                    </Link>
+                  </div>
+
+                  {user ? (
+                    <>
+                      <div className="px-4 py-3 border-b border-border-main mb-1">
                         <p className="text-xs text-muted">Signed in as</p>
                         <p className="text-sm font-medium text-content truncate">{user.email || user.displayName}</p>
                       </div>
@@ -259,17 +322,15 @@ function Navbar() {
                           <span>Sign Out</span>
                         </button>
                       </div>
+                    </>
+                  ) : (
+                    <div className="p-3">
+                      <Link to="/login" onClick={closeMenu} className="block w-full text-center bg-primary hover:bg-primary/90 text-white rounded-lg py-2.5 text-sm font-semibold transition-colors shadow-sm">
+                        Sign In
+                      </Link>
                     </div>
                   )}
-                </>
-              ) : (
-                /* ถ้ายังไม่ได้ Login: โชว์ปุ่ม Login */
-                <Link
-                  to="/login"
-                  className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-full text-sm font-medium transition-all shadow-sm active:scale-95"
-                >
-                  Sign In
-                </Link>
+                </div>
               )}
             </div>
           </div>
