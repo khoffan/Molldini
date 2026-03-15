@@ -131,10 +131,11 @@ export const updateDataOrder = createAsyncThunk(
 
 export const checkoutOrder = createAsyncThunk(
     "order/checkout",
-    async ({ source, orderId, }: { source: string, orderId: string }, { rejectWithValue }) => {
+    async ({ source, orderId, shippingId }: { source: string, orderId: string, shippingId: string }, { rejectWithValue }) => {
         try {
             const res = await api.post("/api/v1/checkout/" + orderId, {
-                source
+                source,
+                shippingId
             });
             console.log("Order checked out:", res.data);
             return res.data;

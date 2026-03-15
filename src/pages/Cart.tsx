@@ -71,19 +71,33 @@ function Cart() {
 
   const handleCheckOut = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
+
+    if (selectedItems.length === 0) {
+      showToast({
+        icon: 'warning',
+        title: 'No items selected',
+        text: 'Please select at least one item to checkout.',
+      });
+      return;
+    }
+
+    // 🟢 1. เริ่มแสดง Loading ทันที
+    Swal.fire({
+      title: 'กำลังเตรียมคำสั่งซื้อ...',
+      text: 'กรุณารอสักครู่ ระบบกำลังจัดเตรียมข้อมูลให้คุณ',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     try {
       // if (!isSynced) {
       //   await dispatch(mergeCartAfterLogin());
       //   console.log("Syncing cart...");
       // }
-      if (selectedItems.length === 0) {
-        showToast({
-          icon: 'warning',
-          title: 'No items selected',
-          text: 'Please select at least one item to checkout.',
-        });
-        return;
-      }
+
       const result = await dispatch(setOrderFromCartId({
         cartId: id,
         selectedItems,
@@ -93,6 +107,14 @@ function Cart() {
         paymentMethod: ""
       })).unwrap();
       dispatch(setOrderLocalCheckout());
+      // 🟢 2. ปิด Loading ด้วย Success Popup (หรือข้ามไปหน้าใหม่เลยก็ได้)
+      Swal.fire({
+        icon: 'success',
+        title: 'สร้างคำสั่งซื้อสำเร็จ',
+        text: 'ระบบกำลังนำคุณไปยังหน้าชำระเงิน',
+        timer: 1500, // แสดงสัก 1.5 วิแล้วค่อยไปต่อ
+        showConfirmButton: false
+      });
       navigate(`/checkout/${result.id}?items=${JSON.stringify(selectedItems)}`);
     } catch (err: unknown) {
       console.error("Error during checkout:", err);

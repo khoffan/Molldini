@@ -27,18 +27,45 @@ export default function CheckoutPage() {
     const [selectedAddressId, setSelectedAddressId] = useState<string>(
         user?.addresses?.find(addr => addr.isDefault)?.id || user?.addresses?.[0]?.id || ""
     );
-
-    const [paymentMethod, setPaymentMethod] = useState<string>("truemoney_jumpapp");
-    const [selectedBank, setSelectedBank] = useState<string>("");
-    const [selectedShippingId, setSelectedShippingId] = useState<string>("s1"); // [id, setSelectedShippingId]
-
-
+    console.log(payments);
     useEffect(() => {
         dispatch(fetchPayment());
         dispatch(fetchShipping());
         dispatch(fetchOrderLocalCheckout());
     }, [dispatch])
+    // 1. ประกาศ State เริ่มต้นเป็นค่าว่างไว้ก่อน
+    const [paymentMethod, setPaymentMethod] = useState<string>("");
+    const [selectedBank, setSelectedBank] = useState<string>("");
+    const [selectedShippingId, setSelectedShippingId] = useState<string>("");
 
+    // สำหรับ Payment Method
+    useEffect(() => {
+        // ถ้าข้อมูลมาแล้ว และยังไม่มีการเลือกค่า (State ยังว่าง)
+        if (payments && payments.length > 0 && !paymentMethod) {
+            const defaultPayment = payments.find(p => p.method === 'truemoney_jumpapp');
+            if (defaultPayment) {
+                setPaymentMethod(defaultPayment.method);
+            } else if (payments[0]) {
+                // กรณีหา truemoney ไม่เจอ ให้เลือกตัวแรกเป็น default กันพลาด
+                setPaymentMethod(payments[0].method);
+            }
+        }
+    }, [payments]); // Watch แค่ payments ก็พอ เพื่อให้รันเฉพาะตอนข้อมูลเปลี่ยน
+
+    // สำหรับ Shipping Method
+    useEffect(() => {
+        if (shippings && shippings.length > 0 && !selectedShippingId) {
+            const standardShipping = shippings.find(s =>
+                s.name.toLowerCase().includes('standard')
+            );
+            if (standardShipping) {
+                setSelectedShippingId(standardShipping.id);
+            } else if (shippings[0]) {
+                // ถ้าไม่เจอคำว่า standard ให้เลือกเจ้าแรกที่มี
+                setSelectedShippingId(shippings[0].id);
+            }
+        }
+    }, [shippings]);
 
     const createSource = (amount: number, method: string): Promise<any> => {
         return new Promise((resolve, reject) => {
@@ -68,6 +95,15 @@ export default function CheckoutPage() {
         setSelectedBank(method);
     }
 
+    const paymentSections = payments;
+
+    const amount = order?.totalPrice || 0;
+    const shippingMethod = shippings.find(m => m.id === selectedShippingId);
+    const isFree = shippingMethod?.freeShippingThreshold && amount >= shippingMethod.freeShippingThreshold;
+    const shippingCost = isFree ? 0 : shippingMethod?.price || 0;
+    const total = amount + shippingCost;
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedAddressId) {
@@ -92,7 +128,6 @@ export default function CheckoutPage() {
         if (paymentChoice === undefined || paymentChoice === null) return;
 
         const address = user?.addresses?.find(a => a.id === selectedAddressId);
-        // const shippingMethod = mockShippingMethods.find(m => m.id === selectedShippingId);
 
         Swal.fire({
             title: 'กำลังสร้างคำสั่งซื้อ...',
@@ -131,9 +166,10 @@ export default function CheckoutPage() {
             if (paymentChoice === true && method !== "cod") {
                 console.log("resultOrder: ", resultOrder);
                 const source = await createSource(total, method);
+                console.log("total =>", total);
                 console.log("🚀 ~ handleSubmit ~ source:", source)
                 Swal.close();
-                const chargeResult = await dispatch(checkoutOrder({ source: source.id, orderId: resultOrder.id })).unwrap();
+                const chargeResult = await dispatch(checkoutOrder({ source: source.id, orderId: resultOrder.id, shippingId: selectedShippingId })).unwrap();
                 if (chargeResult.redirectUrl) {
                     window.location.href = chargeResult.redirectUrl;
                     return;
@@ -141,7 +177,7 @@ export default function CheckoutPage() {
                     const code = chargeResult.code
                     navigate("/checkout/qr", {
                         state: {
-                            qrUri: code.image.download_uri,
+                            qrUri: code,
                             orderId: resultOrder.id,
                             amount: total,
                             expiredAt: chargeResult.expiredAt
@@ -169,7 +205,6 @@ export default function CheckoutPage() {
         }
     };
 
-    const paymentSections = payments;
 
     // const mockShippingMethods = [
     //     {
@@ -222,11 +257,7 @@ export default function CheckoutPage() {
     //     }
     // ];
 
-    const amount = order?.totalPrice || 0;
-    const shippingMethod = shippings.find(m => m.id === selectedShippingId);
-    const isFree = shippingMethod?.freeShippingThreshold && amount >= shippingMethod.freeShippingThreshold;
-    const shippingCost = isFree ? 0 : shippingMethod?.price || 0;
-    const total = amount + shippingCost;
+
 
 
 
@@ -347,9 +378,8 @@ export default function CheckoutPage() {
                                 <CreditCard className="text-primary" size={20} />
                                 ช่องทางชำระเงิน
                             </h2>
-                            {/* Container หลัก: บนจอใหญ่จะจำกัดความกว้างไว้ตรงกลางเพื่อให้ดูไม่ใหญ่จนเกินไป */}
                             <div className="max-w-4xl mx-auto w-full px-2 sm:px-4">
-                                <div className="flex flex-col gap-4"> {/* ใช้ flex-col เพื่อให้เรียงลงมาทั้ง mobile และ desktop */}
+                                <div className="flex flex-col gap-4">
                                     {paymentSections.map((section) => (
                                         <div
                                             key={section.id}
@@ -367,22 +397,25 @@ export default function CheckoutPage() {
                                                 <div className="flex items-center space-x-4">
                                                     <div className={`p-3 rounded-xl text-3xl shadow-sm ${paymentMethod === section.method ? 'bg-surface' : 'bg-main'
                                                         }`}>
-                                                        {section.icon?.url}
+                                                        {/* ใช้ icon จาก DB ถ้ามี ถ้าไม่มีให้แสดง emoji ตาม method */}
+                                                        {section.icon?.url || (
+                                                            section.method === 'promptpay' ? '🎯' :
+                                                                section.method === 'mobile_banking' ? '📱' :
+                                                                    section.method.includes('truemoney') ? '🔸' : '💳'
+                                                        )}
                                                     </div>
                                                     <div className="text-left">
                                                         <span className="block font-semibold text-content text-lg">
                                                             {section.label}
                                                         </span>
                                                         <span className="text-xs text-muted uppercase tracking-wider">
-                                                            Secure Payment {paymentMethod}
+                                                            Secure Payment
                                                         </span>
                                                     </div>
                                                 </div>
 
                                                 {/* Radio Indicator */}
-                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === section.method
-                                                    ? 'border-primary bg-primary'
-                                                    : 'border-muted'
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === section.method ? 'border-primary bg-primary' : 'border-muted'
                                                     }`}>
                                                     {paymentMethod === section.method && (
                                                         <div className="w-2.5 h-2.5 bg-white rounded-full animate-in zoom-in-50" />
@@ -393,9 +426,10 @@ export default function CheckoutPage() {
                                             {/* Expandable Content Section */}
                                             {paymentMethod === section.method && (
                                                 <div className="p-6 border-t border-border-main bg-main/30 animate-in fade-in slide-in-from-top-4 duration-300">
-                                                    <div className="max-w-md mx-auto"> {/* จำกัดความกว้าง Form ภายในให้พอดีสายตา */}
+                                                    <div className="max-w-md mx-auto">
 
-                                                        {section.id === 'PROMPTPAY' && (
+                                                        {/* 1. PromptPay Logic */}
+                                                        {/* {section.method === 'promptpay' && (
                                                             <div className="text-center py-6 bg-surface rounded-2xl border border-border-main shadow-inner">
                                                                 <p className="text-sm font-medium text-muted mb-4">สแกนจ่ายผ่านแอปธนาคารทุกธนาคาร</p>
                                                                 <div className="mx-auto w-48 h-48 bg-main flex items-center justify-center rounded-xl border-2 border-dashed border-border-main">
@@ -406,9 +440,10 @@ export default function CheckoutPage() {
                                                                 </div>
                                                                 <p className="mt-4 text-[11px] text-muted italic">* QR Code มีอายุการใช้งาน 15 นาที</p>
                                                             </div>
-                                                        )}
+                                                        )} */}
 
-                                                        {section.id === 'MOBILE_BANKING' && (
+                                                        {/* 2. Mobile Banking Logic */}
+                                                        {section.method === 'mobile_banking' && (
                                                             <div className="grid grid-cols-2 gap-3">
                                                                 {section.paymentChilds.map(bank => (
                                                                     <button
@@ -419,79 +454,46 @@ export default function CheckoutPage() {
                                                                             : 'border-border-main bg-surface text-content hover:border-primary/30 hover:bg-surface-hover'
                                                                             }`}
                                                                     >
-                                                                        {/* 🟢 แสดงเครื่องหมายถูกที่มุมขวาบนเมื่อถูกเลือก */}
                                                                         {selectedBank === bank.method && (
                                                                             <div className="absolute top-2 right-2 animate-in zoom-in duration-200">
-                                                                                <div className="bg-blue-500 rounded-full p-0.5">
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        className="h-3 w-3 text-white"
-                                                                                        viewBox="0 0 20 20"
-                                                                                        fill="currentColor"
-                                                                                    >
-                                                                                        <path
-                                                                                            fillRule="evenodd"
-                                                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                                                            clipRule="evenodd"
-                                                                                        />
+                                                                                <div className="bg-primary rounded-full p-0.5">
+                                                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                                                     </svg>
                                                                                 </div>
                                                                             </div>
                                                                         )}
-
-                                                                        {/* ส่วนของโลโก้จำลอง */}
-                                                                        <div className={`w-12 h-12 rounded-lg mb-2 flex items-center justify-center text-xs font-bold uppercase transition-colors ${selectedBank === bank.method ? 'bg-surface text-primary' : 'bg-surface-hover'
-                                                                            }`}>
-                                                                            {bank.label.substring(0, 2)}
+                                                                        <div className="w-10 h-10 rounded-lg mb-2 flex items-center justify-center bg-main text-[10px] font-bold">
+                                                                            LOGO
                                                                         </div>
-
-                                                                        <span className="text-sm tracking-tight">{bank.label}</span>
+                                                                        <span className="text-xs text-center leading-tight">{bank.label}</span>
                                                                     </button>
                                                                 ))}
                                                             </div>
                                                         )}
 
-                                                        {section.id === 'CREDIT_CARD' && (
-                                                            <div className="space-y-4 bg-surface p-5 rounded-2xl border border-border-main shadow-sm">
-                                                                <div>
-                                                                    <label className="text-xs font-bold text-muted uppercase mb-1 block">Card Number</label>
-                                                                    <input type="text" placeholder="0000 0000 0000 0000" className="w-full p-3 bg-main border border-border-main rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all" />
-                                                                </div>
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    <div>
-                                                                        <label className="text-xs font-bold text-muted uppercase mb-1 block">Expiry Date</label>
-                                                                        <input type="text" placeholder="MM/YY" className="w-full p-3 bg-main border border-border-main rounded-xl focus:ring-2 focus:ring-primary outline-none" />
-                                                                    </div>
-                                                                    <div>
-                                                                        <label className="text-xs font-bold text-muted uppercase mb-1 block">CVV</label>
-                                                                        <input type="password" placeholder="***" className="w-full p-3 bg-main border border-border-main rounded-xl focus:ring-2 focus:ring-primary outline-none" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-                                                        {section.id === 'TRUEMONEY' && (
+                                                        {/* 3. TrueMoney JumpApp Logic */}
+                                                        {section.method === 'truemoney_jumpapp' && (
                                                             <div className="space-y-4 bg-surface p-5 rounded-2xl border border-border-main shadow-sm">
                                                                 <div className="flex items-center space-x-3 mb-2">
-                                                                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">📱</div>
-                                                                    <span className="text-sm font-semibold text-content">TrueMoney Wallet</span>
+                                                                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-lg">📱</div>
+                                                                    <span className="text-sm font-semibold text-content">TrueMoney JumpApp</span>
                                                                 </div>
-                                                                <input
-                                                                    type="tel"
-                                                                    placeholder="08X-XXX-XXXX"
-                                                                    className="w-full p-3 bg-main border border-border-main rounded-xl focus:ring-2 focus:ring-orange-400 outline-none transition-all"
-                                                                />
-                                                                <p className="text-[11px] text-muted leading-relaxed">
-                                                                    กรุณาตรวจสอบยอดเงินคงเหลือใน Wallet ก่อนทำรายการ ระบบจะส่งคำขอหักเงินไปยังแอป TrueMoney ของคุณ
+                                                                <p className="text-xs text-muted leading-relaxed">
+                                                                    ระบบจะนำคุณไปยังแอป TrueMoney เพื่อยืนยันการชำระเงินโดยอัตโนมัติ
                                                                 </p>
+                                                                <div className="p-3 bg-orange-50 rounded-xl border border-orange-100">
+                                                                    <p className="text-[11px] text-orange-700">ไม่ต้องกรอกเบอร์โทรศัพท์ ระบบจะเชื่อมต่อกับแอปของคุณทันที</p>
+                                                                </div>
                                                             </div>
                                                         )}
 
-                                                        {section.id === 'COD' && (
-                                                            <div className="text-center py-4 bg-green-50 rounded-2xl border border-green-100">
-                                                                <div className="text-4xl mb-2">🏠</div>
-                                                                <p className="text-sm text-green-700 font-semibold uppercase tracking-wide">Cash on Delivery Available</p>
-                                                                <p className="text-xs text-green-600 mt-1">เตรียมเงินสดให้พอดีกับยอดชำระเมื่อพนักงานไปถึง</p>
+                                                        {/* 4. Rabbit Line Pay & Others */}
+                                                        {(section.method === 'rabbit_linepay' || section.method === 'truemoney_qr') && (
+                                                            <div className="text-center py-6 bg-surface rounded-2xl border border-border-main">
+                                                                <div className="text-3xl mb-2">💳</div>
+                                                                <p className="text-sm font-medium">ชำระผ่าน {section.label}</p>
+                                                                <p className="text-xs text-muted mt-1">กดปุ่มชำระเงินเพื่อดำเนินการต่อ</p>
                                                             </div>
                                                         )}
 
@@ -557,11 +559,11 @@ export default function CheckoutPage() {
                                     <div className="hidden lg:flex flex-col gap-2">
                                         <div className="flex justify-between text-sm text-muted">
                                             <span>ราคารวมสินค้า</span>
-                                            <span className="font-medium text-content">฿{total.toLocaleString()}</span>
+                                            <span className="font-medium text-content">฿{amount.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-muted">
                                             <span>ค่าจัดส่ง</span>
-                                            <span className="text-emerald-600 font-medium">ฟรี</span>
+                                            <span className="text-emerald-600 font-medium">฿{shippingCost.toLocaleString()}</span>
                                         </div>
                                     </div>
 
