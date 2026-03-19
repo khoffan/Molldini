@@ -1,7 +1,51 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { Order, OrderAddress, OrderReceiveInfo, OrderResponse } from "../interface/orderInterface";
 import api from "../lib/api";
 import { AxiosError } from "axios";
+
+// Helper สำหรับแปลง Order ให้เป็น Number ทั้ง Object
+const transformOrderToNumber = (order: any): Order => {
+    if (!order) return order;
+    return {
+        ...order,
+        totalPrice: Number(order.totalPrice || 0),
+        totalSystemFee: order.totalSystemFee ? Number(order.totalSystemFee) : undefined,
+        totalNetMerchant: order.totalNetMerchant ? Number(order.totalNetMerchant) : undefined,
+        subOrders: order.subOrders?.map((sub: any) => ({
+            ...sub,
+            totalPrice: Number(sub.totalPrice || 0),
+            shippingFee: Number(sub.shippingFee || 0),
+            systemFeeAmount: Number(sub.systemFeeAmount || 0),
+            netToMerchant: Number(sub.netToMerchant || 0),
+            orderItems: sub.orderItems?.map((item: any) => ({
+                ...item,
+                price: Number(item.price || 0)
+            }))
+        }))
+    };
+};
+
+const transformOrderResToNumber = (order: any): OrderResponse => {
+    if (!order) return order;
+    return {
+        ...order,
+        totalPrice: Number(order.totalPrice || 0),
+        totalSystemFee: order.totalSystemFee ? Number(order.totalSystemFee) : undefined,
+        totalNetMerchant: order.totalNetMerchant ? Number(order.totalNetMerchant) : undefined,
+        subOrders: order.subOrders?.map((sub: any) => ({
+            ...sub,
+            totalPrice: Number(sub.totalPrice || 0),
+            shippingFee: Number(sub.shippingFee || 0),
+            systemFeeAmount: Number(sub.systemFeeAmount || 0),
+            netToMerchant: Number(sub.netToMerchant || 0),
+            orderItems: sub.orderItems?.map((item: any) => ({
+                ...item,
+                price: Number(item.price || 0)
+            }))
+        }))
+    };
+};
 
 interface OrderState {
     listOrderUser: OrderResponse[] | null;
@@ -39,7 +83,6 @@ export const fetchOrderMerchant = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const res = await api.get('/api/v1/orders/merchant');
-            console.log("🚀 ~ res:", res.data)
             return res.data as OrderResponse[];
         } catch (e: unknown) {
             if (e instanceof AxiosError) {
@@ -89,7 +132,6 @@ export const setOrderFromCartId = createAsyncThunk(
                 receiverPhone,
                 paymentMethod
             });
-            console.log("Order created from cart ID:", res.data);
             return res.data;
         } catch (err: unknown) {
             if (err instanceof Error) {
@@ -118,7 +160,6 @@ export const updateDataOrder = createAsyncThunk(
                 receiverPhone: phone,
                 paymentMethod: paymentMethod,
             });
-            console.log("Order data updated:", res.data);
             return res.data;
         } catch (e: unknown) {
             if (e instanceof Error) {
@@ -137,7 +178,6 @@ export const checkoutOrder = createAsyncThunk(
                 source,
                 shippingId
             });
-            console.log("Order checked out:", res.data);
             return res.data;
         } catch (e: unknown) {
             if (e instanceof Error) {
@@ -166,7 +206,7 @@ const orderSlice = createSlice({
         fetchOrderLocalCheckout: (state) => {
             const orderParse = localStorage.getItem("order");
             if (orderParse) {
-                state.order = JSON.parse(orderParse);
+                state.order = transformOrderToNumber(JSON.parse(orderParse));
             }
         }
     },
@@ -177,7 +217,7 @@ const orderSlice = createSlice({
                 state.error = null;
             })
             .addCase(setOrderFromCartId.fulfilled, (state, action) => {
-                state.order = action.payload;
+                state.order = transformOrderToNumber(action.payload);
                 state.loading = false;
             })
             .addCase(setOrderFromCartId.rejected, (state, action) => {
@@ -189,7 +229,7 @@ const orderSlice = createSlice({
                 state.error = null;
             })
             .addCase(updateDataOrder.fulfilled, (state, action) => {
-                state.order = action.payload;
+                state.order = transformOrderToNumber(action.payload);
                 state.loading = false;
             })
             .addCase(updateDataOrder.rejected, (state, action) => {
@@ -201,7 +241,7 @@ const orderSlice = createSlice({
                 state.error = null;
             })
             .addCase(checkoutOrder.fulfilled, (state, action) => {
-                state.order = action.payload;
+                state.order = transformOrderToNumber(action.payload);
                 state.loading = false;
             })
             .addCase(checkoutOrder.rejected, (state, action) => {
@@ -213,7 +253,7 @@ const orderSlice = createSlice({
                 state.error = null;
             })
             .addCase(fetchOrderUser.fulfilled, (state, action) => {
-                state.listOrderUser = action.payload;
+                state.listOrderUser = action.payload.map(transformOrderResToNumber);
                 state.loading = false;
             })
             .addCase(fetchOrderUser.rejected, (state, action) => {
@@ -225,7 +265,7 @@ const orderSlice = createSlice({
                 state.error = null;
             })
             .addCase(fetchOrderMerchant.fulfilled, (state, action) => {
-                state.listOrderMerchant = action.payload;
+                state.listOrderMerchant = action.payload.map(transformOrderResToNumber);
                 state.loading = false;
             })
             .addCase(fetchOrderMerchant.rejected, (state, action) => {

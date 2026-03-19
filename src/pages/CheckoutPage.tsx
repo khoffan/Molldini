@@ -8,8 +8,6 @@ import { useNavigate, useParams } from 'react-router';
 import Swal from 'sweetalert2';
 import { checkoutOrder, fetchOrderLocalCheckout, updateDataOrder } from '../service/orderService';
 import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
-import { fetchPayment } from '../service/paymentService';
-import { fetchShipping } from '../service/shippingService';
 
 Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);
 
@@ -29,43 +27,25 @@ export default function CheckoutPage() {
     );
     console.log(payments);
     useEffect(() => {
-        dispatch(fetchPayment());
-        dispatch(fetchShipping());
         dispatch(fetchOrderLocalCheckout());
     }, [dispatch])
-    // 1. ประกาศ State เริ่มต้นเป็นค่าว่างไว้ก่อน
-    const [paymentMethod, setPaymentMethod] = useState<string>("");
+    // 🟢 1. จัดการ Payment Method
+    const [paymentMethod, setPaymentMethod] = useState<string>(() => {
+        // ดึงค่าจาก Store ได้ทันทีเพราะโหลดมาแล้ว
+        const defaultPayment = payments?.find(p => p.method === 'truemoney_jumpapp');
+        return defaultPayment?.method || payments?.[0]?.method || "";
+    });
+
+    // 🟢 2. จัดการ Shipping Method
+    const [selectedShippingId, setSelectedShippingId] = useState<string>(() => {
+        const standardShipping = shippings?.find(s =>
+            s.name.toLowerCase().includes('standard')
+        );
+        return standardShipping?.id || shippings?.[0]?.id || "";
+    });
+
+    // 🟢 3. จัดการ Selected Bank (ถ้ามีเงื่อนไขเริ่มต้น)
     const [selectedBank, setSelectedBank] = useState<string>("");
-    const [selectedShippingId, setSelectedShippingId] = useState<string>("");
-
-    // สำหรับ Payment Method
-    useEffect(() => {
-        // ถ้าข้อมูลมาแล้ว และยังไม่มีการเลือกค่า (State ยังว่าง)
-        if (payments && payments.length > 0 && !paymentMethod) {
-            const defaultPayment = payments.find(p => p.method === 'truemoney_jumpapp');
-            if (defaultPayment) {
-                setPaymentMethod(defaultPayment.method);
-            } else if (payments[0]) {
-                // กรณีหา truemoney ไม่เจอ ให้เลือกตัวแรกเป็น default กันพลาด
-                setPaymentMethod(payments[0].method);
-            }
-        }
-    }, [payments]); // Watch แค่ payments ก็พอ เพื่อให้รันเฉพาะตอนข้อมูลเปลี่ยน
-
-    // สำหรับ Shipping Method
-    useEffect(() => {
-        if (shippings && shippings.length > 0 && !selectedShippingId) {
-            const standardShipping = shippings.find(s =>
-                s.name.toLowerCase().includes('standard')
-            );
-            if (standardShipping) {
-                setSelectedShippingId(standardShipping.id);
-            } else if (shippings[0]) {
-                // ถ้าไม่เจอคำว่า standard ให้เลือกเจ้าแรกที่มี
-                setSelectedShippingId(shippings[0].id);
-            }
-        }
-    }, [shippings]);
 
     const createSource = (amount: number, method: string): Promise<any> => {
         return new Promise((resolve, reject) => {
@@ -98,10 +78,13 @@ export default function CheckoutPage() {
     const paymentSections = payments;
 
     const amount = order?.totalPrice || 0;
+    console.log("🚀 ~ CheckoutPage ~ amount:", amount)
     const shippingMethod = shippings.find(m => m.id === selectedShippingId);
     const isFree = shippingMethod?.freeShippingThreshold && amount >= shippingMethod.freeShippingThreshold;
     const shippingCost = isFree ? 0 : shippingMethod?.price || 0;
+    console.log("🚀 ~ CheckoutPage ~ shippingCost:", shippingCost)
     const total = amount + shippingCost;
+    console.log("🚀 ~ CheckoutPage ~ total:", total)
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -204,63 +187,6 @@ export default function CheckoutPage() {
             }
         }
     };
-
-
-    // const mockShippingMethods = [
-    //     {
-    //         id: "s1",
-    //         name: "Standard Delivery",
-    //         provider: "FLASH",
-    //         description: "จัดส่งธรรมดา ราคาประหยัด",
-    //         price: 35,
-    //         estimatedDays: "2-3 วัน",
-    //         minOrderAmount: 0,
-    //         freeShippingThreshold: 1000,
-    //         sortOrder: 10,
-    //         image: "https://cdn.brandfetch.io/idzqDyW4sQ/w/400/h/400/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1700855441017"
-    //     },
-    //     {
-    //         id: "s2",
-    //         name: "Express Delivery",
-    //         provider: "KERRY",
-    //         description: "จัดส่งด่วนพิเศษ ได้รับไว",
-    //         price: 70,
-    //         estimatedDays: "1-2 วัน",
-    //         minOrderAmount: 200, // ต้องซื้อครบ 200 ถึงจะขึ้นตัวเลือกนี้
-    //         freeShippingThreshold: 4000,
-    //         sortOrder: 20,
-    //         image: "https://cdn.brandfetch.io/idWh9MmD5j/w/236/h/53/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1732604587406"
-    //     },
-    //     {
-    //         id: "s3",
-    //         name: "Standard Delivery",
-    //         provider: "J&T Express",
-    //         description: "จัดส่งด่วนพิเศษ ได้รับไว",
-    //         price: 70,
-    //         estimatedDays: "1-2 วัน",
-    //         minOrderAmount: 100, // ต้องซื้อครบ 200 ถึงจะขึ้นตัวเลือกนี้
-    //         freeShippingThreshold: 6000,
-    //         sortOrder: 20,
-    //         image: "https://cdn.brandfetch.io/idJ7kFPKaZ/w/521/h/521/theme/dark/icon.jpeg?c=1bxid64Mup7aczewSAYMX&t=1768878791269"
-    //     },
-    //     {
-    //         id: "s4",
-    //         name: "Lalamove Express",
-    //         provider: "LALAMOVE",
-    //         description: "ส่งด่วนด้วยรถมอเตอร์ไซค์ (เฉพาะพื้นที่)",
-    //         price: 150,
-    //         estimatedDays: "ภายใน 3 ชม.",
-    //         minOrderAmount: 500,
-    //         freeShippingThreshold: null,
-    //         sortOrder: 30,
-    //         image: "https://cdn.brandfetch.io/idUoPQNwIr/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1767342240419"
-    //     }
-    // ];
-
-
-
-
-
 
     if (loading) {
         return <LoadingSkelition />
@@ -569,11 +495,11 @@ export default function CheckoutPage() {
 
                                     {/* 2. Main Action Area: เปลี่ยน Layout ตามหน้าจอ */}
                                     <div className="
-        /* Mobile: แถวแนวนอน ยอดเงินซ้าย ปุ่มขวา */
-        flex flex-row items-center justify-between gap-4
-        /* Desktop: แถวแนวตั้ง ทุกอย่างเต็มความกว้าง */
-        lg:flex-col lg:items-stretch lg:gap-4
-    ">
+                                            /* Mobile: แถวแนวนอน ยอดเงินซ้าย ปุ่มขวา */
+                                            flex flex-row items-center justify-between gap-4
+                                            /* Desktop: แถวแนวตั้ง ทุกอย่างเต็มความกว้าง */
+                                            lg:flex-col lg:items-stretch lg:gap-4
+                                        ">
 
                                         {/* ส่วนแสดงราคาสุทธิ */}
                                         <div className="flex flex-col">
@@ -583,7 +509,7 @@ export default function CheckoutPage() {
                                             <div className="flex items-baseline gap-1">
                                                 <span className="text-sm lg:text-base font-bold text-primary">฿</span>
                                                 <span className="text-2xl lg:text-3xl font-black text-primary leading-none">
-                                                    {total.toLocaleString()}
+                                                    {total.toString()}
                                                 </span>
                                             </div>
                                         </div>
@@ -603,8 +529,7 @@ export default function CheckoutPage() {
                 shadow-[0_10px_20px_-10px_rgba(var(--primary-rgb),0.5)]
                 hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]
                 flex items-center justify-center gap-2 group
-            "
-                                        >
+            ">
                                             <span className="whitespace-nowrap">ยืนยันการสั่งซื้อ</span>
                                             <ChevronRight size={20} className="transition-transform group-hover:translate-x-1" />
                                         </button>

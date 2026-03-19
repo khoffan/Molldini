@@ -8,10 +8,12 @@ import { useDispatch } from 'react-redux';
 import { addCartDb } from '../service/cartService';
 import type { CartItem } from '../interface/cartInterface';
 import Swal from 'sweetalert2';
+import { useGuardAction } from '../utils/checkAuth';
 import { fetchProducts } from '../service/productService';
 import { getImageValidate } from '../utils/getImageValidate';
 
 function ProductDetail() {
+    const { checkAuth } = useGuardAction();
     const { id } = useParams();
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
@@ -55,34 +57,36 @@ function ProductDetail() {
     const handleDecrement = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
     const handleAddToCart = (shouldNavigate: boolean, variantId: string) => {
-        const cartItem: CartItem = {
-            quantity,
-            userId: "",
-            title: product.title,
-            productId: variantId
-        }
-        dispatch(addCartDb(cartItem));
+        checkAuth(() => {
+            const cartItem: CartItem = {
+                quantity,
+                userId: "",
+                title: product.title,
+                productId: variantId
+            }
+            dispatch(addCartDb(cartItem));
 
-        if (shouldNavigate) {
-            // กรณีปุ่ม "ซื้อเลยตอนนี้"
-            navigate('/cart');
-        } else {
-            // กรณีปุ่ม "เพิ่มไปยังรถเข็น" - แสดง Alert สวยๆ
-            Swal.fire({
-                title: 'เพิ่มลงตะกร้าสำเร็จ!',
-                text: `เพิ่ม ${product.title} จำนวน ${quantity} ชิ้นเรียบร้อยแล้ว`,
-                icon: 'success',
-                showConfirmButton: false,
-                timer: 1500, // ปิดเองภายใน 1.5 วินาที
-                position: 'center',
-                toast: false, // ถ้าอยากให้เป็น Popup กลางจอ
-                iconColor: '#2563eb', // สีน้ำเงิน Blue-600 ของ Molldini
-                customClass: {
-                    popup: 'rounded-3xl', // ทำมุมโค้งให้เข้ากับ UI ของเรา
-                    title: 'text-xl font-bold text-gray-800',
-                }
-            });
-        }
+            if (shouldNavigate) {
+                // กรณีปุ่ม "ซื้อเลยตอนนี้"
+                navigate('/cart');
+            } else {
+                // กรณีปุ่ม "เพิ่มไปยังรถเข็น" - แสดง Alert สวยๆ
+                Swal.fire({
+                    title: 'เพิ่มลงตะกร้าสำเร็จ!',
+                    text: `เพิ่ม ${product.title} จำนวน ${quantity} ชิ้นเรียบร้อยแล้ว`,
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 1500, // ปิดเองภายใน 1.5 วินาที
+                    position: 'center',
+                    toast: false, // ถ้าอยากให้เป็น Popup กลางจอ
+                    iconColor: '#2563eb', // สีน้ำเงิน Blue-600 ของ Molldini
+                    customClass: {
+                        popup: 'rounded-3xl', // ทำมุมโค้งให้เข้ากับ UI ของเรา
+                        title: 'text-xl font-bold text-gray-800',
+                    }
+                });
+            }
+        })
     }
 
 

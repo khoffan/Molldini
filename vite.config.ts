@@ -17,16 +17,16 @@ export default defineConfig(({ mode }) => {
       '__FB_APP_ID__': JSON.stringify(env.VITE_FB_APP_ID),
       '__FB_MEASUREMENT_ID__': JSON.stringify(env.VITE_FB_MEASUREMENT_ID),
     },
-    // server: {
-    //   port: 5173,
-    //   strictPort: true,
-    //   allowedHosts: [
-    //     '.ngrok-free.app', // อนุญาตทุก subdomain ของ ngrok
-    //     '.ngrok-free.dev', // อนุญาตทุก subdomain ของ ngrok
-    //     'localhost'
-    //   ],
-    //   host: true
-    // },
+    server: {
+      port: 5173,
+      strictPort: true,
+      allowedHosts: [
+        '.ngrok-free.app', // อนุญาตทุก subdomain ของ ngrok
+        '.ngrok-free.dev', // อนุญาตทุก subdomain ของ ngrok
+        'localhost'
+      ],
+      host: true
+    },
   }
 
 })

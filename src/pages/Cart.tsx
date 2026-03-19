@@ -9,6 +9,8 @@ import Swal from "sweetalert2";
 import { getImageValidate } from "../utils/getImageValidate";
 import LoadingSkelition from "../components/loadingSkeleton/LoadingShrinkBoxSkelition";
 import { showToast } from "../utils/Toast";
+import { fetchPayment } from "../service/paymentService";
+import { fetchShipping } from "../service/shippingService";
 
 
 function Cart() {
@@ -106,15 +108,14 @@ function Cart() {
         receiverPhone: "",
         paymentMethod: ""
       })).unwrap();
+      await Promise.all([
+        dispatch(fetchPayment()).unwrap(),
+        dispatch(fetchShipping()).unwrap(),
+      ]);
+
       dispatch(setOrderLocalCheckout());
-      // 🟢 2. ปิด Loading ด้วย Success Popup (หรือข้ามไปหน้าใหม่เลยก็ได้)
-      Swal.fire({
-        icon: 'success',
-        title: 'สร้างคำสั่งซื้อสำเร็จ',
-        text: 'ระบบกำลังนำคุณไปยังหน้าชำระเงิน',
-        timer: 1500, // แสดงสัก 1.5 วิแล้วค่อยไปต่อ
-        showConfirmButton: false
-      });
+      Swal.close();
+
       navigate(`/checkout/${result.id}?items=${JSON.stringify(selectedItems)}`);
     } catch (err: unknown) {
       console.error("Error during checkout:", err);

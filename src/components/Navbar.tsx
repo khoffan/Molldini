@@ -261,11 +261,11 @@ function Navbar() {
               {/* Shared Dropdown Menu */}
               {isOpen && (
                 <div className="absolute right-0 mt-3 w-64 md:w-52 bg-surface rounded-xl shadow-xl border border-border-main py-2 z-50 overflow-hidden transform origin-top-right transition-all">
-                  
+
                   {/* Mobile Actions inside Dropdown */}
                   <div className="md:hidden flex items-center justify-around px-4 py-3 border-b border-border-main bg-surface-hover/30">
                     <ThemeToggle />
-                    
+
                     {/* Mobile Noti */}
                     <div className="relative">
                       <button onClick={closeNoti} className="p-2 bg-surface rounded-full shadow-sm hover:bg-primary-light transition-colors border border-border-main">
@@ -277,13 +277,13 @@ function Navbar() {
                         </span>
                       )}
                       {notiOpen && (
-                         <div className="absolute right-0 mt-2 w-64 md:w-80">
-                           <NotificationDropdown
-                             notifications={noti}
-                             isOpen={notiOpen}
-                             onClose={() => setNotiOpen(false)}
-                           />
-                         </div>
+                        <div className="absolute right-0 mt-2 w-64 md:w-80">
+                          <NotificationDropdown
+                            notifications={noti}
+                            isOpen={notiOpen}
+                            onClose={() => setNotiOpen(false)}
+                          />
+                        </div>
                       )}
                     </div>
 
