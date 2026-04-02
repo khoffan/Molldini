@@ -32,10 +32,11 @@
 //             }
 //         },
 
-export interface InvoiceResponce {
+export interface InvoiceResponse {
     id: string | null;
     orderId: string | null;
     amount: number;
+    shippingCost: number;
     paymentMethod: string;
     status: string;
     paidAt: string | null;

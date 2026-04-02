@@ -31,11 +31,12 @@ import SuccessCheckoutPage from './pages/SuccessCheckoutPage'
 import QRcodePage from './pages/QRcodePage'
 import MerchantProductStore from './pages/MerchantProductStore'
 import MerchantProfilePage from './pages/MerchantProfilePage'
-import { fetchNoti, resetNotiState, setupNotifications } from './service/notificationService'
+import { fetchNoti, resetNotiState } from './service/notificationService'
 import { clearOrderState } from './service/orderService'
 import PolicyPage from './pages/PolicyPage'
 import TermPage from './pages/TermPage'
 import NotFoundPage from './pages/NotFounadPage'
+import LoadingLogoScreen from './components/loadingComponent/LoadingLogo'
 
 
 
@@ -101,12 +102,7 @@ function App() {
   }, [dispatch]); // เอา isSynced ออกจากตรงนี้เด็ดขาด!
 
   if (!isAuthenticated) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        {/* ใส่ Spinner สวยๆ ตรงนี้ เพื่อไม่ให้หน้าจอกระพริบ */}
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
+    return <LoadingLogoScreen />
   }
 
   const element = (
@@ -137,7 +133,7 @@ function App() {
           <Route path='orders' element={<OrderUserPage />} />
           <Route path='orders/:id' element={<OrderDetailPage />} />
         </Route>
-        <Route path='/order/:id' element={<OrderDetailPage />} />
+        <Route path='/orders/:id' element={<OrderDetailPage />} />
         <Route path='/settings' element={<SettingPage />} />
         <Route path="/checkout/:id" element={<CheckoutPage />} />
         <Route path='/checkout/qr' element={<QRcodePage />} />

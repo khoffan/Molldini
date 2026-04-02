@@ -112,6 +112,27 @@ export const addCartDb = createAsyncThunk(
     }
 )
 
+export const removeItemFormCartDb = createAsyncThunk(
+    "cart/removeItemFormCartDb",
+    async (itemId: string, { rejectWithValue }) => {
+        try {
+            const res = await api.delete(`/api/v1/carts/item/${itemId}`)
+            if (res.status === 204) {
+                console.log("remove Cart to database");
+                return itemId
+            }
+            return undefined
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                return rejectWithValue(e.message);
+            } else if (e instanceof AxiosError) {
+                return rejectWithValue(e.response?.data?.message || e.message);
+            }
+            return rejectWithValue("An unknown error occurred");
+        }
+    }
+)
+
 
 // Thunk สำหรับอัปเดตจำนวนสินค้าในตะกร้าไปยัง Database
 export const updateCartIncrementQuantityDb = createAsyncThunk(
@@ -290,6 +311,20 @@ const cartSlice = createSlice({
             .addCase(fetchCart.rejected, (state, action) => {
                 state.loading = false
                 state.error = action.payload as string
+            })
+            .addCase(removeItemFormCartDb.fulfilled, (state, action) => {
+                state.loading = false;
+                const productId = action.payload;
+                if (productId === undefined) return
+                if (state.cart && productId) {
+                    // ลบ item ออกจาก state โดยตรง
+                    state.cart.items = state.cart.items.filter(item => item.productId !== productId);
+                    saveToLocal(state.cart);
+                }
+            })
+            .addCase(removeItemFormCartDb.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
             })
     }
 });

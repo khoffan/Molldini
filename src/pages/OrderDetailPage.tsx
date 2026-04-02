@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
 import { useEffect, useMemo, useState } from 'react';
 import { checkoutOrder, fetchOrderById } from '../service/orderService';
-import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
+import LoadingSkelition from '../components/loadingComponent/LoadingShrinkBoxSkelition';
 import Swal from 'sweetalert2';
 
 Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);
@@ -28,6 +28,7 @@ export default function OrderDetailPage() {
     const navigate = useNavigate();
 
     const [order, setOrder] = useState<OrderResponse | null>(null)
+
     const [loading, setLoading] = useState<boolean>(false);
     useEffect(() => {
         setLoading(true);

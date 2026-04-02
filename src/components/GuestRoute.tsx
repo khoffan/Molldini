@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet } from 'react-router';
 import type { RootState } from '../store'; // ปรับ path ตามโปรเจกต์คุณ
-import LoadingCircularSkelition from './loadingSkeleton/LoadingCircularSkelition';
+import LoadingCircularSkelition from './loadingComponent/LoadingCircularSkelition';
 
 const GuestRoute = () => {
     const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);

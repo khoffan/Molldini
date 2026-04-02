@@ -121,7 +121,7 @@ const RegisterPage: React.FC = () => {
     const isLoading = localLoading || loading;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-bg from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
             <div className="max-w-md w-full">
                 {/* Card */}
                 <div className="bg-surface/80 backdrop-blur-lg rounded-3xl shadow-2xl shadow-blue-900/5 p-8 sm:p-10 border border-border-main">
@@ -156,7 +156,7 @@ const RegisterPage: React.FC = () => {
                         <div className="grid grid-cols-2 gap-3">
                             {/* First Name */}
                             <div>
-                                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1.5">
+                                <label htmlFor="firstName" className="block text-sm font-medium text-content mb-1.5">
                                     First name
                                 </label>
                                 <div className="relative">
@@ -185,7 +185,7 @@ const RegisterPage: React.FC = () => {
 
                             {/* Last Name */}
                             <div>
-                                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1.5">
+                                <label htmlFor="lastName" className="block text-sm font-medium text-content mb-1.5">
                                     Last name
                                 </label>
                                 <div className="relative">

@@ -1,29 +1,36 @@
-import type { InvoiceResponce, ReceiptResponse } from "./invoiceInterface";
+import type { InvoiceResponse, ReceiptResponse } from "./invoiceInterface";
 
 
 export interface OrderResponse {
     id: string | null;
+    chargeId: string | null;
     userId: string | null;
-    totalPrice: number; // ปรับให้รับ String ได้
+    totalPrice: number;
+    totalShippingCost: number;
+    netAmount: number;
     totalSystemFee?: number;
     totalNetMerchant?: number;
     status: string;
     subOrders: SubOrder[];
     shippingAddress: string | null;
     receiverName: string | null;
+    receiverPhone: string | null;
     email: string | null;
-    recivePhone: string | null;
-    invoice: InvoiceResponce;
-    receipt: ReceiptResponse;
+    invoice: InvoiceResponse;
+    receipt: ReceiptResponse | null;
     createdAt?: string | Date;
     updatedAt?: string | Date;
+    expiredAt?: string | Date;
 }
 
 
 export interface Order {
     id?: string | null;
+    chargeId?: string | null;
     userId: string | null;
-    totalPrice: number; // ปรับให้รับ String ได้
+    totalPrice: number;
+    totalShippingCost?: number;
+    netAmount?: number;
     totalSystemFee?: number;
     totalNetMerchant?: number;
     status: string;
@@ -34,6 +41,7 @@ export interface Order {
     recivePhone: string | null;
     createdAt?: string | Date;
     updatedAt?: string | Date;
+    expiredAt?: string | Date;
 }
 
 export interface SubOrder {
@@ -42,6 +50,8 @@ export interface SubOrder {
     merchantId: string;
     merchantName?: string | null;
     shippingFee: number;
+    shippingProvider: string | null;
+    feePercentage?: string | number;
     totalPrice: number;
     systemFeeAmount?: number;
     netToMerchant?: number;
@@ -56,6 +66,7 @@ export interface OrderItems {
     subOrderId?: string | null;
     productId: string;
     merchantId: string;
+    cartItemId?: string;
     title: string;
     quantity: number;
     price: number;

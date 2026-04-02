@@ -3,7 +3,7 @@ import type { AppDispatch, RootState } from '../store';
 import { useEffect, useMemo, useState } from 'react';
 import { fetchProducts } from '../service/productService';
 import CategoryTag from '../components/categoryTag';
-import LoadingSkelition from '../components/loadingSkeleton/LoadingShrinkBoxSkelition';
+import LoadingSkelition from '../components/loadingComponent/LoadingShrinkBoxSkelition';
 import { fetchCategories } from '../service/categoryService';
 import { ProductContent } from '../components/product/ProductContent';
 

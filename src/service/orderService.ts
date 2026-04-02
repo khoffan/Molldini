@@ -50,6 +50,7 @@ const transformOrderResToNumber = (order: any): OrderResponse => {
 interface OrderState {
     listOrderUser: OrderResponse[] | null;
     listOrderMerchant: OrderResponse[] | null;
+    orderData: OrderResponse | null;
     order: Order | null;
     loading: boolean;
     error: string | null;
@@ -58,6 +59,7 @@ interface OrderState {
 export const initialOrderState: OrderState = {
     listOrderUser: null,
     listOrderMerchant: null,
+    orderData: null,
     order: null,
     loading: false,
     error: null,
@@ -98,19 +100,7 @@ export const fetchOrderById = createAsyncThunk(
     async (orderId: string, { rejectWithValue }) => {
         try {
             const res = await api.get(`/api/v1/orders/${orderId}`);
-            const order: Order = {
-                id: res.data.id,
-                userId: res.data.userId,
-                status: res.data.status,
-                totalPrice: res.data.totalPrice,
-                subOrders: res.data.subOrders,
-                shippingAddress: res.data.shippingAddress,
-                reciveInfo: res.data.reciveInfo,
-                email: res.data.email,
-                recivePhone: res.data.recivePhone,
-                createdAt: res.data.createdAt,
-                updatedAt: res.data.updatedAt,
-            }
+            const order: OrderResponse = transformOrderResToNumber(res.data);
             return order;
         } catch (e: unknown) {
             if (e instanceof AxiosError) {
@@ -276,7 +266,7 @@ const orderSlice = createSlice({
                 state.loading = false;
             })
             .addCase(fetchOrderById.fulfilled, (state, action) => {
-                state.order = action.payload;
+                state.orderData = action.payload;
                 state.loading = false;
             })
             .addCase(fetchOrderById.rejected, (state, action) => {

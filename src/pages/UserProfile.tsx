@@ -13,7 +13,7 @@ import { Link, useNavigate } from 'react-router';
 import { logoutAction } from '../service/authService';
 import { useEffect } from 'react';
 import { fetchUser } from '../service/userService';
-import LoadingCircularSkelition from '../components/loadingSkeleton/LoadingCircularSkelition';
+import LoadingCircularSkelition from '../components/loadingComponent/LoadingCircularSkelition';
 
 function UserProfile() {
     const dispatch = useDispatch<AppDispatch>();

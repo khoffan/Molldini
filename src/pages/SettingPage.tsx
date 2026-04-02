@@ -5,7 +5,7 @@ import type { AppDispatch, RootState } from '../store';
 import { UserRole } from '../interface/userInterface';
 import { setupNotifications } from '../service/notificationService';
 import { fetchUser, updateUser } from '../service/userService';
-import LoadingCircularSkelition from '../components/loadingSkeleton/LoadingCircularSkelition';
+import LoadingCircularSkelition from '../components/loadingComponent/LoadingCircularSkelition';
 import { sendEmailVerification } from 'firebase/auth';
 import { auth } from '../firebase/firebaseConfig';
 import { showToast } from '../utils/Toast';
@@ -239,9 +239,9 @@ export default function SettingPage() {
                                             <div>
                                                 <p className="text-sm font-semibold text-content">Browser Push Notifications</p>
                                                 <p className="text-xs text-muted">
-                                                    {permissionStatus === 'granted' ? 'Status: Active' : 
-                                                     permissionStatus === 'denied' ? 'Status: Blocked' : 
-                                                     'Enable to get real-time alerts'}
+                                                    {permissionStatus === 'granted' ? 'Status: Active' :
+                                                        permissionStatus === 'denied' ? 'Status: Blocked' :
+                                                            'Enable to get real-time alerts'}
                                                 </p>
                                             </div>
                                         </div>
@@ -249,12 +249,11 @@ export default function SettingPage() {
                                         <button
                                             onClick={() => dispatch(setupNotifications())}
                                             disabled={permissionStatus === 'granted' || permissionStatus === 'denied'}
-                                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                                permissionStatus === 'granted'
-                                                ? 'bg-green-500 text-white cursor-default'
-                                                : permissionStatus === 'denied'
-                                                ? 'bg-gray-400 text-white cursor-not-allowed'
-                                                : 'bg-primary text-white hover:bg-primary/90 shadow-sm'
+                                            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${permissionStatus === 'granted'
+                                                    ? 'bg-green-500 text-white cursor-default'
+                                                    : permissionStatus === 'denied'
+                                                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                                                        : 'bg-primary text-white hover:bg-primary/90 shadow-sm'
                                                 }`}
                                         >
                                             {permissionStatus === 'granted' ? 'ON' : permissionStatus === 'denied' ? 'BLOCKED' : 'ENABLE'}

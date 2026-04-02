@@ -24,7 +24,7 @@ import {
 import { useNavigate } from "react-router";
 import RegistrationForm from "../components/RegistrationForm";
 import { fetchMyMerchant, updateMerchant } from "../service/merchantService";
-import LoadingCircularSkelition from "../components/loadingSkeleton/LoadingCircularSkelition";
+import LoadingCircularSkelition from "../components/loadingComponent/LoadingCircularSkelition";
 import MerchantSettingsForm from "../components/merchantDashboard/MerchantSettingsForm";
 import type { UpdateMerchantInput } from "../interface/merchantInterface";
 import Swal from "sweetalert2";

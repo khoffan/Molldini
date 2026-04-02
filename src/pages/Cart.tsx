@@ -1,13 +1,13 @@
 import { useSelector, useDispatch } from "react-redux";
 import type { AppDispatch, RootState } from "../store";
 import type { CartItem } from "../interface/cartInterface";
-import { fetchCart, removeFromCart, updateCartDecrementQuantityDb, updateCartIncrementQuantityDb } from "../service/cartService";
+import { fetchCart, removeItemFormCartDb, updateCartDecrementQuantityDb, updateCartIncrementQuantityDb } from "../service/cartService";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { setOrderFromCartId, setOrderLocalCheckout } from "../service/orderService";
 import Swal from "sweetalert2";
 import { getImageValidate } from "../utils/getImageValidate";
-import LoadingSkelition from "../components/loadingSkeleton/LoadingShrinkBoxSkelition";
+import LoadingSkelition from "../components/loadingComponent/LoadingShrinkBoxSkelition";
 import { showToast } from "../utils/Toast";
 import { fetchPayment } from "../service/paymentService";
 import { fetchShipping } from "../service/shippingService";
@@ -56,7 +56,7 @@ function Cart() {
   const total = subtotal;
 
   const handleDeleteItem = (id: string) => {
-    dispatch(removeFromCart(id));
+    dispatch(removeItemFormCartDb(id));
   }
 
   const handleIncrement = (id: string) => {
