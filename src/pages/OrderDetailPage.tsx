@@ -85,37 +85,37 @@ export default function OrderDetailPage() {
         })
     }
 
-    const handleSubmitPay = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        if (!order) return;
-        Swal.fire({
-            title: 'กำลังสร้างคำสั่งซื้อ...',
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
-        });
-        try {
-            const source = await createSource(order.invoice.amount, order.invoice.paymentMethod);
-            Swal.close();
-            const chargeResult = await dispatch(checkoutOrder({ source: source.id, orderId: order.id as string })).unwrap();
-            console.log("🚀 ~ handleSubmitPay ~ chargeResult:", chargeResult)
-            if (chargeResult.redirectUrl) {
-                window.location.href = chargeResult.redirectUrl;
-                return;
-            } else {
-                const code = chargeResult.code
-                navigate("/checkout/qr", {
-                    state: {
-                        qrUri: code.image.download_uri,
-                        orderId: order.id,
-                        amount: order.invoice.amount,
-                        expiredAt: chargeResult.expiredAt
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Error creating source:', error);
-        }
-    }
+    // const handleSubmitPay = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    //     e.preventDefault();
+    //     if (!order) return;
+    //     Swal.fire({
+    //         title: 'กำลังสร้างคำสั่งซื้อ...',
+    //         allowOutsideClick: false,
+    //         didOpen: () => Swal.showLoading(),
+    //     });
+    //     try {
+    //         const source = await createSource(order.invoice.amount, order.invoice.paymentMethod);
+    //         Swal.close();
+    //         const chargeResult = await dispatch(checkoutOrder({ source: source.id, orderId: order.id as string })).unwrap();
+    //         console.log("🚀 ~ handleSubmitPay ~ chargeResult:", chargeResult)
+    //         if (chargeResult.redirectUrl) {
+    //             window.location.href = chargeResult.redirectUrl;
+    //             return;
+    //         } else {
+    //             const code = chargeResult.code
+    //             navigate("/checkout/qr", {
+    //                 state: {
+    //                     qrUri: code.image.download_uri,
+    //                     orderId: order.id,
+    //                     amount: order.invoice.amount,
+    //                     expiredAt: chargeResult.expiredAt
+    //                 }
+    //             });
+    //         }
+    //     } catch (error) {
+    //         console.error('Error creating source:', error);
+    //     }
+    // }
 
     if (loading && !order) return <LoadingSkelition />;
 
@@ -214,7 +214,7 @@ export default function OrderDetailPage() {
                         {/* Action Button: Conditional Rendering */}
                         <div className="pt-4">
                             {status === 'UNPAID' ? (
-                                <button onClick={handleSubmitPay} className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg">
+                                <button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-lg">
                                     <CreditCard size={18} />
                                     <span>Pay Now</span>
                                 </button>
