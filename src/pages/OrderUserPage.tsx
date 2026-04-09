@@ -24,14 +24,14 @@ export default function OrderUserPage() {
     }, [dispatch])
 
     // ฟังก์ชันจัดการสีของ Status
-    const getStatusStyle = (status: string) => {
-        switch (status) {
-            case 'SUCCESS': return 'bg-green-100 text-green-600 border-green-200';
-            case 'PENDING': return 'bg-amber-100 text-amber-600 border-amber-200';
-            case 'CANCELLED': return 'bg-red-100 text-red-600 border-red-200';
-            default: return 'bg-gray-100 text-gray-600 border-gray-200';
-        }
-    };
+    // const getStatusStyle = (status: string) => {
+    //     switch (status) {
+    //         case 'SUCCESS': return 'bg-green-100 text-green-600 border-green-200';
+    //         case 'PENDING': return 'bg-amber-100 text-amber-600 border-amber-200';
+    //         case 'CANCELLED': return 'bg-red-100 text-red-600 border-red-200';
+    //         default: return 'bg-gray-100 text-gray-600 border-gray-200';
+    //     }
+    // };
 
     const handleOrderDetail = (e: React.MouseEvent<HTMLButtonElement>, order: OrderResponse) => {
         e.preventDefault();

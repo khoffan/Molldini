@@ -1,4 +1,3 @@
-import React from 'react';
 import { Store, ShoppingBag } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectCheckoutItemsByMerchant } from '../../service/checkoutService';

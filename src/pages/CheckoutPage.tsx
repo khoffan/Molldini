@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/immutability */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { MapPin, Plus, CreditCard, ChevronRight, Lock, CheckCircle2 } from 'lucide-react';
+import { MapPin, Plus, CreditCard, CheckCircle2 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { useNavigate, useParams } from 'react-router';
@@ -16,7 +16,6 @@ import {
     initializeCheckout,
     selectOrderSummary,
     selectValidateCheckout,
-    selectIsAnyCalculating
 } from '../service/checkoutService';
 
 Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);

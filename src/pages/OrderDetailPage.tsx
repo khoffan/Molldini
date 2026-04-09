@@ -16,9 +16,9 @@ import type { OrderResponse } from '../interface/orderInterface';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
 import { useEffect, useMemo, useState } from 'react';
-import { checkoutOrder, fetchOrderById } from '../service/orderService';
+import { fetchOrderById } from '../service/orderService';
 import LoadingSkelition from '../components/loadingComponent/LoadingShrinkBoxSkelition';
-import Swal from 'sweetalert2';
+// import Swal from 'sweetalert2';
 
 Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);
 
@@ -69,21 +69,21 @@ export default function OrderDetailPage() {
         }).filter(v => v !== null);
     }, [allOrderItems, allProducts]);
 
-    const createSource = (amount: number, method: string): Promise<any> => {
-        return new Promise((resolve, reject) => {
-            const totalAmout = Math.round(amount * 100);
+    // const createSource = (amount: number, method: string): Promise<any> => {
+    //     return new Promise((resolve, reject) => {
+    //         const totalAmout = Math.round(amount * 100);
 
-            Omise.createSource(method, {
-                amount: totalAmout,
-                currency: "THB",
-            }, (statusCode: number, response: any) => {
-                if (statusCode !== 200) {
-                    return reject(response);
-                }
-                return resolve(response);
-            })
-        })
-    }
+    //         Omise.createSource(method, {
+    //             amount: totalAmout,
+    //             currency: "THB",
+    //         }, (statusCode: number, response: any) => {
+    //             if (statusCode !== 200) {
+    //                 return reject(response);
+    //             }
+    //             return resolve(response);
+    //         })
+    //     })
+    // }
 
     // const handleSubmitPay = async (e: React.MouseEvent<HTMLButtonElement>) => {
     //     e.preventDefault();

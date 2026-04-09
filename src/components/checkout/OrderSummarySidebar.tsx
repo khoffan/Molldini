@@ -1,7 +1,7 @@
-import React from 'react';
+
 import { useSelector } from 'react-redux';
 import { Package, ChevronRight, Lock, CheckCircle2 } from 'lucide-react';
-import type { RootState } from '../../store';
+// import type { RootState } from '../../store';
 import {
     selectOrderSummary,
     selectValidateCheckout,
@@ -42,8 +42,8 @@ const ExpiryCountdown = ({ expiredAt, status }: { expiredAt?: string | Date; sta
 
     return (
         <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border mb-4 ${isExpired
-                ? 'bg-red-50 text-red-600 border-red-100'
-                : 'bg-amber-50 text-amber-700 border-amber-100'
+            ? 'bg-red-50 text-red-600 border-red-100'
+            : 'bg-amber-50 text-amber-700 border-amber-100'
             }`}>
             <span>{isExpired ? 'คำสั่งซื้อหมดอายุแล้ว' : `ชำระภายใน ${timeLeft}`}</span>
         </div>
