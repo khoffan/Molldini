@@ -10,6 +10,7 @@ import addressReducer from './service/addressService';
 import notiReducer from './service/notificationService';
 import paymentReducer from './service/paymentService';
 import shippingReducer from './service/shippingService';
+import checkoutReducer from './service/checkoutService';
 
 export const store = configureStore({
     reducer: {
@@ -23,7 +24,8 @@ export const store = configureStore({
         address: addressReducer,
         noti: notiReducer,
         payment: paymentReducer,
-        shipping: shippingReducer
+        shipping: shippingReducer,
+        checkout: checkoutReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

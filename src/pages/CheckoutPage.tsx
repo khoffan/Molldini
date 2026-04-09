@@ -1,163 +1,78 @@
 /* eslint-disable react-hooks/immutability */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { MapPin, Plus, CreditCard, ChevronRight, CheckCircle2, Truck, Package, Lock, Clock, Store, Receipt, AlertTriangle } from 'lucide-react';
+import { MapPin, Plus, CreditCard, ChevronRight, Lock, CheckCircle2 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { useNavigate, useParams } from 'react-router';
 import Swal from 'sweetalert2';
 import { checkoutOrder, fetchOrderLocalCheckout, updateDataOrder } from '../service/orderService';
 import LoadingSkelition from '../components/loadingComponent/LoadingShrinkBoxSkelition';
-import { formatCurrency, formatDate, getTimeUntilExpiry, getOrderStatusConfig, getInvoiceStatusConfig } from '../utils/formatOrder';
+
+// NEW Checkout Imports
+import CheckoutItemsList from '../components/checkout/CheckoutItemsList';
+import OrderSummarySidebar from '../components/checkout/OrderSummarySidebar';
+import {
+    initializeCheckout,
+    selectOrderSummary,
+    selectValidateCheckout,
+    selectIsAnyCalculating
+} from '../service/checkoutService';
 
 Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY);
-
-// ─── Sub-Components ──────────────────────────────────────────────
-
-/** Status Badge — color-coded pill based on order status */
-const OrderStatusBadge = ({ status }: { status: string }) => {
-    const config = getOrderStatusConfig(status);
-    return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border ${config.bgColor} ${config.textColor} ${config.borderColor}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor} animate-pulse`} />
-            {config.label}
-        </span>
-    );
-};
-
-/** Invoice Status Badge */
-const InvoiceStatusBadge = ({ status }: { status: string }) => {
-    const config = getInvoiceStatusConfig(status);
-    return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold border ${config.bgColor} ${config.textColor} ${config.borderColor}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
-            {config.label}
-        </span>
-    );
-};
-
-/** Expiry Countdown — only renders when order is PENDING and expiredAt exists */
-const ExpiryCountdown = ({ expiredAt, status }: { expiredAt?: string | Date; status: string }) => {
-    if (status?.toUpperCase() !== 'PENDING' || !expiredAt) return null;
-
-    const timeLeft = getTimeUntilExpiry(expiredAt);
-    if (!timeLeft) return null;
-
-    const isExpired = timeLeft === 'หมดอายุแล้ว';
-
-    return (
-        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border ${isExpired
-            ? 'bg-red-50 text-red-600 border-red-100'
-            : 'bg-amber-50 text-amber-700 border-amber-100'
-            }`}>
-            {isExpired ? <AlertTriangle size={14} /> : <Clock size={14} className="animate-pulse" />}
-            <span>{isExpired ? 'คำสั่งซื้อหมดอายุแล้ว' : `ชำระภายใน ${timeLeft}`}</span>
-        </div>
-    );
-};
-
-/** Merchant Items Group — renders one SubOrder (merchant header + items) */
-const MerchantItemsGroup = ({ merchantName, items }: { merchantName: string; items: any[] }) => (
-    <div className="mb-3 last:mb-0">
-        {/* Merchant Header */}
-        <div className="flex items-center gap-1.5 mb-2">
-            <Store size={12} className="text-muted" />
-            <span className="text-[11px] font-bold text-muted uppercase tracking-wider truncate">
-                {merchantName || 'Unknown Shop'}
-            </span>
-        </div>
-        {/* Items */}
-        <div className="space-y-0">
-            {items.map((item) => (
-                <div key={item.id} className="flex gap-3 py-2.5 border-b border-border-main/40 last:border-0">
-                    <div className="w-12 h-12 lg:w-14 lg:h-14 bg-main rounded-lg border border-border-main shrink-0 overflow-hidden">
-                        <img
-                            src={item.image}
-                            className="w-full h-full object-contain mix-blend-multiply"
-                            alt={item.title}
-                        />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-content truncate">{item.title}</p>
-                        <div className="flex justify-between items-center mt-1">
-                            <p className="text-xs text-muted font-medium">x{item.quantity}</p>
-                            <p className="text-sm font-bold text-content">{formatCurrency(item.price)}</p>
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
-    </div>
-);
-
-/** Invoice Summary Row */
-const InvoiceSummarySection = ({ invoice }: { invoice: any }) => {
-    if (!invoice) return null;
-
-    return (
-        <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-main/40 border border-border-main/50">
-            <div className="flex items-center gap-2">
-                <Receipt size={14} className="text-muted" />
-                <span className="text-xs font-semibold text-muted">Invoice</span>
-            </div>
-            <InvoiceStatusBadge status={invoice.status} />
-        </div>
-    );
-};
-
-
-// ─── Main Component ──────────────────────────────────────────────
 
 export default function CheckoutPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
 
-    // ดึงข้อมูล User และ Saved Addresses
+    // User & Order Data
     const { user } = useSelector((state: RootState) => state.user);
-    const { order, loading } = useSelector((state: RootState) => state.order);
+    const { orderData, order, loading } = useSelector((state: RootState) => state.order);
     const { payments } = useSelector((state: RootState) => state.payment);
     const { shippings } = useSelector((state: RootState) => state.shipping);
-    // 📍 State สำหรับเลือกที่อยู่ (Default เลือกอันที่เป็น isDefault)
+
+    // Checkout Redux State
+    const checkoutSummary = useSelector(selectOrderSummary);
+    const isValidCheckout = useSelector(selectValidateCheckout);
+    const { items: checkoutItems } = useSelector((state: RootState) => state.checkout);
+
+    // Address State
     const [selectedAddressId, setSelectedAddressId] = useState<string>(
         user?.addresses?.find(addr => addr.isDefault)?.id || user?.addresses?.[0]?.id || ""
     );
 
+    // Initial Fetch
     useEffect(() => {
         dispatch(fetchOrderLocalCheckout());
-    }, [dispatch])
+    }, [dispatch]);
 
-    // 🟢 1. จัดการ Payment Method
+    // Initialize Checkout Items & Shipping
+    useEffect(() => {
+        if (order && shippings.length > 0) {
+            dispatch(initializeCheckout({ order, shippings }));
+        }
+    }, [dispatch, order, shippings]);
+
+    // Payment State
     const [paymentMethod, setPaymentMethod] = useState<string>(() => {
         const defaultPayment = payments?.find(p => p.method === 'truemoney_jumpapp');
         return defaultPayment?.method || payments?.[0]?.method || "";
     });
-
-    // 🟢 2. จัดการ Shipping Method
-    const [selectedShippingId, setSelectedShippingId] = useState<string>(() => {
-        const standardShipping = shippings?.find(s =>
-            s.name.toLowerCase().includes('standard')
-        );
-        return standardShipping?.id || shippings?.[0]?.id || "";
-    });
-
-    // 🟢 3. จัดการ Selected Bank (ถ้ามีเงื่อนไขเริ่มต้น)
     const [selectedBank, setSelectedBank] = useState<string>("");
 
+    // Omise Helper
     const createSource = (amount: number, method: string): Promise<any> => {
         return new Promise((resolve, reject) => {
             const totalAmout = Math.round(amount * 100);
-
             Omise.createSource(method, {
                 amount: totalAmout,
                 currency: "THB",
             }, (statusCode: number, response: any) => {
-                if (statusCode !== 200) {
-                    return reject(response);
-                }
+                if (statusCode !== 200) return reject(response);
                 return resolve(response);
-            })
-        })
+            });
+        });
     }
 
     const handleSelectPayment = (e: React.MouseEvent<HTMLButtonElement>, method: string) => {
@@ -172,18 +87,14 @@ export default function CheckoutPage() {
         setSelectedBank(method);
     }
 
-    const paymentSections = payments;
-
-    const amount = order?.totalPrice || 0;
-    const shippingMethod = shippings.find(m => m.id === selectedShippingId);
-    const isFree = shippingMethod?.freeShippingThreshold && amount >= shippingMethod.freeShippingThreshold;
-    const shippingCost = isFree ? 0 : shippingMethod?.price || 0;
-    const total = amount + shippingCost;
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedAddressId) {
             return Swal.fire('กรุณาเลือกที่อยู่', 'คุณยังไม่ได้เลือกที่อยู่จัดส่ง', 'warning');
+        }
+
+        if (!isValidCheckout) {
+            return Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณาเลือกช่องทางการจัดส่งให้ครบทุกรายการ', 'warning');
         }
 
         const { value: paymentChoice } = await Swal.fire({
@@ -219,6 +130,11 @@ export default function CheckoutPage() {
             } else {
                 method = paymentMethod
             }
+
+            // Derive a single shipping ID for legacy API compatibility.
+            // In a full per-item shipping world, the backend would accept an array of [{productId, shippingId}]
+            const dominantShippingId = checkoutItems.find(i => i.selectedShipping)?.selectedShipping?.id || (shippings[0]?.id ?? '');
+
             const resultOrder = await dispatch(updateDataOrder({
                 cartId: id || '',
                 reciveAddress: {
@@ -235,9 +151,14 @@ export default function CheckoutPage() {
             })).unwrap();
 
             if (paymentChoice === true && method !== "cod") {
-                const source = await createSource(total, method);
+                const source = await createSource(checkoutSummary.grandTotal, method);
                 Swal.close();
-                const chargeResult = await dispatch(checkoutOrder({ source: source.id, orderId: resultOrder.id, shippingId: selectedShippingId })).unwrap();
+                const chargeResult = await dispatch(checkoutOrder({
+                    source: source.id,
+                    orderId: resultOrder.id,
+                    shippingId: dominantShippingId
+                })).unwrap();
+
                 if (chargeResult.redirectUrl) {
                     window.location.href = chargeResult.redirectUrl;
                     return;
@@ -247,7 +168,7 @@ export default function CheckoutPage() {
                         state: {
                             qrUri: code,
                             orderId: resultOrder.id,
-                            amount: total,
+                            amount: checkoutSummary.grandTotal,
                             expiredAt: chargeResult.expiredAt
                         }
                     });
@@ -274,13 +195,6 @@ export default function CheckoutPage() {
     if (loading) {
         return <LoadingSkelition />
     }
-
-    // ─── Derived values for the summary ──────────────
-    const orderStatus = order?.status || 'PENDING';
-    const statusConfig = getOrderStatusConfig(orderStatus);
-    const orderId = order?.id;
-    const shortOrderId = orderId ? `#${orderId.slice(0, 8).toUpperCase()}` : '';
-    const totalItemCount = order?.subOrders?.reduce((acc, sub) => acc + (sub.orderItems?.length || 0), 0) || 0;
 
     return (
         <div className="bg-bg min-h-screen py-10 font-sans grid">
@@ -338,55 +252,8 @@ export default function CheckoutPage() {
                             </div>
                         </section>
 
-                        {/* 2. Shipping Method Section */}
-                        <section className="bg-surface rounded-2xl shadow-sm border border-border-main p-6">
-                            <h2 className="text-lg font-bold text-content flex items-center gap-2 mb-6">
-                                <Truck className="text-primary" size={20} />
-                                ตัวเลือกการจัดส่ง
-                            </h2>
-                            <div className="space-y-3">
-                                {shippings
-                                    .filter(method => total >= method.minOrderAmount)
-                                    .sort((a, b) => a.sortOrder - b.sortOrder)
-                                    .map((method) => (
-                                        <div
-                                            key={method.id}
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                e.stopPropagation()
-                                                setSelectedShippingId(method.id)
-                                            }}
-                                            className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${selectedShippingId === method.id
-                                                ? 'border-primary bg-primary-light/30'
-                                                : 'border-border-main hover:border-content/30'
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-lg bg-surface-hover flex items-center justify-center text-xs font-black text-muted border border-border-main">
-                                                    <img src={method.image?.url} alt={method.name} className="w-full h-full object-contain" />
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-content text-sm">{method.name}</p>
-                                                    <p className="text-xs text-muted">{method.description} • {method.estimatedDays}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="font-bold text-primary">
-                                                    {method.freeShippingThreshold && total >= method.freeShippingThreshold
-                                                        ? "FREE"
-                                                        : `฿${method.price}`
-                                                    }
-                                                </p>
-                                                {selectedShippingId === method.id && (
-                                                    <div className="flex justify-end mt-1">
-                                                        <CheckCircle2 className="text-primary" size={16} />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                            </div>
-                        </section>
+                        {/* 2. Items & Shipping Section (Integrated Hybrid Component) */}
+                        <CheckoutItemsList />
 
                         {/* 3. Payment Section */}
                         <section className="bg-surface rounded-2xl shadow-sm border border-border-main p-6">
@@ -396,7 +263,7 @@ export default function CheckoutPage() {
                             </h2>
                             <div className="max-w-4xl mx-auto w-full px-2 sm:px-4">
                                 <div className="flex flex-col gap-4">
-                                    {paymentSections.map((section) => (
+                                    {payments?.map((section) => (
                                         <div
                                             key={section.id}
                                             className={`border-2 rounded-2xl overflow-hidden transition-all duration-300 shadow-sm ${paymentMethod === section.method
@@ -443,10 +310,10 @@ export default function CheckoutPage() {
                                                 <div className="p-6 border-t border-border-main bg-main/30 animate-in fade-in slide-in-from-top-4 duration-300">
                                                     <div className="max-w-md mx-auto">
 
-                                                        {/* 2. Mobile Banking Logic */}
+                                                        {/* Mobile Banking Logic */}
                                                         {section.method === 'mobile_banking' && (
                                                             <div className="grid grid-cols-2 gap-3">
-                                                                {section.paymentChilds.map(bank => (
+                                                                {section.paymentChilds?.map(bank => (
                                                                     <button
                                                                         key={bank.id}
                                                                         onClick={(e) => handleSelectBankMethod(e, bank.method)}
@@ -473,7 +340,7 @@ export default function CheckoutPage() {
                                                             </div>
                                                         )}
 
-                                                        {/* 3. TrueMoney JumpApp Logic */}
+                                                        {/* TrueMoney JumpApp Logic */}
                                                         {section.method === 'truemoney_jumpapp' && (
                                                             <div className="space-y-4 bg-surface p-5 rounded-2xl border border-border-main shadow-sm">
                                                                 <div className="flex items-center space-x-3 mb-2">
@@ -489,7 +356,7 @@ export default function CheckoutPage() {
                                                             </div>
                                                         )}
 
-                                                        {/* 4. Rabbit Line Pay & Others */}
+                                                        {/* Rabbit Line Pay & Others */}
                                                         {(section.method === 'rabbit_linepay' || section.method === 'truemoney_qr') && (
                                                             <div className="text-center py-6 bg-surface rounded-2xl border border-border-main">
                                                                 <div className="text-3xl mb-2">💳</div>
@@ -508,144 +375,25 @@ export default function CheckoutPage() {
                         </section>
                     </div>
 
-                    {/* ═══════════════════════════════════════════════════════════
-                        Right Column: Enhanced Order Summary Sidebar
-                    ═══════════════════════════════════════════════════════════ */}
+                    {/* Right Column: Order Summary Sidebar */}
                     <div className="mt-8 lg:mt-0 lg:col-span-5 xl:col-span-4">
                         <div className="
                                 fixed bottom-0 left-0 right-0 z-50 
                                 bg-surface border-t border-border-main shadow-[0_-10px_40px_rgba(0,0,0,0.15)]
                                 rounded-t-[24px] transition-all duration-300
                                 lg:relative lg:bottom-auto lg:z-20 
-                                lg:rounded-2xl lg:border lg:p-6 lg:shadow-sm lg:sticky lg:top-8 lg:bg-surface
+                                lg:rounded-2xl lg:border lg:shadow-sm lg:sticky lg:top-8 lg:bg-surface
                             ">
                             {/* Handle bar สำหรับ Mobile */}
                             <div className="w-12 h-1.5 bg-border-main rounded-full mx-auto my-3 lg:hidden" />
 
-                            <div className="p-4 lg:p-0">
-
-                                {/* ── Order Header with Status ────────────── */}
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-lg font-bold text-content flex items-center gap-2">
-                                        <Package className="text-primary" size={20} />
-                                        สรุปคำสั่งซื้อ
-                                    </h2>
-                                    <OrderStatusBadge status={orderStatus} />
-                                </div>
-
-                                {/* ── Short Order ID & Date (Desktop only) ── */}
-                                {orderId && (
-                                    <div className="hidden lg:flex items-center justify-between mb-3 pb-3 border-b border-border-main/60">
-                                        <span className="text-xs text-muted font-mono font-semibold">{shortOrderId}</span>
-                                        {order?.createdAt && (
-                                            <span className="text-[11px] text-muted">{formatDate(order.createdAt)}</span>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* ── Expiry Countdown (Conditional) ────── */}
-                                <div className="hidden lg:block mb-3">
-                                    <ExpiryCountdown expiredAt={order?.expiredAt} status={orderStatus} />
-                                </div>
-
-                                {/* ── Merchant-grouped Items List ────────── */}
-                                <div className="
-                                        space-y-1 mb-4 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200
-                                        max-h-[160px] lg:max-h-[350px]
-                                    ">
-                                    {order?.subOrders?.map((sub) => (
-                                        <MerchantItemsGroup
-                                            key={sub.id}
-                                            merchantName={sub.merchantName || 'Unknown'}
-                                            items={sub.orderItems || []}
-                                        />
-                                    ))}
-                                </div>
-
-                                {/* ── Item Count Summary ─────────────────── */}
-                                <div className="hidden lg:flex items-center gap-2 mb-3 text-xs text-muted">
-                                    <Package size={12} />
-                                    <span>ทั้งหมด {totalItemCount} รายการ จาก {order?.subOrders?.length || 0} ร้านค้า</span>
-                                </div>
-
-                                {/* ── Price Breakdown ────────────────────── */}
-                                <div className="pt-4 border-t border-border-main space-y-4">
-
-                                    {/* Desktop Price Breakdown */}
-                                    <div className="hidden lg:flex flex-col gap-2">
-                                        <div className="flex justify-between text-sm text-muted">
-                                            <span>ราคารวมสินค้า</span>
-                                            <span className="font-medium text-content">{formatCurrency(amount)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm text-muted">
-                                            <span>ค่าจัดส่ง</span>
-                                            <span className={`font-medium ${shippingCost === 0 ? 'text-emerald-600' : 'text-content'}`}>
-                                                {shippingCost === 0 ? 'ฟรี' : formatCurrency(shippingCost)}
-                                            </span>
-                                        </div>
-                                        {/* Future: Discount line — shown in green only when discount exists */}
-                                        {/* {discount > 0 && (
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-emerald-600 font-medium">ส่วนลด</span>
-                                                <span className="text-emerald-600 font-bold">-{formatCurrency(discount)}</span>
-                                            </div>
-                                        )} */}
-                                    </div>
-
-                                    {/* Invoice Status (Desktop only) */}
-                                    <div className="hidden lg:block">
-                                        <InvoiceSummarySection invoice={order?.invoice} />
-                                    </div>
-
-                                    {/* Main Action Area */}
-                                    <div className="
-                                            flex flex-row items-center justify-between gap-4
-                                            lg:flex-col lg:items-stretch lg:gap-4
-                                        ">
-
-                                        {/* Net Total */}
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] lg:text-xs text-muted uppercase font-black tracking-widest">
-                                                ยอดชำระสุทธิ
-                                            </span>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className={`text-2xl lg:text-3xl font-black leading-none ${statusConfig.textColor === 'text-amber-600' ? 'text-primary' : statusConfig.textColor}`}>
-                                                    {formatCurrency(total)}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* Submit Button */}
-                                        <button
-                                            type="submit"
-                                            className="
-                                                px-6 py-3.5 lg:w-full lg:py-4 lg:mt-2
-                                                bg-primary text-white rounded-xl lg:rounded-2xl
-                                                font-bold text-base lg:text-lg
-                                                transition-all duration-200
-                                                shadow-[0_10px_20px_-10px_rgba(var(--primary-rgb),0.5)]
-                                                hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]
-                                                flex items-center justify-center gap-2 group
-                                            ">
-                                            <span className="whitespace-nowrap">ยืนยันการสั่งซื้อ</span>
-                                            <ChevronRight size={20} className="transition-transform group-hover:translate-x-1" />
-                                        </button>
-                                    </div>
-
-                                    {/* Desktop Security Note */}
-                                    <div className="hidden lg:flex items-center justify-center gap-2 pt-2 text-[11px] text-muted font-bold uppercase tracking-tighter">
-                                        <Lock size={12} className="text-emerald-500" />
-                                        <span>Secure Checkout</span>
-                                        <span className="mx-1">•</span>
-                                        <span>Buyer Protection</span>
-                                    </div>
-                                </div>
-
-                                <div className="hidden lg:flex mt-4 items-center justify-center gap-2 text-[10px] text-muted uppercase tracking-widest font-bold">
-                                    <CheckCircle2 size={12} />
-                                    <span>Secure SSL Encryption</span>
-                                </div>
-                            </div>
+                            <OrderSummarySidebar
+                                orderStatus={orderData?.status || 'PENDING'}
+                                orderId={orderData?.id ?? undefined}
+                                createdAt={orderData?.createdAt}
+                                expiredAt={orderData?.expiredAt}
+                                invoice={orderData?.invoice}
+                            />
                         </div>
 
                         {/* Spacer สำหรับ Mobile */}

@@ -72,6 +72,8 @@ export interface OrderItems {
     price: number;
     image: string;
     productVariantId: string;
+    sku?: string | null;
+    isDigital?: boolean;
 }
 
 export interface OrderAddress {
