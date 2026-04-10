@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
   return {
     plugins: [react(), tailwindcss(), sitemap({
-      hostname: 'https://molldini-frontend.vercel.app',
+      hostname: 'https://molldini.vercel.app',
       dynamicRoutes: [
         '/',
         '/products',

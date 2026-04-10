@@ -13,4 +13,4 @@ Allow: /
 Allow: /products
 
 # ระบุตำแหน่ง Sitemap (เพื่อให้ Bot หาไฟล์ที่เราเจนจาก Vite เจอ)
-Sitemap: https://molldini-frontend.vercel.app/sitemap.xml
+Sitemap: https://molldini.vercel.app/sitemap.xml
