@@ -1,12 +1,22 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import sitemap from 'vite-plugin-sitemap'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), sitemap({
+      hostname: 'https://molldini-frontend.vercel.app',
+      dynamicRoutes: [
+        '/',
+        '/products',
+        '/login',
+        '/about',
+        // สำหรับหน้าสินค้า คุณอาจต้อง Hardcode หรือดึงจาก API มาใส่ตรงนี้
+      ]
+    }),],
     define: {
       // แทนที่ข้อความเหล่านี้ด้วยค่าจริงตรงๆ
       '__FB_API_KEY__': JSON.stringify(env.VITE_FB_API_KEY),
@@ -17,6 +27,7 @@ export default defineConfig(({ mode }) => {
       '__FB_APP_ID__': JSON.stringify(env.VITE_FB_APP_ID),
       '__FB_MEASUREMENT_ID__': JSON.stringify(env.VITE_FB_MEASUREMENT_ID),
     },
+
     // server: {
     //   port: 5173,
     //   strictPort: true,

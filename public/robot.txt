@@ -1,0 +1,16 @@
+# อนุญาตให้ทุก Bot (Google, Bing, etc.) เข้าถึงได้
+User-agent: *
+
+# ห้ามเก็บข้อมูลในหน้าที่เป็นระบบหลังบ้านหรือหน้าส่วนตัว
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+Disallow: /login
+Disallow: /register
+
+# อนุญาตให้เก็บข้อมูลหน้าสินค้าและหน้าแรก
+Allow: /
+Allow: /products
+
+# ระบุตำแหน่ง Sitemap (เพื่อให้ Bot หาไฟล์ที่เราเจนจาก Vite เจอ)
+Sitemap: https://molldini-frontend.vercel.app/sitemap.xml
