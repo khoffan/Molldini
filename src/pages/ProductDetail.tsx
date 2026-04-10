@@ -90,13 +90,15 @@ function ProductDetail() {
         })
     }
 
-
+    console.log(product.title)
 
     return (
         <>
             <Helmet>
                 {/* เปลี่ยน Title ตามชื่อสินค้าจริงที่โหลดมาจาก Backend */}
-                <title>{product.title} | Molldini</title>
+                <title>
+                    {product?.title ? `${product.title} | Molldini` : "กำลังโหลด... | Molldini"}
+                </title>
                 <meta name="description" content={product.description || ""} />
 
                 {/* แถม: ทำ Social Share (Facebook/Line) ให้สวยด้วย OG Tags */}
