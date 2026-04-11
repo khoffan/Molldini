@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React, { memo, useState } from 'react'
 import type { Product } from '../../interface/productInterface'
 import { Link, useNavigate } from 'react-router';
 import { getImageValidate } from '../../utils/getImageValidate';
@@ -7,10 +7,15 @@ import { Store } from 'lucide-react';
 
 interface ProductContentProps {
     product: Product
+    index: number
 
 }
-export const ProductContent = memo(({ product }: ProductContentProps) => {
+export const ProductContent = memo(({ product, index }: ProductContentProps) => {
     const navigate = useNavigate();
+    const [isLoaded, setIsLoaded] = useState<boolean>(false);
+
+    // check prioiry product first 4 product by product has not priority
+    const isPriority = index < 4;
 
     const handleMerchantPage = (e: React.MouseEvent, merchantId: string) => {
         e.preventDefault();
@@ -25,24 +30,31 @@ export const ProductContent = memo(({ product }: ProductContentProps) => {
     return (
         <Link to={`/product/${product.id}`} key={product.id}
             className="group flex flex-col bg-surface rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 border border-border-main will-change-transform">
-            {/* Image Section */}
-            <div className="relative aspect-[4/5] overflow-hidden">
+            {/* Image Section - กำหนดสัดส่วน 4:5 หรือ 1:1 ตามความเหมาะสม */}
+            <div className={`relative aspect-[4/5] w-full overflow-hidden bg-surface-hover ${!isLoaded ? 'animate-pulse' : ''}`}>
                 <img
+                    // ใส่ width/height เพื่อให้ Browser จองที่ว่างไว้ (ป้องกัน CLS)
+                    width={400}
+                    height={500}
                     src={getImageValidate(product?.images?.[0]?.url)}
+                    onLoad={() => setIsLoaded(true)}
                     alt={product.title}
-                    decoding='async'
-                    loading='lazy'
+                    decoding={isPriority ? 'sync' : 'async'}
+                    loading={isPriority ? 'eager' : 'lazy'}
+                    fetchPriority={isPriority ? 'high' : 'auto'}
                     onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        // ถ้า Link หลักตาย ให้เปลี่ยนเป็น Link สำรอง (Fallback Link)
                         target.src = "https://placehold.co/400x500?text=Image+Error";
                     }}
-                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    // เพิ่ม object-cover เพื่อให้รูปขยายเต็มพื้นที่โดยไม่เสียสัดส่วน
+                    className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                 />
+
+                {/* Badge: Multiple Variants */}
                 {hasMultipleVariants && (
-                    <div className="absolute top-3 left-3 bg-surface/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
-                        <p className="text-[10px] font-bold uppercase text-muted">
-                            {product.variants.length} Options
+                    <div className="absolute top-3 left-3 bg-surface/80 backdrop-blur-md px-3 py-1 rounded-full shadow-sm border border-white/20">
+                        <p className="text-[10px] font-bold uppercase text-primary tracking-tight">
+                            {product.variants.length} Styles
                         </p>
                     </div>
                 )}

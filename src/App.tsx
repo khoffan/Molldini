@@ -37,6 +37,7 @@ import PolicyPage from './pages/PolicyPage'
 import TermPage from './pages/TermPage'
 import NotFoundPage from './pages/NotFounadPage'
 import LoadingLogoScreen from './components/loadingComponent/LoadingLogo'
+import { Tooltip } from 'react-tooltip';
 
 
 
@@ -147,6 +148,12 @@ function App() {
     <>
       <Navbar />
       {element}
+      <Tooltip
+        id="molldini-tooltip"
+        // ใช้ ! หน้า class เพื่อให้ Tailwind ชนะสไตล์เดิมของ Lib
+        className="!rounded-xl !text-xs !font-medium !shadow-lg !opacity-100"
+        place="top"
+      />
     </>
   )
 }

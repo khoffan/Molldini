@@ -24,6 +24,8 @@ function ThemeToggle() {
     return (
         <button
             onClick={() => setIsDark(!isDark)}
+            data-tooltip-id="molldini-tooltip"
+            data-tooltip-content="theme"
             className="p-2 bg-surface-hover rounded-full hover:bg-primary-light transition-all cursor-pointer focus:outline-none"
             aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >

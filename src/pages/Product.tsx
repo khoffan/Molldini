@@ -44,8 +44,8 @@ export default function ProductPage() {
             <CategoryTag categories={categories} selectedId={selectedCat} onSelect={(value) => setSelectedCat(value)} />
 
             <div className="grid grid-cols-1 gap-y-12 gap-x-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filterProductByCategory.map((product) => {
-                return <ProductContent key={product.id} product={product} />
+              {filterProductByCategory.map((product, index) => {
+                return <ProductContent key={product.id} product={product} index={index} />
               })}
             </div>
           </>

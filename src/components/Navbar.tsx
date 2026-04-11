@@ -163,13 +163,24 @@ function Navbar() {
                 placeholder="Search products..."
                 className="w-full px-4 py-2 bg-surface-hover border border-border-main rounded-full focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-surface transition-all text-sm text-content"
               />
-              <button type="submit" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-primary">
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-primary"
+                data-tooltip-id="molldini-tooltip"
+                data-tooltip-content="search"
+                data-tooltip-offset={20}
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
             </form>
-            <Link to="/profile/orders" className="hidden md:block text-sm font-medium text-muted hover:text-primary whitespace-nowrap">
+            <Link
+              to="/profile/orders"
+              data-tooltip-id="molldini-tooltip"
+              data-tooltip-content="order tracking"
+              data-tooltip-offset={20}
+              className="hidden md:block text-sm font-medium text-muted hover:text-primary whitespace-nowrap">
               Order Tracking
             </Link>
           </div>
@@ -184,6 +195,8 @@ function Navbar() {
               <div className="relative">
                 <button
                   onClick={closeNoti}
+                  data-tooltip-id="molldini-tooltip"
+                  data-tooltip-content="notification"
                   className="p-2 bg-surface-hover rounded-full hover:bg-primary-light transition-colors cursor-pointer focus:outline-none"
                 >
                   <BellIcon className="h-6 w-6 text-content" />
@@ -200,7 +213,11 @@ function Navbar() {
                 />
               </div>
               {/* Cart Icon */}
-              <Link to="/cart" className="relative cursor-pointer group">
+              <Link
+                to="/cart"
+                data-tooltip-id="molldini-tooltip"
+                data-tooltip-content="cart"
+                className="relative cursor-pointer group">
                 <div className="p-2 bg-surface-hover rounded-full group-hover:bg-primary-light transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-content group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -219,6 +236,8 @@ function Navbar() {
               <div className="hidden md:block border-l pl-5 ml-2 border-border-main">
                 <Link
                   to="/login"
+                  data-tooltip-id="molldini-tooltip"
+                  data-tooltip-content="login"
                   className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-full text-sm font-medium transition-all shadow-sm active:scale-95"
                 >
                   Sign In
@@ -230,6 +249,8 @@ function Navbar() {
             <div className={`relative ${user ? 'border-l pl-3 ml-2 md:pl-5 border-border-main' : ''}`}>
               <button
                 onClick={() => setIsOpen(!isOpen)}
+                data-tooltip-id="molldini-tooltip"
+                data-tooltip-content="profile"
                 className="flex items-center space-x-2 group focus:outline-none"
               >
                 {user ? (
@@ -268,7 +289,11 @@ function Navbar() {
 
                     {/* Mobile Noti */}
                     <div className="relative">
-                      <button onClick={closeNoti} className="p-2 bg-surface rounded-full shadow-sm hover:bg-primary-light transition-colors border border-border-main">
+                      <button
+                        onClick={closeNoti}
+                        data-tooltip-id="molldini-tooltip"
+                        data-tooltip-content="notification"
+                        className="p-2 bg-surface rounded-full shadow-sm hover:bg-primary-light transition-colors border border-border-main">
                         <BellIcon className="h-4 w-4 text-content" />
                       </button>
                       {unreadCount > 0 && (
@@ -314,6 +339,8 @@ function Navbar() {
                       <div className="border-t border-border-main mt-2 pt-1">
                         <button
                           onClick={handleSignOut}
+                          data-tooltip-id="molldini-tooltip"
+                          data-tooltip-content="sign out"
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 transition-colors"
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

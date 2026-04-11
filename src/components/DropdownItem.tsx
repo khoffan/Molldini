@@ -6,6 +6,8 @@ function DropdownItem({ to, icon, label, color = "text-content", onClick }: { to
         <Link
             to={to}
             onClick={onClick}
+            data-tooltip-id="molldini-tooltip"
+            data-tooltip-content={label}
             className={`px-4 py-2 text-sm ${color} hover:bg-surface-hover flex items-center space-x-2 transition-colors`}
         >
             <svg className="h-4 w-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
