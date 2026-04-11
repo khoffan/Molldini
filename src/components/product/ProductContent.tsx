@@ -36,16 +36,12 @@ export const ProductContent = memo(({ product, index }: ProductContentProps) => 
                     // ใส่ width/height เพื่อให้ Browser จองที่ว่างไว้ (ป้องกัน CLS)
                     width={400}
                     height={500}
-                    src={getImageValidate(product?.images?.[0]?.url)}
+                    src={product?.images?.[0]?.url ? getImageValidate(product.images[0].url) : "https://placehold.co/400x500?text=Image+Error"}
                     onLoad={() => setIsLoaded(true)}
                     alt={product.title}
                     decoding={isPriority ? 'sync' : 'async'}
                     loading={isPriority ? 'eager' : 'lazy'}
                     fetchPriority={isPriority ? 'high' : 'auto'}
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "https://placehold.co/400x500?text=Image+Error";
-                    }}
                     // เพิ่ม object-cover เพื่อให้รูปขยายเต็มพื้นที่โดยไม่เสียสัดส่วน
                     className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                 />
