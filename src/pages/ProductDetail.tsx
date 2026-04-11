@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { useSelector } from 'react-redux';
-import type { RootState, AppDispatch } from '../store';
-import { ShoppingCart, Plus, Minus, ChevronLeft, Star, ShieldCheck, Truck } from 'lucide-react';
+import type { AppDispatch } from '../store';
+import { ShoppingCart, Plus, Minus, ChevronLeft, Star } from 'lucide-react';
 import LoadingSkelition from '../components/loadingComponent/LoadingShrinkBoxSkelition';
 import { useDispatch } from 'react-redux';
 import { addCartDb } from '../service/cartService';
@@ -12,52 +11,67 @@ import { useGuardAction } from '../utils/checkAuth';
 import { fetchProducts } from '../service/productService';
 import { getImageValidate } from '../utils/getImageValidate';
 import { Helmet } from 'react-helmet-async';
+import type { Product } from '../interface/productInterface';
 
 function ProductDetail() {
     const { checkAuth } = useGuardAction();
     const { id } = useParams();
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+
+    // --- [ปรับปรุง] ใช้ Local State เพื่อความสดใหม่ของข้อมูล ---
+    const [product, setProduct] = useState<Product | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
-
-    const { items, loading, error } = useSelector((state: RootState) =>
-        state.product
-    );
-
-    const product = items.find(item => item.id === id);
-    const productVariant = product?.variants;
-
-    // เพิ่ม State สำหรับเลือก Variant (เริ่มต้นที่ตัวแรก)
     const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
-    const currentVariant = productVariant![selectedVariantIndex];
-
-
-    let imageUrl: string = "";
-    if (Array.isArray(currentVariant.images) && currentVariant.images.length > 0) {
-        imageUrl = getImageValidate(currentVariant.images[0]?.url ?? '');
-    } else {
-        imageUrl = "https://placehold.co/400x500?text=Image+Error";
-    }
-
 
     useEffect(() => {
-        dispatch(fetchProducts());
-    }, [dispatch]);
+        const loadProductData = async () => {
+            if (!id) return;
+            setLoading(true);
+            try {
+                // 🚀 เรียก action ตรงๆ และ unwrap ออกมา
+                const result = await dispatch(fetchProducts(id)).unwrap();
 
-    if (loading) {
-        return <LoadingSkelition />;
+                // ตรวจสอบว่าเป็น Object สินค้าตัวเดียว (ถ้า API คืนค่าเป็น Array ให้หยิบตัวแรก)
+                const data = Array.isArray(result) ? result[0] : result;
+
+                if (data && data.variants && data.variants.length > 0) {
+                    setProduct(data);
+                } else {
+                    throw new Error("Product data is incomplete");
+                }
+            } catch (err: unknown) {
+                console.error("Fetch Error:", err);
+                setError((err as Error).message || "ไม่สามารถโหลดข้อมูลสินค้าได้");
+                // ถ้าไม่พบสินค้าจริงๆ ให้ดีดกลับหน้าแรก
+                navigate('/', { replace: true });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadProductData();
+    }, [dispatch, id, navigate]);
+
+    // --- [Helper Variables] ---
+    const productVariant = product?.variants;
+    const currentVariant = productVariant?.[selectedVariantIndex];
+    console.log(currentVariant)
+
+    // จัดการรูปภาพ (ปลอดภัยขึ้นด้วย Optional Chaining)
+    let imageUrl: string = "https://placehold.co/400x500?text=No+Image";
+    if (currentVariant?.images && currentVariant.images.length > 0) {
+        imageUrl = getImageValidate(currentVariant.images[0]?.url ?? '');
     }
 
-    if (error) {
-        return <div className="text-center py-20 text-muted">เกิดข้อผิดพลาด: {error}</div>;
-    }
-
-    if (!product || !currentVariant) return <div className="text-center py-20 text-muted">ไม่พบข้อมูลสินค้า</div>;
-
+    // --- [Handlers] ---
     const handleIncrement = () => setQuantity(prev => prev + 1);
     const handleDecrement = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
     const handleAddToCart = (shouldNavigate: boolean, variantId: string) => {
+        if (!product) return;
         checkAuth(() => {
             const cartItem: CartItem = {
                 quantity,
@@ -68,44 +82,36 @@ function ProductDetail() {
             dispatch(addCartDb(cartItem));
 
             if (shouldNavigate) {
-                // กรณีปุ่ม "ซื้อเลยตอนนี้"
                 navigate('/cart');
             } else {
-                // กรณีปุ่ม "เพิ่มไปยังรถเข็น" - แสดง Alert สวยๆ
                 Swal.fire({
                     title: 'เพิ่มลงตะกร้าสำเร็จ!',
                     text: `เพิ่ม ${product.title} จำนวน ${quantity} ชิ้นเรียบร้อยแล้ว`,
                     icon: 'success',
                     showConfirmButton: false,
-                    timer: 1500, // ปิดเองภายใน 1.5 วินาที
-                    position: 'center',
-                    toast: false, // ถ้าอยากให้เป็น Popup กลางจอ
-                    iconColor: '#2563eb', // สีน้ำเงิน Blue-600 ของ Molldini
-                    customClass: {
-                        popup: 'rounded-3xl', // ทำมุมโค้งให้เข้ากับ UI ของเรา
-                        title: 'text-xl font-bold text-gray-800',
-                    }
+                    timer: 1500,
+                    iconColor: '#2563eb',
+                    customClass: { popup: 'rounded-3xl', title: 'text-xl font-bold text-gray-800' }
                 });
             }
         })
     }
 
+    // --- [Conditional Rendering] ---
+    if (loading) return <LoadingSkelition />;
+    if (error) return <div className="text-center py-20 text-muted">เกิดข้อผิดพลาด: {error}</div>;
+    if (!product || !currentVariant) return null;
 
     return (
         <>
             <Helmet>
-                {/* เปลี่ยน Title ตามชื่อสินค้าจริงที่โหลดมาจาก Backend */}
-                <title>
-                    {product?.title ? `${product.title} | Molldini` : "กำลังโหลด... | Molldini"}
-                </title>
+                <title>{`${product.title} | Molldini`}</title>
                 <meta name="description" content={product.description || ""} />
-
-                {/* แถม: ทำ Social Share (Facebook/Line) ให้สวยด้วย OG Tags */}
                 <meta property="og:title" content={product.title} />
-                <meta property="og:image" content={product.images[0]?.url} />
+                <meta property="og:image" content={productVariant?.[0]?.images?.[0]?.url || ""} />
             </Helmet>
+
             <div className="bg-main min-h-screen pb-12">
-                {/* Breadcrumb */}
                 <div className="max-w-6xl mx-auto px-4 py-4">
                     <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-muted hover:text-primary transition-colors font-medium">
                         <ChevronLeft size={20} /> ย้อนกลับ
@@ -116,28 +122,24 @@ function ProductDetail() {
                     <div className="bg-surface rounded-[2.5rem] shadow-sm border border-border-main overflow-hidden">
                         <div className="flex flex-col lg:flex-row">
 
-                            {/* 📸 ฝั่งซ้าย: รูปภาพสินค้า (ไม่ Map ซ้ำแล้ว) */}
+                            {/* ฝั่งซ้าย: รูปภาพ */}
                             <div className="lg:w-1/2 p-4 lg:p-12 bg-surface">
                                 <div className="aspect-square rounded-3xl overflow-hidden bg-white border border-border-main group">
                                     <img
                                         src={imageUrl}
                                         alt={currentVariant.variantName}
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            // ถ้า Link หลักตาย ให้เปลี่ยนเป็น Link สำรอง (Fallback Link)
-                                            target.src = "https://placehold.co/400x500?text=Image+Error";
-                                        }}
                                         className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700"
+                                        onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/400x500?text=Image+Error"; }}
                                     />
                                 </div>
                             </div>
 
-                            {/* 📝 ฝั่งขวา: รายละเอียดและการเลือก */}
+                            {/* ฝั่งขวา: รายละเอียด */}
                             <div className="lg:w-1/2 p-8 lg:p-12 bg-surface flex flex-col border-l border-border-main">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-4">
                                         <span className="px-3 py-1 bg-primary-light text-primary text-[10px] font-bold rounded-full uppercase tracking-widest">
-                                            {currentVariant.sku}
+                                            {currentVariant.sku || 'PRODUCT'}
                                         </span>
                                         <div className="flex items-center gap-1 text-amber-400">
                                             <Star size={14} fill="currentColor" />
@@ -159,11 +161,11 @@ function ProductDetail() {
                                         </span>
                                     </div>
 
-                                    {/* 🎨 ส่วนเลือก Variant (ใช้ Map ตรงนี้แทน) */}
+                                    {/* ส่วนเลือก Variant */}
                                     <div className="mt-10">
                                         <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em] mb-4">ตัวเลือกสินค้า</h3>
                                         <div className="flex flex-wrap gap-3">
-                                            {Array.isArray(productVariant) && productVariant.map((variant, index) => (
+                                            {productVariant.map((variant, index) => (
                                                 <button
                                                     key={variant.id}
                                                     onClick={() => setSelectedVariantIndex(index)}
@@ -178,7 +180,7 @@ function ProductDetail() {
                                         </div>
                                     </div>
 
-                                    {/* 🔢 ส่วนเลือกจำนวน */}
+                                    {/* ส่วนเลือกจำนวน */}
                                     <div className="mt-10">
                                         <h3 className="text-xs font-black text-muted uppercase tracking-[0.2em] mb-4">จำนวน</h3>
                                         <div className="flex items-center gap-6">
@@ -192,7 +194,7 @@ function ProductDetail() {
                                     </div>
                                 </div>
 
-                                {/* 🛒 ปุ่ม Action */}
+                                {/* ปุ่ม Action */}
                                 <div className="mt-12 flex flex-col sm:flex-row gap-4">
                                     <button onClick={() => handleAddToCart(false, currentVariant.id)} className="flex-[2] flex items-center justify-center gap-3 bg-surface border-2 border-primary text-primary py-4 rounded-2xl font-black hover:bg-primary-light transition-all active:scale-95 shadow-lg">
                                         <ShoppingCart size={22} /> เพิ่มลงรถเข็น
@@ -204,22 +206,10 @@ function ProductDetail() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Info Badges */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                        <div className="bg-surface p-5 rounded-3xl flex items-center gap-4 border border-border-main">
-                            <div className="bg-green-50 p-3 rounded-2xl text-green-600"><ShieldCheck /></div>
-                            <div><p className="font-bold text-sm">รับประกันของแท้</p><p className="text-xs text-muted">ยินดีคืนเงิน 100%</p></div>
-                        </div>
-                        <div className="bg-surface p-5 rounded-3xl flex items-center gap-4 border border-border-main">
-                            <div className="bg-primary-light p-3 rounded-2xl text-primary"><Truck /></div>
-                            <div><p className="font-bold text-sm">จัดส่งด่วน</p><p className="text-xs text-muted">ภายใน 1-3 วันทำการ</p></div>
-                        </div>
-                    </div>
+                    {/* Info Badges อื่นๆ... */}
                 </main>
             </div>
         </>
-
     );
 }
 
