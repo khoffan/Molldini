@@ -10,7 +10,8 @@ Disallow: /register
 
 # อนุญาตให้เก็บข้อมูลหน้าสินค้าและหน้าแรก
 Allow: /
-Allow: /products
+Allow: /login
+Allow: /register
 
 # ระบุตำแหน่ง Sitemap (เพื่อให้ Bot หาไฟล์ที่เราเจนจาก Vite เจอ)
 Sitemap: https://molldini.vercel.app/sitemap.xml

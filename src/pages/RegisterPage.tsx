@@ -369,9 +369,9 @@ const RegisterPage: React.FC = () => {
                 {/* Footer */}
                 <p className="text-center text-xs text-muted mt-6">
                     By creating an account, you agree to our{' '}
-                    <a href="#" className="underline hover:text-content transition-colors">Terms</a>{' '}
+                    <Link to="/terms" className="underline hover:text-content transition-colors">Terms</Link>{' '}
                     and{' '}
-                    <a href="#" className="underline hover:text-content transition-colors">Privacy Policy</a>
+                    <Link to="/policy" className="underline hover:text-content transition-colors">Privacy Policy</Link>
                 </p>
             </div>
         </div>

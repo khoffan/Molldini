@@ -90,7 +90,6 @@ function ProductDetail() {
         })
     }
 
-    console.log(product.title)
 
     return (
         <>
