@@ -1,0 +1,371 @@
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../../store";
+import { fetchOrderMerchant } from "../../orders/services/orderService";
+import MerchantDashboard from "../components/MerchantDashboard";
+import type { OrderResponse } from "../../orders/interfaces/orderInterface";
+import { convertDateUtctoTimezone } from "../../../common/utils/convertDateUtctoTimezone";
+import { getImageValidate } from "../../../common/utils/getImageValidate";
+import {
+    LayoutDashboard,
+    ShoppingBag,
+    Settings,
+    Package,
+    Clock,
+    CheckCircle2,
+    XCircle,
+    ChevronRight,
+    Calendar,
+    CreditCard,
+    ReceiptText,
+    MapPin,
+    Store,
+} from "lucide-react";
+import { useNavigate } from "react-router";
+import RegistrationForm from "../components/RegistrationForm";
+import { fetchMyMerchant, updateMerchant } from "../services/merchantService";
+import LoadingCircularSkelition from "../../../common/components/loadingComponent/LoadingCircularSkelition";
+import MerchantSettingsForm from "../components/MerchantSettingsForm";
+import type { UpdateMerchantInput } from "../interfaces/merchantInterface";
+import Swal from "sweetalert2";
+
+type TabId = "dashboard" | "orders" | "settings";
+
+const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
+    { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
+    { id: "orders", label: "Orders", icon: <ShoppingBag size={18} /> },
+    { id: "settings", label: "Settings", icon: <Settings size={18} /> },
+];
+
+type OrderFilter = "ALL" | "PENDING" | "PAID" | "CANCELLED";
+
+export default function MerchantProfilePage() {
+    const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState<TabId>("dashboard");
+    const [orderFilter, setOrderFilter] = useState<OrderFilter>("ALL");
+
+    const { merchant, loading: merchantLoading } = useSelector((state: RootState) => state.merchant);
+    const { listOrderMerchant, loading: orderLoading } = useSelector(
+        (state: RootState) => state.order
+    );
+
+    // Fetch merchant orders when Orders tab is selected
+    useEffect(() => {
+        if (activeTab === "orders") {
+            dispatch(fetchOrderMerchant());
+        }
+        dispatch(fetchMyMerchant());
+    }, [activeTab, dispatch]);
+
+    const saveEditMerchant = (data: UpdateMerchantInput) => {
+        dispatch(updateMerchant(data));
+        Swal.fire('บันทึกสําเร็จ!', '', 'success');
+    }
+
+    if (!merchant) {
+        return (
+            <div className="min-h-screen bg-main py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+                <div className="max-w-4xl mx-auto">
+                    {/* Header Section */}
+                    <div className="mb-10 text-center lg:text-left">
+                        <h1 className="text-3xl font-bold text-content">Become a Merchant</h1>
+                        <p className="mt-2 text-gray-500 dark:text-gray-400">
+                            Start your business with Molldini and reach customers worldwide.
+                        </p>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-800 shadow-2xl rounded-3xl overflow-hidden border border-gray-100 dark:border-slate-700">
+                        <div className="flex flex-col md:flex-row">
+
+                            {/* Left Side: Info/Incentive (Hidden on mobile) */}
+                            <div className="hidden md:flex md:w-1/3 bg-primary p-10 flex-col justify-between text-white">
+                                <div>
+                                    <h3 className="text-xl font-semibold mb-4">Why sell with us?</h3>
+                                    <ul className="space-y-4 text-sm opacity-90">
+                                        <li>✓ Low commission rates</li>
+                                        <li>✓ Easy CSV product import</li>
+                                        <li>✓ 24/7 Merchant support</li>
+                                    </ul>
+                                </div>
+                                <div className="text-xs opacity-70">
+                                    Molldini Merchant Partner Program v1.0
+                                </div>
+                            </div>
+
+                            {/* Right Side: The Form */}
+                            <div className="flex-1 p-8 lg:p-12">
+                                <RegistrationForm />
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const orders = listOrderMerchant || [];
+    const filteredOrders =
+        orderFilter === "ALL"
+            ? orders
+            : orders.filter((o) => o.status === orderFilter);
+
+    return (
+        <div className="min-h-screen bg-main pb-12">
+            {/* ── Hero Banner ── */}
+            <div className="bg-surface border-b border-surface-200">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                        {merchant.logoUrl ? (
+                            <img
+                                src={getImageValidate(merchant.logoUrl.url)}
+                                alt={merchant.name}
+                                className="w-20 h-20 rounded-2xl object-cover border-2 border-gray-100 shadow-sm"
+                            />
+                        ) : (
+                            <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+                                <Store className="w-9 h-9 text-content" />
+                            </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-2xl font-black text-content truncate">
+                                {merchant.name}
+                            </h1>
+                            <p className="text-content-200 text-sm mt-1 line-clamp-2">
+                                {merchant.description || "ยังไม่มีคำอธิบายร้านค้า"}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-3 mt-3">
+                                <span className="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg font-semibold">
+                                    <Calendar size={12} />
+                                    สมาชิกเมื่อ{" "}
+                                    {new Date(merchant.createdAt).toLocaleDateString("th-TH")}
+                                </span>
+                                {merchant.address && (
+                                    <span className="inline-flex items-center gap-1.5 text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-lg font-medium">
+                                        <MapPin size={12} />
+                                        {merchant.address.province}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Tab Bar ── */}
+            <div className="bg-surface border-b border-surface sticky top-16 z-30">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <nav className="flex gap-1 -mb-px overflow-x-auto">
+                        {TABS.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+                                    ? "border-blue-600 text-blue-600"
+                                    : "border-transparent text-content hover:text-content-200 hover:border-gray-300"
+                                    }`}
+                            >
+                                {tab.icon}
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+            </div>
+
+            {/* ── Tab Content ── */}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+                {/* ─── Dashboard Tab ─── */}
+                {activeTab === "dashboard" && (
+                    merchantLoading ? (
+                        <LoadingCircularSkelition />
+                    ) : (
+                        <MerchantDashboard merchant={merchant} />
+                    )
+                )}
+
+                {/* ─── Orders Tab ─── */}
+                {activeTab === "orders" && (
+                    <div className="space-y-6">
+                        {/* Filter buttons */}
+                        <div className="flex flex-wrap gap-2">
+                            {(
+                                [
+                                    { id: "ALL", label: "ทั้งหมด" },
+                                    { id: "PENDING", label: "รอชำระ" },
+                                    { id: "PAID", label: "จ่ายแล้ว" },
+                                    { id: "CANCELLED", label: "ยกเลิก" },
+                                ] as { id: OrderFilter; label: string }[]
+                            ).map((f) => (
+                                <button
+                                    key={f.id}
+                                    onClick={() => setOrderFilter(f.id)}
+                                    className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${orderFilter === f.id
+                                        ? "bg-primary text-white shadow-sm"
+                                        : "bg-surface text-content border border-border-main hover:bg-hover"
+                                        }`}
+                                >
+                                    {f.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Loading */}
+                        {orderLoading && (
+                            <div className="flex justify-center py-16">
+                                <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+                            </div>
+                        )}
+
+                        {/* Empty */}
+                        {!orderLoading && filteredOrders.length === 0 && (
+                            <div className="bg-surface rounded-xl shadow-sm p-5 border border-border-main">
+                                <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <ReceiptText className="text-gray-300" size={40} />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-800">
+                                    ยังไม่มีคำสั่งซื้อ
+                                </h3>
+                                <p className="text-gray-500 mt-1">
+                                    {orderFilter === "ALL"
+                                        ? "เมื่อลูกค้าสั่งซื้อสินค้า รายการจะแสดงที่นี่"
+                                        : "ไม่พบคำสั่งซื้อในสถานะนี้"}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Order List */}
+                        {!orderLoading && filteredOrders.length > 0 && (
+                            <div className="space-y-4">
+                                {filteredOrders.map((order: OrderResponse) => (
+                                    <div
+                                        key={order.id}
+                                        className="bg-surface rounded-xl p-4 border border-border-main hover:border-primary/30 hover:shadow-md transition-all cursor-pointer"
+                                        onClick={() =>
+                                            navigate(`/profile/orders/${order.id}`)
+                                        }
+                                    >
+                                        <div className="p-5 md:p-6">
+                                            {/* Top: Order ID + Status */}
+                                            <div className="flex flex-wrap justify-between items-start gap-4 mb-4 pb-4 border-b border-gray-50">
+                                                <div className="space-y-1">
+                                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                                        Order ID
+                                                    </p>
+                                                    <p className="font-mono text-sm font-bold text-gray-700">
+                                                        #{order.id?.slice(0, 8).toUpperCase()}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <MerchantStatusBadge status={order.status} />
+                                                    <div className="flex items-center gap-1.5 text-gray-500">
+                                                        <Calendar size={12} className="text-gray-400" />
+                                                        <p className="text-xs font-medium">
+                                                            {order.invoice?.paidAt
+                                                                ? convertDateUtctoTimezone(order.invoice.paidAt)
+                                                                : order.createdAt
+                                                                    ? convertDateUtctoTimezone(
+                                                                        order.createdAt as string
+                                                                    )
+                                                                    : "-"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Middle: Items + Total */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="bg-gray-50 p-3 rounded-2xl text-gray-400">
+                                                        <Package size={24} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-gray-900">
+                                                            สินค้า (
+                                                            {order.subOrders?.reduce(
+                                                                (acc, sub) =>
+                                                                    acc + (sub.orderItems?.length || 0),
+                                                                0
+                                                            ) || 0}{" "}
+                                                            รายการ)
+                                                        </p>
+                                                        {order.receiverName && (
+                                                            <p className="text-sm text-gray-500">
+                                                                ผู้รับ: {order.receiverName}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                                                        ยอดรวม
+                                                    </p>
+                                                    <p className="text-xl font-black text-blue-600">
+                                                        ฿{order.totalPrice?.toLocaleString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Bottom: Payment + Detail Link */}
+                                            <div className="mt-5 flex items-center justify-between gap-4 pt-4 border-t border-gray-50">
+                                                <div className="flex items-center gap-2 text-gray-400 text-xs">
+                                                    <CreditCard size={14} />
+                                                    <span>
+                                                        ชำระผ่าน: {order.invoice?.paymentMethod || "N/A"}
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    onClick={() =>
+                                                        navigate(`/profile/orders/${order.id}`)
+                                                    }
+                                                    className="flex items-center gap-1 text-sm font-bold text-gray-700 hover:text-blue-600 transition-colors"
+                                                >
+                                                    ดูรายละเอียด <ChevronRight size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ─── Settings Tab ─── */}
+                {activeTab === "settings" && (
+                    <MerchantSettingsForm
+                        merchant={merchant}
+                        onSave={async (data) => {
+                            saveEditMerchant(data)
+                        }} />
+
+                )}
+            </div>
+        </div>
+    );
+}
+
+/* ── Status Badge ── */
+function MerchantStatusBadge({ status }: { status: string }) {
+    switch (status) {
+        case "PAID":
+            return (
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100 flex items-center gap-1">
+                    <CheckCircle2 size={12} /> จ่ายแล้ว
+                </span>
+            );
+        case "CANCELLED":
+            return (
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-gray-50 text-gray-500 border border-gray-200 flex items-center gap-1">
+                    <XCircle size={12} /> ยกเลิก
+                </span>
+            );
+        default:
+            return (
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-600 border border-amber-100 flex items-center gap-1">
+                    <Clock size={12} /> รอชำระ
+                </span>
+            );
+    }
+}

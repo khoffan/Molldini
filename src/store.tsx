@@ -1,16 +1,16 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./service/authService";
-import merchantReducer from "./service/merchantService";
-import cartReducer from "./service/cartService";
-import categoryReducer from "./service/categoryService";
-import productReducer from "./service/productService";
-import orderReducer from "./service/orderService";
-import userService from "./service/userService";
-import addressReducer from './service/addressService';
-import notiReducer from './service/notificationService';
-import paymentReducer from './service/paymentService';
-import shippingReducer from './service/shippingService';
-import checkoutReducer from './service/checkoutService';
+import authReducer from "./features/auth/service/authService";
+import merchantReducer from "./features/merchants/services/merchantService";
+import cartReducer from "./features/carts/services/cartService";
+import categoryReducer from "./features/products/services/categoryService";
+import productReducer from "./features/products/services/productService";
+import orderReducer from "./features/orders/services/orderService";
+import userService from "./features/user/services/userService";
+import addressReducer from './features/address/service/addressService';
+import notiReducer from './features/notification/service/notificationService';
+import paymentReducer from './features/orders/services/paymentService';
+import shippingReducer from './features/orders/services/shippingService';
+import checkoutReducer from './features/carts/services/checkoutService';
 
 export const store = configureStore({
     reducer: {
