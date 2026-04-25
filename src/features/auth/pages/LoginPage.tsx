@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { auth, provider } from '../../../common/firebase/firebaseConfig';
-import { signInWithEmailAndPassword, signInWithPopup, } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { Navigate, Link } from 'react-router';
 import { syncUserWithBackend } from '../service/authService'
@@ -68,6 +68,9 @@ const LoginPage: React.FC = () => {
                 console.error("google error login code:", err.code);
                 console.error("google error login message:", err.message);
                 switch (err.code) {
+                    case 'auth/popup-blocked':
+                        await signInWithRedirect(auth, provider)
+                        break;
                     case 'auth/popup-closed-in-the-middle':
                         setFormError('Popup closed in the middle.');
                         break;
