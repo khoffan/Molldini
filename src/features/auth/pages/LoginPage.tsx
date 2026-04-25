@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { auth, provider } from '../../../common/firebase/firebaseConfig';
-import { signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithRedirect } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { Navigate, Link } from 'react-router';
 import { syncUserWithBackend } from '../service/authService'
@@ -56,16 +56,11 @@ const LoginPage: React.FC = () => {
         setLocalLoading(true);
         setFormError(null);
         try {
-            const result = await signInWithPopup(auth, provider);
-            dispatch(syncUserWithBackend(result.user));
+            await signInWithRedirect(auth, provider);
         } catch (err: unknown) {
             if (err instanceof FirebaseError) {
-                console.log("google login err:", err.message);
-                if (err.code === 'auth/popup-closed-by-user') {
-                    setFormError('Sign-in popup was closed.');
-                } else {
-                    setFormError('Google sign-in failed. Please try again.');
-                }
+                console.error("Redirect trigger error:", err);
+                setFormError('Failed to start Google sign-in.');
             } else {
                 setFormError('An unexpected error occurred.');
             }

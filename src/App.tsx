@@ -23,7 +23,7 @@ import type { AppDispatch, RootState } from './store'
 import { fetchProducts } from './features/products/services/productService'
 import Login from './features/auth/pages/LoginPage'
 import Register from './features/auth/pages/RegisterPage'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, getRedirectResult } from 'firebase/auth'
 import { auth } from './common/firebase/firebaseConfig'
 import { syncUserWithBackend, setInitialize } from './features/auth/service/authService'
 import ProtectRoute from './common/components/ProtectRoute'
@@ -42,9 +42,6 @@ import LoadingLogoScreen from './common/components/loadingComponent/LoadingLogo'
 import { Tooltip } from 'react-tooltip';
 import { fetchCategories } from './features/products/services/categoryService'
 
-
-
-
 function App() {
   const dispatch = useDispatch<AppDispatch>()
   const { isAuthenticated, isSynced } = useSelector((state: RootState) => state.auth)
@@ -55,13 +52,26 @@ function App() {
 
     let isSyncInProgress = false; // ป้องกันการรันซ้อนภายในรอบเดียว
 
+    // --- ส่วนที่เพิ่ม: ตรวจสอบผลจากการ Redirect ---
+    const checkRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        console.log("Redirect :", result);
+        if (result?.user) {
+          console.log("Redirect Login Success:", result.user.email);
+          // ท่านสามารถเลือก Sync ที่นี่เลย หรือปล่อยให้ onAuthStateChanged จัดการก็ได้
+        }
+      } catch (error) {
+        console.error("Redirect Login Error:", error);
+      }
+    };
+
+
     const unscription = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log("Auth State Changed. User:", firebaseUser?.uid);
 
       if (firebaseUser) {
         // 1. ตรวจสอบว่า Sync ไปแล้วหรือยัง หรือกำลัง Sync อยู่หรือไม่
         // ใช้ Store state (isSynced) และ local variable (isSyncInProgress) ควบคู่กัน
-        console.log(isSynced || isSyncInProgress);
         if (isSynced || isSyncInProgress) return;
 
         try {
@@ -101,9 +111,9 @@ function App() {
         dispatch(setInitialize());
       }
     });
-
+    checkRedirect();
     return () => unscription();
-  }, [dispatch]); // เอา isSynced ออกจากตรงนี้เด็ดขาด!
+  }, [dispatch]);
 
   if (!isAuthenticated) {
     return <LoadingLogoScreen />
