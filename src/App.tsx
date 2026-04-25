@@ -23,7 +23,7 @@ import type { AppDispatch, RootState } from './store'
 import { fetchProducts } from './features/products/services/productService'
 import Login from './features/auth/pages/LoginPage'
 import Register from './features/auth/pages/RegisterPage'
-import { onAuthStateChanged, getRedirectResult } from 'firebase/auth'
+import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from './common/firebase/firebaseConfig'
 import { syncUserWithBackend, setInitialize } from './features/auth/service/authService'
 import ProtectRoute from './common/components/ProtectRoute'
@@ -55,11 +55,12 @@ function App() {
     const handleAuth = async () => {
       try {
         // 1. ตรวจสอบผลจากการ Redirect ก่อน
-        const result = await getRedirectResult(auth);
-        if (result?.user) {
-          console.log("Redirect Success:", result.user.email);
-          // สามารถจัดการข้อมูลพิเศษจาก Credential ได้ที่นี่ถ้าจำเป็น
-        }
+        // ปิดส่วนนี้ไปก่อน
+        // const result = await getRedirectResult(auth);
+        // if (result?.user) {
+        //   console.log("Redirect Success:", result.user.email);
+        //   // สามารถจัดการข้อมูลพิเศษจาก Credential ได้ที่นี่ถ้าจำเป็น
+        // }
 
         // 2. ใช้ onAuthStateChanged เป็นตัวจัดการหลักในการ Sync
         const unsubscription = onAuthStateChanged(auth, async (firebaseUser) => {

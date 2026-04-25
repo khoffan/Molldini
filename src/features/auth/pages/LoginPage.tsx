@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { auth, provider } from '../../../common/firebase/firebaseConfig';
-import { signInWithEmailAndPassword, signInWithRedirect } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { Navigate, Link } from 'react-router';
 import { syncUserWithBackend } from '../service/authService'
@@ -56,12 +56,26 @@ const LoginPage: React.FC = () => {
         setLocalLoading(true);
         setFormError(null);
         try {
-            await signInWithRedirect(auth, provider);
+            // เปลี่ยนจาก Redirect เป็น Popup
+            const result = await signInWithPopup(auth, provider);
+
+            if (result.user) {
+                // สั่ง Sync ข้อมูลกับ Backend ทันทีหลังได้ User มาจาก Popup
+                await dispatch(syncUserWithBackend(result.user)).unwrap();
+            }
         } catch (err: unknown) {
             if (err instanceof FirebaseError) {
-                console.error("Redirect trigger error:", err);
-                setFormError('Failed to start Google sign-in.');
+                console.error("google error login code:", err.code);
+                console.error("google error login message:", err.message);
+                switch (err.code) {
+                    case 'auth/popup-closed-in-the-middle':
+                        setFormError('Popup closed in the middle.');
+                        break;
+                    default:
+                        setFormError('Login failed. Please try again.');
+                }
             } else {
+                console.error("else error login:", err);
                 setFormError('An unexpected error occurred.');
             }
         } finally {
