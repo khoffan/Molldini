@@ -31,6 +31,7 @@ const LoginPage: React.FC = () => {
             dispatch(syncUserWithBackend(result.user));
         } catch (err: unknown) {
             if (err instanceof FirebaseError) {
+                console.log("email login err:", err.message);
                 switch (err.code) {
                     case 'auth/user-not-found':
                     case 'auth/wrong-password':
