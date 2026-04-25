@@ -52,68 +52,62 @@ function App() {
 
     let isSyncInProgress = false; // ป้องกันการรันซ้อนภายในรอบเดียว
 
-    // --- ส่วนที่เพิ่ม: ตรวจสอบผลจากการ Redirect ---
-    const checkRedirect = async () => {
+    const handleAuth = async () => {
       try {
+        // 1. ตรวจสอบผลจากการ Redirect ก่อน
         const result = await getRedirectResult(auth);
-        console.log("Redirect :", result);
         if (result?.user) {
-          console.log("Redirect Login Success:", result.user.email);
-          // ท่านสามารถเลือก Sync ที่นี่เลย หรือปล่อยให้ onAuthStateChanged จัดการก็ได้
+          console.log("Redirect Success:", result.user.email);
+          // สามารถจัดการข้อมูลพิเศษจาก Credential ได้ที่นี่ถ้าจำเป็น
         }
+
+        // 2. ใช้ onAuthStateChanged เป็นตัวจัดการหลักในการ Sync
+        const unsubscription = onAuthStateChanged(auth, async (firebaseUser) => {
+          console.log("onAuthStateChanged", firebaseUser);
+          if (firebaseUser) {
+            if (isSynced || isSyncInProgress) return;
+            console.log("Syncing user...");
+            try {
+              isSyncInProgress = true;
+              await dispatch(syncUserWithBackend(firebaseUser)).unwrap();
+
+              await Promise.all([
+                dispatch(fetchUser()),
+                dispatch(fetchMyMerchant()),
+                dispatch(fetchCart()),
+                dispatch(fetchNoti())
+              ]);
+            } catch (error) {
+              console.error("Sync failed:", error);
+            } finally {
+              isSyncInProgress = false;
+              dispatch(setInitialize());
+            }
+          } else {
+            console.log("User signed out");
+            // Sign out logic
+            dispatch(clearCart());
+            dispatch(clearUserData());
+            dispatch(clearOrderState());
+            dispatch(resetMerchantState());
+            dispatch(resetNotiState());
+            dispatch(setInitialize());
+          }
+        });
+
+        return unsubscription;
       } catch (error) {
-        console.error("Redirect Login Error:", error);
+        console.error("Auth Error:", error);
+        dispatch(setInitialize()); // มั่นใจว่าแอปจะไม่ค้างที่หน้า Loading
       }
     };
 
+    const authUnsubPromise = handleAuth();
 
-    const unscription = onAuthStateChanged(auth, async (firebaseUser) => {
-
-      if (firebaseUser) {
-        // 1. ตรวจสอบว่า Sync ไปแล้วหรือยัง หรือกำลัง Sync อยู่หรือไม่
-        // ใช้ Store state (isSynced) และ local variable (isSyncInProgress) ควบคู่กัน
-        if (isSynced || isSyncInProgress) return;
-
-        try {
-          isSyncInProgress = true;
-
-          // 2. รับ Token และ Sync กับ Backend
-          // มั่นใจว่าใน syncUserWithBackend มีการตั้งค่า axios.defaults.headers.common['Authorization']
-          await dispatch(syncUserWithBackend(firebaseUser)).unwrap();
-
-          // 3. แบบ Auto-prompt (เรียกตอนโหลด) ถูกปิดไว้
-          // Safari iOS ไม่อนุญาตให้ขอ Permission อัตโนมัติ 
-          // ต้องขอผ่าน User Gesture (เช่น OnClick) เท่านั้น
-          // dispatch(setupNotifications());
-
-          // 4. ดึงข้อมูลส่วนตัว (เรียกหลังจาก Sync สำเร็จเท่านั้น)
-          await Promise.all([
-            dispatch(fetchUser()),
-            dispatch(fetchMyMerchant()),
-            dispatch(fetchCart()),
-            dispatch(fetchNoti())
-          ]);
-
-        } catch (error) {
-          console.error("Sync failed:", error);
-        } finally {
-          isSyncInProgress = false;
-          dispatch(setInitialize());
-        }
-      } else {
-        // User Sign Out
-        console.log("User signed out");
-        dispatch(clearCart());
-        dispatch(clearUserData());
-        dispatch(clearOrderState());
-        dispatch(resetMerchantState());
-        dispatch(resetNotiState());
-        dispatch(setInitialize());
-      }
-    });
-    checkRedirect();
-    return () => unscription();
-  }, [dispatch]);
+    return () => {
+      authUnsubPromise.then(unsub => unsub && unsub());
+    };
+  }, [dispatch, isSynced]);
 
   if (!isAuthenticated) {
     return <LoadingLogoScreen />
