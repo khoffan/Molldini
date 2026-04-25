@@ -53,12 +53,12 @@ const LoginPage: React.FC = () => {
     };
 
     const handleGoogleLogin = async (): Promise<void> => {
-        setLocalLoading(true);
         setFormError(null);
         try {
             // เปลี่ยนจาก Redirect เป็น Popup
             const result = await signInWithPopup(auth, provider);
 
+            setLocalLoading(true);
             if (result.user) {
                 // สั่ง Sync ข้อมูลกับ Backend ทันทีหลังได้ User มาจาก Popup
                 await dispatch(syncUserWithBackend(result.user)).unwrap();
