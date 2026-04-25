@@ -60,6 +60,7 @@ const LoginPage: React.FC = () => {
             dispatch(syncUserWithBackend(result.user));
         } catch (err: unknown) {
             if (err instanceof FirebaseError) {
+                console.log("google login err:", err.message);
                 if (err.code === 'auth/popup-closed-by-user') {
                     setFormError('Sign-in popup was closed.');
                 } else {
